@@ -19,19 +19,7 @@
 
 ---
 
-## Why IntuneGet?
-
-Deploying applications to Microsoft Intune shouldn't require hours of manual packaging and configuration. IntuneGet transforms a tedious multi-step process into a single click.
-
-| Traditional Workflow | With IntuneGet |
-|---------------------|----------------|
-| Search for installer downloads | Browse curated catalog |
-| Download and verify installers | One-click selection |
-| Install IntuneWin tool locally | Automated cloud packaging |
-| Create .intunewin packages manually | Instant .intunewin generation |
-| Upload to Intune portal | Direct deployment to tenant |
-| Configure detection rules | Pre-configured settings |
-| Repeat for each application | Deploy multiple apps in minutes |
+Skip the manual packaging workflow and deploy Winget apps to Intune in seconds.
 
 ---
 
@@ -220,6 +208,20 @@ See [SECURITY.md](SECURITY.md) for our complete security policy.
 | [GitHub Actions Setup](docs/GITHUB_ACTIONS_SETUP.md) | Set up the packaging pipeline |
 | [Database Setup](docs/DATABASE_SETUP.md) | Supabase configuration options |
 | [Development Guide](docs/DEVELOPMENT.md) | Local development setup |
+
+---
+
+## How It Compares
+
+| Traditional Workflow | With IntuneGet |
+|---------------------|----------------|
+| Search for installer downloads | Browse curated catalog |
+| Download and verify installers | One-click selection |
+| Install IntuneWin tool locally | Automated cloud packaging |
+| Create .intunewin packages manually | Instant .intunewin generation |
+| Upload to Intune portal | Direct deployment to tenant |
+| Configure detection rules | Pre-configured settings |
+| Repeat for each application | Deploy multiple apps in minutes |
 
 ---
 
