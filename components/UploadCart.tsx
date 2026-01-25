@@ -44,7 +44,7 @@ export function UploadCart() {
   const [isDeploying, setIsDeploying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { isAuthenticated, getAccessToken, signIn } = useMicrosoftAuth();
+  const { isAuthenticated, getAccessToken, signIn, requestAdminConsent } = useMicrosoftAuth();
   const {
     status: permissionStatus,
     error: permissionError,
@@ -60,6 +60,15 @@ export function UploadCart() {
       verify();
     }
   }, [isOpen, isAuthenticated, permissionStatus, verify]);
+
+  const handleFixPermissions = () => {
+    if (permissionError === 'network_error') {
+      verify();
+    } else {
+      // For consent_not_granted, insufficient_intune_permissions, or missing_credentials
+      requestAdminConsent();
+    }
+  };
 
   const handleDeploy = async () => {
     if (items.length === 0) return;
@@ -272,19 +281,28 @@ export function UploadCart() {
                 Clear All
               </Button>
               <Button
-                onClick={handleDeploy}
-                disabled={isDeploying || (isAuthenticated && !canDeploy)}
-                className="flex-1 bg-gradient-to-r from-accent-cyan to-accent-violet hover:opacity-90 text-white border-0 shadow-glow-cyan disabled:opacity-50"
+                onClick={isAuthenticated && !canDeploy && permissionStatus !== 'checking' ? handleFixPermissions : handleDeploy}
+                disabled={isDeploying || (isAuthenticated && permissionStatus === 'checking')}
+                className={`flex-1 text-white border-0 disabled:opacity-50 ${
+                  isAuthenticated && !canDeploy && permissionStatus !== 'checking'
+                    ? 'bg-status-error hover:bg-status-error/90'
+                    : 'bg-gradient-to-r from-accent-cyan to-accent-violet hover:opacity-90 shadow-glow-cyan'
+                }`}
               >
                 {isDeploying ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Deploying...
                   </>
+                ) : isAuthenticated && permissionStatus === 'checking' ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Checking...
+                  </>
                 ) : isAuthenticated && !canDeploy ? (
                   <>
                     <Shield className="w-4 h-4 mr-2" />
-                    {permissionStatus === 'checking' ? 'Checking...' : 'Fix Permissions'}
+                    {permissionError === 'network_error' ? 'Retry Check' : 'Grant Permissions'}
                   </>
                 ) : (
                   <>
