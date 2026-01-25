@@ -18,13 +18,13 @@ export async function GET() {
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     console.log('[stats/public] Supabase URL configured:', !!supabaseUrl);
-    console.log('[stats/public] Supabase Anon Key configured:', !!supabaseAnonKey);
+    console.log('[stats/public] Supabase Service Key configured:', !!supabaseServiceKey);
 
     // Return zeros if Supabase not configured (self-hosted)
-    if (!supabaseUrl || !supabaseAnonKey) {
+    if (!supabaseUrl || !supabaseServiceKey) {
       console.log('[stats/public] Supabase not configured, returning zeros');
       return NextResponse.json(
         { signinClicks: 0, appsDeployed: 0, appsSupported: 0 },
@@ -36,14 +36,15 @@ export async function GET() {
       );
     }
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    // Use service role key to bypass RLS
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Fetch site counters and curated apps count in parallel
     console.log('[stats/public] Fetching from Supabase...');
     const [countersResult, curatedAppsResult] = await Promise.all([
       supabase
         .from('site_counters')
-        .select('id, count')
+        .select('*')
         .in('id', ['signin_clicks', 'apps_deployed']),
       supabase
         .from('curated_apps')
