@@ -1,13 +1,13 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useCallback } from 'react';
 import Link from 'next/link';
 import { Shield, Zap, Cloud, CheckCircle2, Loader2, Package, ChevronDown, Copy, Check, ExternalLink, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMicrosoftAuth } from '@/hooks/useMicrosoftAuth';
 import { getAdminConsentUrl } from '@/lib/msal-config';
-import { isOnboardingCacheValid } from '@/lib/onboarding-utils';
+import { markOnboardingComplete, clearOnboardingCache } from '@/lib/onboarding-utils';
 import { trackSigninClick } from '@/hooks/useLandingStats';
 
 // Microsoft logo SVG component
@@ -46,10 +46,11 @@ const features = [
 ];
 
 function SignInContent() {
-  const { isAuthenticated, signIn } = useMicrosoftAuth();
+  const { isAuthenticated, signIn, getAccessToken } = useMicrosoftAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isVerifyingConsent, setIsVerifyingConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isConsentSectionOpen, setIsConsentSectionOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -67,20 +68,51 @@ function SignInContent() {
     }
   };
 
-  // Redirect based on onboarding status if already signed in
-  // First-time users go to /onboarding, returning users go to dashboard
-  useEffect(() => {
-    if (isAuthenticated) {
-      // Check if user has completed onboarding (valid cache)
-      const onboardingComplete = isOnboardingCacheValid();
-      if (onboardingComplete) {
-        router.push(callbackUrl);
-      } else {
-        // First-time user or cache expired - go to onboarding
-        router.push('/onboarding');
-      }
+  /**
+   * Verify consent status via API (server-side check)
+   * Returns true if consent is granted and permissions are valid
+   */
+  const verifyConsentStatus = useCallback(async (): Promise<boolean> => {
+    try {
+      const token = await getAccessToken();
+      if (!token) return false;
+
+      const response = await fetch('/api/auth/verify-consent', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) return false;
+
+      const result = await response.json();
+      return result.verified === true;
+    } catch {
+      return false;
     }
-  }, [isAuthenticated, router, callbackUrl]);
+  }, [getAccessToken]);
+
+  // Redirect based on ACTUAL consent status (server-verified, not localStorage)
+  // This ensures users with revoked/incomplete consent are sent to onboarding
+  useEffect(() => {
+    if (isAuthenticated && !isVerifyingConsent) {
+      setIsVerifyingConsent(true);
+
+      verifyConsentStatus().then((isVerified) => {
+        if (isVerified) {
+          // Consent verified - update cache and go to dashboard
+          markOnboardingComplete();
+          router.push(callbackUrl);
+        } else {
+          // Consent not granted or incomplete - clear stale cache and go to onboarding
+          clearOnboardingCache();
+          router.push('/onboarding');
+        }
+      });
+    }
+  }, [isAuthenticated, router, callbackUrl, verifyConsentStatus, isVerifyingConsent]);
 
   const handleSignIn = async () => {
     // Track signin click (fire-and-forget)
@@ -101,13 +133,15 @@ function SignInContent() {
     }
   };
 
-  // Show loading state while checking auth or if already authenticated
-  if (isAuthenticated) {
+  // Show loading state while checking auth or verifying consent
+  if (isAuthenticated || isVerifyingConsent) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-          <p className="text-slate-400">Redirecting to your dashboard...</p>
+          <p className="text-slate-400">
+            {isVerifyingConsent ? 'Verifying permissions...' : 'Redirecting to your dashboard...'}
+          </p>
         </div>
       </div>
     );
