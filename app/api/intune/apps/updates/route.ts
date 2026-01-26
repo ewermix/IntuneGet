@@ -1,7 +1,7 @@
 /**
  * Intune Apps Updates API Route
  * Identifies apps with available Winget updates
- * Uses cached Winget package data from Supabase for fast lookups
+ * Uses curated_apps table from Supabase for fast version lookups
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -134,21 +134,23 @@ export async function GET(request: NextRequest) {
       wingetIdsToLookup.push(match.wingetId);
     }
 
-    // Batch lookup all Winget versions from cache (single DB query)
+    // Batch lookup all Winget versions from curated_apps table (single DB query)
     const versionMap = new Map<string, string>();
 
     if (wingetIdsToLookup.length > 0) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: cachedPackages, error: cacheError } = await (supabase as any)
-        .from('winget_packages')
-        .select('id, latest_version')
-        .in('id', wingetIdsToLookup);
+        .from('curated_apps')
+        .select('winget_id, latest_version')
+        .in('winget_id', wingetIdsToLookup);
 
       if (cacheError) {
-        console.error('Error fetching cached Winget packages:', cacheError);
+        console.error('Error fetching curated apps:', cacheError);
       } else if (cachedPackages) {
         for (const pkg of cachedPackages) {
-          versionMap.set(pkg.id, pkg.latest_version);
+          if (pkg.latest_version) {
+            versionMap.set(pkg.winget_id, pkg.latest_version);
+          }
         }
       }
     }
