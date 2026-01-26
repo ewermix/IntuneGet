@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getManifest, getInstallers, getBestInstaller } from '@/lib/winget-api';
+import { fetchSimilarPackages } from '@/lib/manifest-api';
 
 export const runtime = 'edge';
 
@@ -20,8 +21,16 @@ export async function GET(request: NextRequest) {
     const manifest = await getManifest(packageId, version || undefined);
 
     if (!manifest) {
+      // Fetch similar packages to suggest
+      const suggestions = await fetchSimilarPackages(packageId);
       return NextResponse.json(
-        { error: 'Manifest not found' },
+        {
+          error: 'Package not found',
+          message: suggestions.length > 0
+            ? `Package "${packageId}" not found. Did you mean one of these?`
+            : `Package "${packageId}" not found in winget-pkgs repository`,
+          suggestions,
+        },
         { status: 404 }
       );
     }

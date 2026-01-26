@@ -415,3 +415,109 @@ export async function packageExists(wingetId: string): Promise<boolean> {
   const versions = await fetchAvailableVersions(wingetId);
   return versions.length > 0;
 }
+
+/**
+ * Fetch similar packages from the same publisher when a package is not found
+ * Useful for suggesting correct package IDs when user makes a typo
+ */
+export async function fetchSimilarPackages(wingetId: string): Promise<string[]> {
+  const parts = wingetId.split('.');
+  if (parts.length < 2) {
+    return [];
+  }
+
+  const publisher = parts[0];
+  const firstLetter = publisher.charAt(0).toLowerCase();
+  const searchName = parts.slice(1).join('').toLowerCase(); // e.g., "CommandConfigure" from "Dell.Command.Configure"
+
+  try {
+    // Fetch publisher's folder contents
+    const response = await fetch(`${GITHUB_API_BASE}/${firstLetter}/${publisher}`, {
+      headers: {
+        'User-Agent': 'IntuneGet',
+        Accept: 'application/vnd.github.v3+json',
+      },
+      next: { revalidate: 300 },
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const contents = await response.json();
+    const packages: string[] = [];
+
+    // Recursively build package IDs from folder structure
+    async function buildPackageIds(
+      items: Array<{ name: string; type: string; url: string }>,
+      currentPath: string[]
+    ): Promise<void> {
+      for (const item of items) {
+        if (item.type !== 'dir') continue;
+
+        const newPath = [...currentPath, item.name];
+        const potentialId = `${publisher}.${newPath.join('.')}`;
+
+        // Check if this folder contains version folders (has manifest files)
+        try {
+          const subResponse = await fetch(item.url, {
+            headers: {
+              'User-Agent': 'IntuneGet',
+              Accept: 'application/vnd.github.v3+json',
+            },
+          });
+
+          if (subResponse.ok) {
+            const subContents = await subResponse.json();
+            const hasVersionFolders = subContents.some(
+              (sub: { name: string; type: string }) =>
+                sub.type === 'dir' && /^\d/.test(sub.name)
+            );
+
+            if (hasVersionFolders) {
+              packages.push(potentialId);
+            } else {
+              // Go deeper
+              await buildPackageIds(subContents, newPath);
+            }
+          }
+        } catch {
+          // Skip on error
+        }
+      }
+    }
+
+    await buildPackageIds(contents, []);
+
+    // Score and sort by similarity to the searched name
+    const scored = packages.map((pkg) => {
+      const pkgName = pkg.split('.').slice(1).join('').toLowerCase();
+      let score = 0;
+
+      // Exact substring match
+      if (pkgName.includes(searchName) || searchName.includes(pkgName)) {
+        score += 100;
+      }
+
+      // Character overlap
+      const searchChars = new Set(searchName);
+      const pkgChars = new Set(pkgName);
+      const overlap = [...searchChars].filter((c) => pkgChars.has(c)).length;
+      score += overlap * 10;
+
+      // Length similarity
+      const lenDiff = Math.abs(pkgName.length - searchName.length);
+      score -= lenDiff * 2;
+
+      return { pkg, score };
+    });
+
+    return scored
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5)
+      .map((s) => s.pkg);
+  } catch (error) {
+    console.error(`Failed to fetch similar packages for ${wingetId}:`, error);
+    return [];
+  }
+}
