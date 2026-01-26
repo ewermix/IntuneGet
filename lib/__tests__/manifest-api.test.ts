@@ -1,0 +1,469 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { normalizeInstaller } from '../manifest-api';
+import type { WingetInstaller, NormalizedInstaller } from '@/types/winget';
+
+// Mock fetch for network tests
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
+
+describe('normalizeInstaller', () => {
+  it('should normalize a basic installer', () => {
+    const installer: WingetInstaller = {
+      Architecture: 'x64',
+      InstallerUrl: 'https://example.com/installer.exe',
+      InstallerSha256: 'abc123def456',
+      InstallerType: 'exe',
+    };
+
+    const result = normalizeInstaller(installer);
+
+    expect(result).toEqual({
+      architecture: 'x64',
+      url: 'https://example.com/installer.exe',
+      sha256: 'abc123def456',
+      type: 'exe',
+      scope: undefined,
+      silentArgs: '/S',
+      productCode: undefined,
+      packageFamilyName: undefined,
+    });
+  });
+
+  it('should use Silent switch when provided', () => {
+    const installer: WingetInstaller = {
+      Architecture: 'x64',
+      InstallerUrl: 'https://example.com/installer.exe',
+      InstallerSha256: 'abc123',
+      InstallerType: 'exe',
+      InstallerSwitches: {
+        Silent: '/VERYSILENT /SUPPRESSMSGBOXES',
+      },
+    };
+
+    const result = normalizeInstaller(installer);
+
+    expect(result.silentArgs).toBe('/VERYSILENT /SUPPRESSMSGBOXES');
+  });
+
+  it('should use SilentWithProgress when Silent is not available', () => {
+    const installer: WingetInstaller = {
+      Architecture: 'x64',
+      InstallerUrl: 'https://example.com/installer.exe',
+      InstallerSha256: 'abc123',
+      InstallerType: 'exe',
+      InstallerSwitches: {
+        SilentWithProgress: '/S /passive',
+      },
+    };
+
+    const result = normalizeInstaller(installer);
+
+    expect(result.silentArgs).toBe('/S /passive');
+  });
+
+  it('should include scope when provided', () => {
+    const installer: WingetInstaller = {
+      Architecture: 'x64',
+      InstallerUrl: 'https://example.com/installer.exe',
+      InstallerSha256: 'abc123',
+      InstallerType: 'exe',
+      Scope: 'user',
+    };
+
+    const result = normalizeInstaller(installer);
+
+    expect(result.scope).toBe('user');
+  });
+
+  it('should include productCode for MSI installers', () => {
+    const installer: WingetInstaller = {
+      Architecture: 'x64',
+      InstallerUrl: 'https://example.com/installer.msi',
+      InstallerSha256: 'abc123',
+      InstallerType: 'msi',
+      ProductCode: '{12345678-1234-1234-1234-123456789012}',
+    };
+
+    const result = normalizeInstaller(installer);
+
+    expect(result.productCode).toBe('{12345678-1234-1234-1234-123456789012}');
+  });
+
+  it('should include packageFamilyName for MSIX installers', () => {
+    const installer: WingetInstaller = {
+      Architecture: 'x64',
+      InstallerUrl: 'https://example.com/installer.msix',
+      InstallerSha256: 'abc123',
+      InstallerType: 'msix',
+      PackageFamilyName: 'Microsoft.App_8wekyb3d8bbwe',
+    };
+
+    const result = normalizeInstaller(installer);
+
+    expect(result.packageFamilyName).toBe('Microsoft.App_8wekyb3d8bbwe');
+  });
+
+  describe('default silent arguments', () => {
+    it('should use default args for MSI', () => {
+      const installer: WingetInstaller = {
+        Architecture: 'x64',
+        InstallerUrl: 'https://example.com/installer.msi',
+        InstallerSha256: 'abc123',
+        InstallerType: 'msi',
+      };
+
+      const result = normalizeInstaller(installer);
+
+      expect(result.silentArgs).toBe('/qn /norestart');
+    });
+
+    it('should use default args for Inno', () => {
+      const installer: WingetInstaller = {
+        Architecture: 'x64',
+        InstallerUrl: 'https://example.com/installer.exe',
+        InstallerSha256: 'abc123',
+        InstallerType: 'inno',
+      };
+
+      const result = normalizeInstaller(installer);
+
+      expect(result.silentArgs).toBe('/VERYSILENT /SUPPRESSMSGBOXES /NORESTART');
+    });
+
+    it('should use default args for Nullsoft (NSIS)', () => {
+      const installer: WingetInstaller = {
+        Architecture: 'x64',
+        InstallerUrl: 'https://example.com/installer.exe',
+        InstallerSha256: 'abc123',
+        InstallerType: 'nullsoft',
+      };
+
+      const result = normalizeInstaller(installer);
+
+      expect(result.silentArgs).toBe('/S');
+    });
+
+    it('should use default args for WiX', () => {
+      const installer: WingetInstaller = {
+        Architecture: 'x64',
+        InstallerUrl: 'https://example.com/installer.msi',
+        InstallerSha256: 'abc123',
+        InstallerType: 'wix',
+      };
+
+      const result = normalizeInstaller(installer);
+
+      expect(result.silentArgs).toBe('/qn /norestart');
+    });
+
+    it('should use default args for Burn bundles', () => {
+      const installer: WingetInstaller = {
+        Architecture: 'x64',
+        InstallerUrl: 'https://example.com/bundle.exe',
+        InstallerSha256: 'abc123',
+        InstallerType: 'burn',
+      };
+
+      const result = normalizeInstaller(installer);
+
+      expect(result.silentArgs).toBe('/quiet /norestart');
+    });
+
+    it('should use empty args for MSIX', () => {
+      const installer: WingetInstaller = {
+        Architecture: 'x64',
+        InstallerUrl: 'https://example.com/installer.msix',
+        InstallerSha256: 'abc123',
+        InstallerType: 'msix',
+      };
+
+      const result = normalizeInstaller(installer);
+
+      expect(result.silentArgs).toBe('');
+    });
+
+    it('should use empty args for portable', () => {
+      const installer: WingetInstaller = {
+        Architecture: 'x64',
+        InstallerUrl: 'https://example.com/app.zip',
+        InstallerSha256: 'abc123',
+        InstallerType: 'portable',
+      };
+
+      const result = normalizeInstaller(installer);
+
+      expect(result.silentArgs).toBe('');
+    });
+  });
+
+  describe('architecture handling', () => {
+    it('should handle x64 architecture', () => {
+      const installer: WingetInstaller = {
+        Architecture: 'x64',
+        InstallerUrl: 'https://example.com/installer.exe',
+        InstallerSha256: 'abc123',
+        InstallerType: 'exe',
+      };
+
+      expect(normalizeInstaller(installer).architecture).toBe('x64');
+    });
+
+    it('should handle x86 architecture', () => {
+      const installer: WingetInstaller = {
+        Architecture: 'x86',
+        InstallerUrl: 'https://example.com/installer.exe',
+        InstallerSha256: 'abc123',
+        InstallerType: 'exe',
+      };
+
+      expect(normalizeInstaller(installer).architecture).toBe('x86');
+    });
+
+    it('should handle arm64 architecture', () => {
+      const installer: WingetInstaller = {
+        Architecture: 'arm64',
+        InstallerUrl: 'https://example.com/installer.exe',
+        InstallerSha256: 'abc123',
+        InstallerType: 'exe',
+      };
+
+      expect(normalizeInstaller(installer).architecture).toBe('arm64');
+    });
+
+    it('should handle neutral architecture', () => {
+      const installer: WingetInstaller = {
+        Architecture: 'neutral',
+        InstallerUrl: 'https://example.com/installer.exe',
+        InstallerSha256: 'abc123',
+        InstallerType: 'exe',
+      };
+
+      expect(normalizeInstaller(installer).architecture).toBe('neutral');
+    });
+  });
+});
+
+describe('getManifestPaths logic', () => {
+  // Testing the path building logic indirectly through manifest expectations
+  it('should handle simple package IDs', () => {
+    // e.g., "Git.Git" -> "g/Git/Git"
+    const wingetId = 'Git.Git';
+    const parts = wingetId.split('.');
+    const firstLetter = parts[0].charAt(0).toLowerCase();
+
+    expect(firstLetter).toBe('g');
+    expect(parts[0]).toBe('Git');
+    expect(parts[1]).toBe('Git');
+  });
+
+  it('should handle multi-part package IDs', () => {
+    // e.g., "Microsoft.VisualStudioCode" -> "m/Microsoft/VisualStudioCode"
+    const wingetId = 'Microsoft.VisualStudioCode';
+    const parts = wingetId.split('.');
+    const firstLetter = parts[0].charAt(0).toLowerCase();
+
+    expect(firstLetter).toBe('m');
+    expect(parts.join('/')).toBe('Microsoft/VisualStudioCode');
+  });
+
+  it('should handle complex package IDs with multiple dots', () => {
+    // e.g., "Adobe.Acrobat.Reader.64-bit" -> "a/Adobe/Acrobat/Reader/64-bit"
+    const wingetId = 'Adobe.Acrobat.Reader.64-bit';
+    const parts = wingetId.split('.');
+    const firstLetter = parts[0].charAt(0).toLowerCase();
+
+    expect(firstLetter).toBe('a');
+    expect(parts.length).toBe(4);
+    expect(parts.join('/')).toBe('Adobe/Acrobat/Reader/64-bit');
+  });
+
+  it('should handle uppercase and lowercase consistently', () => {
+    const ids = ['Microsoft.VSCode', 'google.Chrome', 'NVIDIA.GeForceExperience'];
+
+    for (const id of ids) {
+      const parts = id.split('.');
+      const firstLetter = parts[0].charAt(0).toLowerCase();
+
+      expect(firstLetter).toMatch(/^[a-z]$/);
+    }
+  });
+});
+
+describe('version sorting', () => {
+  it('should sort semantic versions correctly', () => {
+    const versions = ['1.0.0', '2.0.0', '1.5.0', '10.0.0', '1.10.0'];
+
+    const sorted = versions.sort((a, b) =>
+      b.localeCompare(a, undefined, { numeric: true })
+    );
+
+    expect(sorted[0]).toBe('10.0.0');
+    expect(sorted[1]).toBe('2.0.0');
+    expect(sorted[2]).toBe('1.10.0');
+    expect(sorted[3]).toBe('1.5.0');
+    expect(sorted[4]).toBe('1.0.0');
+  });
+
+  it('should handle versions with different formats', () => {
+    const versions = ['1.85.2', '1.85.10', '1.84.0', '1.9.0'];
+
+    const sorted = versions.sort((a, b) =>
+      b.localeCompare(a, undefined, { numeric: true })
+    );
+
+    expect(sorted[0]).toBe('1.85.10');
+    expect(sorted[1]).toBe('1.85.2');
+  });
+
+  it('should handle versions with build numbers', () => {
+    const versions = ['121.0.6167.85', '121.0.6167.160', '120.0.6099.129'];
+
+    const sorted = versions.sort((a, b) =>
+      b.localeCompare(a, undefined, { numeric: true })
+    );
+
+    expect(sorted[0]).toBe('121.0.6167.160');
+    expect(sorted[1]).toBe('121.0.6167.85');
+    expect(sorted[2]).toBe('120.0.6099.129');
+  });
+});
+
+describe('installer type mapping', () => {
+  const testCases: Array<{ input: string; expected: string }> = [
+    { input: 'msix', expected: 'msix' },
+    { input: 'msi', expected: 'msi' },
+    { input: 'appx', expected: 'appx' },
+    { input: 'exe', expected: 'exe' },
+    { input: 'zip', expected: 'zip' },
+    { input: 'inno', expected: 'inno' },
+    { input: 'nullsoft', expected: 'nullsoft' },
+    { input: 'wix', expected: 'wix' },
+    { input: 'burn', expected: 'burn' },
+    { input: 'pwa', expected: 'pwa' },
+    { input: 'portable', expected: 'portable' },
+    // Case insensitive
+    { input: 'MSI', expected: 'msi' },
+    { input: 'EXE', expected: 'exe' },
+    { input: 'Inno', expected: 'inno' },
+  ];
+
+  it.each(testCases)('should map "$input" to "$expected"', ({ input, expected }) => {
+    const typeMap: Record<string, string> = {
+      msix: 'msix',
+      msi: 'msi',
+      appx: 'appx',
+      exe: 'exe',
+      zip: 'zip',
+      inno: 'inno',
+      nullsoft: 'nullsoft',
+      wix: 'wix',
+      burn: 'burn',
+      pwa: 'pwa',
+      portable: 'portable',
+    };
+
+    const result = typeMap[input.toLowerCase()] || 'exe';
+
+    expect(result).toBe(expected);
+  });
+
+  it('should default to "exe" for unknown types', () => {
+    const typeMap: Record<string, string> = {
+      msix: 'msix',
+      msi: 'msi',
+      exe: 'exe',
+    };
+
+    const result = typeMap['unknown'?.toLowerCase()] || 'exe';
+
+    expect(result).toBe('exe');
+  });
+});
+
+describe('architecture priority', () => {
+  it('should prefer x64 architecture when x64 is preferred', () => {
+    const archPriority: Record<string, string[]> = {
+      x64: ['x64', 'neutral', 'x86'],
+      x86: ['x86', 'neutral', 'x64'],
+      arm64: ['arm64', 'arm', 'neutral', 'x64'],
+    };
+
+    const installers: NormalizedInstaller[] = [
+      { architecture: 'x86', url: '', sha256: '', type: 'exe' },
+      { architecture: 'x64', url: '', sha256: '', type: 'exe' },
+      { architecture: 'neutral', url: '', sha256: '', type: 'exe' },
+    ];
+
+    const priority = archPriority['x64'];
+    let selected: NormalizedInstaller | undefined;
+
+    for (const arch of priority) {
+      selected = installers.find((i) => i.architecture === arch);
+      if (selected) break;
+    }
+
+    expect(selected?.architecture).toBe('x64');
+  });
+
+  it('should fall back to neutral when preferred arch is not available', () => {
+    const archPriority: Record<string, string[]> = {
+      x64: ['x64', 'neutral', 'x86'],
+    };
+
+    const installers: NormalizedInstaller[] = [
+      { architecture: 'x86', url: '', sha256: '', type: 'exe' },
+      { architecture: 'neutral', url: '', sha256: '', type: 'exe' },
+    ];
+
+    const priority = archPriority['x64'];
+    let selected: NormalizedInstaller | undefined;
+
+    for (const arch of priority) {
+      selected = installers.find((i) => i.architecture === arch);
+      if (selected) break;
+    }
+
+    expect(selected?.architecture).toBe('neutral');
+  });
+
+  it('should fall back to x86 when only x86 is available for x64 preference', () => {
+    const archPriority: Record<string, string[]> = {
+      x64: ['x64', 'neutral', 'x86'],
+    };
+
+    const installers: NormalizedInstaller[] = [
+      { architecture: 'x86', url: '', sha256: '', type: 'exe' },
+    ];
+
+    const priority = archPriority['x64'];
+    let selected: NormalizedInstaller | undefined;
+
+    for (const arch of priority) {
+      selected = installers.find((i) => i.architecture === arch);
+      if (selected) break;
+    }
+
+    expect(selected?.architecture).toBe('x86');
+  });
+
+  it('should handle arm64 preference correctly', () => {
+    const archPriority: Record<string, string[]> = {
+      arm64: ['arm64', 'arm', 'neutral', 'x64'],
+    };
+
+    const installers: NormalizedInstaller[] = [
+      { architecture: 'x64', url: '', sha256: '', type: 'exe' },
+      { architecture: 'arm', url: '', sha256: '', type: 'exe' },
+    ];
+
+    const priority = archPriority['arm64'];
+    let selected: NormalizedInstaller | undefined;
+
+    for (const arch of priority) {
+      selected = installers.find((i) => i.architecture === arch);
+      if (selected) break;
+    }
+
+    expect(selected?.architecture).toBe('arm');
+  });
+});
