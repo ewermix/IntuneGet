@@ -146,6 +146,7 @@ jobs:
         id: validate
         env:
           MODE: ${{ github.event.inputs.mode || 'both' }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Continue'
@@ -343,11 +344,93 @@ jobs:
             return $null
           }
 
+          # Helper function to query OpenAI with web search for winget ID
+          function Get-WingetIdFromOpenAI {
+            param(
+              [string]$AppName,
+              [string]$Publisher,
+              [string]$ExistingWingetId
+            )
+
+            $apiKey = $env:OPENAI_API_KEY
+            if (-not $apiKey) {
+              Write-Host "    OpenAI API key not configured, skipping AI fallback" -ForegroundColor Yellow
+              return $null
+            }
+
+            try {
+              $prompt = @"
+Find the correct winget package ID for this Windows application:
+- App Name: $AppName
+- Publisher: $Publisher
+- Current/Expected ID: $ExistingWingetId
+
+Search the web for the correct winget ID. The ID format is Publisher.AppName (e.g., Microsoft.VisualStudioCode, Google.Chrome).
+
+IMPORTANT:
+- Only return a winget ID if you are confident it exists in the winget repository
+- The ID must be in the format Publisher.AppName
+- If the app is not available in winget, respond with "NOT_AVAILABLE"
+- If you cannot determine the correct ID, respond with "UNKNOWN"
+
+Respond with ONLY the winget ID (e.g., "Microsoft.VisualStudioCode") or "NOT_AVAILABLE" or "UNKNOWN". No explanation.
+"@
+
+              $body = @{
+                model = "gpt-4o-mini-search-preview"
+                web_search_options = @{
+                  search_context_size = "medium"
+                }
+                messages = @(
+                  @{
+                    role = "user"
+                    content = $prompt
+                  }
+                )
+              } | ConvertTo-Json -Depth 10
+
+              $response = Invoke-RestMethod -Uri "https://api.openai.com/v1/chat/completions" `
+                -Method Post `
+                -Headers @{
+                  "Authorization" = "Bearer $apiKey"
+                  "Content-Type" = "application/json"
+                } `
+                -Body $body `
+                -TimeoutSec 30
+
+              $answer = $response.choices[0].message.content.Trim()
+
+              # Validate the response format
+              if ($answer -eq "NOT_AVAILABLE" -or $answer -eq "UNKNOWN") {
+                return @{ Status = $answer; Id = $null }
+              }
+
+              # Check if it looks like a valid winget ID (Publisher.Name format)
+              if ($answer -match '^[A-Za-z0-9_-]+\.[A-Za-z0-9._-]+$') {
+                # Verify the ID actually exists in winget
+                $verifyOutput = winget show --id $answer --exact --accept-source-agreements 2>&1 | Out-String
+                if ($LASTEXITCODE -eq 0 -and $verifyOutput -notmatch 'No package found') {
+                  return @{ Status = "FOUND"; Id = $answer }
+                } else {
+                  Write-Host "    OpenAI suggested '$answer' but it doesn't exist in winget" -ForegroundColor Yellow
+                  return @{ Status = "INVALID"; Id = $null }
+                }
+              }
+
+              return @{ Status = "INVALID"; Id = $null }
+            } catch {
+              Write-Host "    OpenAI API error: $_" -ForegroundColor Red
+              return $null
+            }
+          }
+
           # Load apps to validate
           $apps = Get-Content "apps-to-validate.json" | ConvertFrom-Json
           $results = @()
           $validated = 0
           $discovered = 0
+          $aiDiscovered = 0
+          $notInWinget = 0
           $failed = 0
 
           Write-Host "Processing $($apps.Count) apps in mode: $mode"
@@ -364,6 +447,8 @@ jobs:
               is_valid = $false
               discovered_id = $null
               match_score = 0
+              discovery_method = $null
+              not_in_winget = $false
               error = $null
             }
 
@@ -418,23 +503,39 @@ jobs:
                   $searchResults = Parse-WingetSearch $searchOutput
                 }
 
+                $match = $null
                 if ($searchResults.Count -gt 0) {
                   Write-Host "  Found $($searchResults.Count) potential matches"
-
                   $match = Get-BestMatch -AppName $app.name -Publisher $app.publisher -ExistingWingetId $wingetId -SearchResults $searchResults
+                }
 
-                  if ($match) {
-                    $result.discovered_id = $match.Id
-                    $result.match_score = $match.Score
-                    $discovered++
-                    Write-Host "  DISCOVERED: $($match.Id) (score: $($match.Score))" -ForegroundColor Cyan
-                  } else {
-                    Write-Host "  No confident match found" -ForegroundColor Yellow
-                    $failed++
-                  }
+                if ($match) {
+                  $result.discovered_id = $match.Id
+                  $result.match_score = $match.Score
+                  $result.discovery_method = "winget_search"
+                  $discovered++
+                  Write-Host "  DISCOVERED: $($match.Id) (score: $($match.Score))" -ForegroundColor Cyan
                 } else {
-                  Write-Host "  No search results found after all stages" -ForegroundColor Yellow
-                  $failed++
+                  # Stage 5: OpenAI with web search as final fallback
+                  Write-Host "  Stage 5: Querying OpenAI with web search..." -ForegroundColor Magenta
+                  $aiResult = Get-WingetIdFromOpenAI -AppName $app.name -Publisher $app.publisher -ExistingWingetId $wingetId
+
+                  if ($aiResult -and $aiResult.Status -eq "FOUND" -and $aiResult.Id) {
+                    $result.discovered_id = $aiResult.Id
+                    $result.match_score = 200  # High score for AI-verified result
+                    $result.discovery_method = "openai_websearch"
+                    $aiDiscovered++
+                    Write-Host "  DISCOVERED (AI): $($aiResult.Id)" -ForegroundColor Cyan
+                  } elseif ($aiResult -and $aiResult.Status -eq "NOT_AVAILABLE") {
+                    $result.error = "App not available in winget repository"
+                    $result.not_in_winget = $true
+                    $notInWinget++
+                    Write-Host "  NOT IN WINGET - App is not available in winget repository" -ForegroundColor Red
+                  } else {
+                    $result.error = "Could not determine winget ID"
+                    $failed++
+                    Write-Host "  FAILED - Could not determine correct winget ID" -ForegroundColor Red
+                  }
                 }
               }
             } catch {
@@ -445,22 +546,27 @@ jobs:
 
             $results += $result
 
-            # Rate limiting to avoid overwhelming winget
+            # Rate limiting to avoid overwhelming winget/API
             Start-Sleep -Milliseconds 500
           }
 
           Write-Host ""
           Write-Host "=== Summary ===" -ForegroundColor Cyan
           Write-Host "Validated (existing ID works): $validated"
-          Write-Host "Discovered (found correct ID): $discovered"
-          Write-Host "Failed (no match found): $failed"
+          Write-Host "Discovered (winget search): $discovered"
+          Write-Host "Discovered (AI web search): $aiDiscovered"
+          Write-Host "Not in winget: $notInWinget"
+          Write-Host "Failed (unknown): $failed"
 
           # Save results
           $results | ConvertTo-Json -Depth 10 | Out-File "validation-results.json" -Encoding UTF8
 
           # Set outputs
+          $totalDiscovered = $discovered + $aiDiscovered
           echo "validated=$validated" >> $env:GITHUB_OUTPUT
-          echo "discovered=$discovered" >> $env:GITHUB_OUTPUT
+          echo "discovered=$totalDiscovered" >> $env:GITHUB_OUTPUT
+          echo "ai_discovered=$aiDiscovered" >> $env:GITHUB_OUTPUT
+          echo "not_in_winget=$notInWinget" >> $env:GITHUB_OUTPUT
           echo "failed=$failed" >> $env:GITHUB_OUTPUT
 
       - name: Update Supabase with results
@@ -603,23 +709,36 @@ jobs:
           if [ -f validation-results.json ]; then
             TOTAL=$(jq 'length' validation-results.json)
             VALID=$(jq '[.[] | select(.is_valid == true)] | length' validation-results.json)
-            DISCOVERED=$(jq '[.[] | select(.discovered_id != null)] | length' validation-results.json)
-            FAILED=$((TOTAL - VALID - DISCOVERED))
+            DISCOVERED_WINGET=$(jq '[.[] | select(.discovered_id != null and .discovery_method == "winget_search")] | length' validation-results.json)
+            DISCOVERED_AI=$(jq '[.[] | select(.discovered_id != null and .discovery_method == "openai_websearch")] | length' validation-results.json)
+            NOT_IN_WINGET=$(jq '[.[] | select(.not_in_winget == true)] | length' validation-results.json)
+            FAILED=$(jq '[.[] | select(.is_valid == false and .discovered_id == null and .not_in_winget != true)] | length' validation-results.json)
 
             echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
             echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
             echo "| Total Processed | $TOTAL |" >> $GITHUB_STEP_SUMMARY
             echo "| Valid (existing ID works) | $VALID |" >> $GITHUB_STEP_SUMMARY
-            echo "| Discovered (corrected ID) | $DISCOVERED |" >> $GITHUB_STEP_SUMMARY
-            echo "| Failed (no match) | $FAILED |" >> $GITHUB_STEP_SUMMARY
+            echo "| Discovered (winget search) | $DISCOVERED_WINGET |" >> $GITHUB_STEP_SUMMARY
+            echo "| Discovered (AI web search) | $DISCOVERED_AI |" >> $GITHUB_STEP_SUMMARY
+            echo "| Not available in winget | $NOT_IN_WINGET |" >> $GITHUB_STEP_SUMMARY
+            echo "| Failed (unknown) | $FAILED |" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
 
-            if [ "$DISCOVERED" -gt 0 ]; then
+            if [ "$DISCOVERED_WINGET" -gt 0 ] || [ "$DISCOVERED_AI" -gt 0 ]; then
               echo "### Corrected IDs" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
-              echo "| Original ID | Corrected ID | Score |" >> $GITHUB_STEP_SUMMARY
-              echo "|-------------|--------------|-------|" >> $GITHUB_STEP_SUMMARY
-              jq -r '.[] | select(.discovered_id != null) | "| \(.original_winget_id) | \(.discovered_id) | \(.match_score) |"' validation-results.json >> $GITHUB_STEP_SUMMARY
+              echo "| Original ID | Corrected ID | Method | Score |" >> $GITHUB_STEP_SUMMARY
+              echo "|-------------|--------------|--------|-------|" >> $GITHUB_STEP_SUMMARY
+              jq -r '.[] | select(.discovered_id != null) | "| \(.original_winget_id) | \(.discovered_id) | \(.discovery_method // "unknown") | \(.match_score) |"' validation-results.json >> $GITHUB_STEP_SUMMARY
+            fi
+
+            if [ "$NOT_IN_WINGET" -gt 0 ]; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "### Apps Not Available in Winget" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "| App Name | Original ID |" >> $GITHUB_STEP_SUMMARY
+              echo "|----------|-------------|" >> $GITHUB_STEP_SUMMARY
+              jq -r '.[] | select(.not_in_winget == true) | "| \(.name) | \(.original_winget_id) |"' validation-results.json >> $GITHUB_STEP_SUMMARY
             fi
           else
             echo "No validation results found" >> $GITHUB_STEP_SUMMARY
