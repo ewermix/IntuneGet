@@ -359,22 +359,17 @@ jobs:
             }
 
             try {
-              $prompt = @"
-Find the correct winget package ID for this Windows application:
-- App Name: $AppName
-- Publisher: $Publisher
-- Current/Expected ID: $ExistingWingetId
-
-Search the web for the correct winget ID. The ID format is Publisher.AppName (e.g., Microsoft.VisualStudioCode, Google.Chrome).
-
-IMPORTANT:
-- Only return a winget ID if you are confident it exists in the winget repository
-- The ID must be in the format Publisher.AppName
-- If the app is not available in winget, respond with "NOT_AVAILABLE"
-- If you cannot determine the correct ID, respond with "UNKNOWN"
-
-Respond with ONLY the winget ID (e.g., "Microsoft.VisualStudioCode") or "NOT_AVAILABLE" or "UNKNOWN". No explanation.
-"@
+              $prompt = "Find the correct winget package ID for this Windows application:`n" +
+                "- App Name: $AppName`n" +
+                "- Publisher: $Publisher`n" +
+                "- Current/Expected ID: $ExistingWingetId`n`n" +
+                "Search the web for the correct winget ID. The ID format is Publisher.AppName (e.g., Microsoft.VisualStudioCode, Google.Chrome).`n`n" +
+                "IMPORTANT:`n" +
+                "- Only return a winget ID if you are confident it exists in the winget repository`n" +
+                "- The ID must be in the format Publisher.AppName`n" +
+                "- If the app is not available in winget, respond with NOT_AVAILABLE`n" +
+                "- If you cannot determine the correct ID, respond with UNKNOWN`n`n" +
+                "Respond with ONLY the winget ID (e.g., Microsoft.VisualStudioCode) or NOT_AVAILABLE or UNKNOWN. No explanation."
 
               $body = @{
                 model = "gpt-5-nano"
