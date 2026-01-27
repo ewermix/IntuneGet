@@ -377,7 +377,7 @@ Respond with ONLY the winget ID (e.g., "Microsoft.VisualStudioCode") or "NOT_AVA
 "@
 
               $body = @{
-                model = "gpt-4o-mini-search-preview"
+                model = "gpt-5-nano"
                 web_search_options = @{
                   search_context_size = "medium"
                 }
