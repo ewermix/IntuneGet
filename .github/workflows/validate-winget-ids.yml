@@ -84,18 +84,17 @@ jobs:
           # Wait for index to be ready
           Start-Sleep -Seconds 10
 
-          # Test with a search (more reliable than show)
-          Write-Host "`nTesting winget with search..."
-          $searchResult = winget search Microsoft.Skype --exact --accept-source-agreements 2>&1 | Out-String
-          Write-Host $searchResult
+          # Test with multiple approaches to diagnose winget issues
+          Write-Host "`nTesting winget search by ID..."
+          winget search --id Microsoft.Skype --source winget --accept-source-agreements
 
-          if ($searchResult -match 'Microsoft\.Skype') {
-            Write-Host "`nWinget verification PASSED" -ForegroundColor Green
-          } else {
-            Write-Host "`nWinget verification WARNING - Microsoft.Skype not found" -ForegroundColor Yellow
-            Write-Host "Listing all Skype packages..."
-            winget search Skype --accept-source-agreements
-          }
+          Write-Host "`nTesting winget show by ID..."
+          winget show --id Microsoft.Skype --source winget --accept-source-agreements
+
+          Write-Host "`nListing Microsoft packages (first 20)..."
+          winget search --id Microsoft. --source winget --count 20 --accept-source-agreements
+
+          Write-Host "`nWinget setup complete - proceeding with validation"
 
       - name: Fetch apps from Supabase
         id: fetch
