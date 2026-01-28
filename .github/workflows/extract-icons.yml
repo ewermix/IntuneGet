@@ -387,7 +387,12 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
-          # Stage the new icons first
+          # Fetch latest and checkout main branch (we may be in detached HEAD from workflow_run trigger)
+          git fetch origin main
+          git checkout main || git checkout -b main origin/main
+          git pull origin main
+
+          # Stage the new icons
           git add public/icons/ || true
 
           if git diff --staged --quiet; then
@@ -396,7 +401,7 @@ jobs:
             ICON_COUNT=$(git diff --staged --name-only | grep -c "icon-64.png" || echo "0")
             git commit -m "chore: add icons for $ICON_COUNT apps"
 
-            # Pull and rebase, then push (retry up to 3 times for race conditions)
+            # Push with retry for race conditions
             for i in 1 2 3; do
               git pull --rebase origin main && git push origin main && break
               echo "Retry $i: pull/push failed, retrying..."
