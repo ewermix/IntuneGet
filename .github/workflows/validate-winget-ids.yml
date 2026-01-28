@@ -364,6 +364,62 @@ jobs:
             return $null
           }
 
+          # Helper function to validate a winget search match using AI
+          function Confirm-WingetMatch {
+            param(
+              [string]$AppName,
+              [string]$Publisher,
+              [string]$ExistingWingetId,
+              [string]$CandidateId,
+              [string]$CandidateName
+            )
+
+            $apiKey = $env:OPENAI_API_KEY
+            if (-not $apiKey) { return @{ IsCorrect = $true } }
+
+            try {
+              $prompt = "Application we are looking for:`n" +
+                "- Name: $AppName`n" +
+                "- Publisher: $Publisher`n" +
+                "- Original winget ID: $ExistingWingetId`n`n" +
+                "Candidate match from winget search:`n" +
+                "- Winget ID: $CandidateId`n" +
+                "- Package name: $CandidateName`n`n" +
+                "Is the candidate the SAME application? Rules:`n" +
+                "- Must be the same app, not a plugin, extension, or related tool`n" +
+                "- 'Zoom Skype for Business Plugin' is NOT 'Skype'`n" +
+                "- 'Visual Studio Code' is NOT 'Visual Studio'`n" +
+                "- A name substring match alone does not mean it is correct`n`n" +
+                "Return ONLY: YES or NO"
+
+              $body = @{
+                model = "gpt-5-nano"
+                messages = @(
+                  @{ role = "system"; content = "You validate winget package matches. Respond ONLY 'YES' or 'NO'." },
+                  @{ role = "user"; content = $prompt }
+                )
+                max_tokens = 10
+                temperature = 0
+              } | ConvertTo-Json -Depth 10
+
+              $response = Invoke-RestMethod -Uri "https://api.openai.com/v1/chat/completions" `
+                -Method Post `
+                -Headers @{ "Authorization" = "Bearer $apiKey"; "Content-Type" = "application/json" } `
+                -Body $body -TimeoutSec 30
+
+              $answer = $response.choices[0].message.content.Trim().ToUpper()
+
+              if ($answer -eq "YES" -or $answer -like "YES*") {
+                return @{ IsCorrect = $true }
+              } else {
+                return @{ IsCorrect = $false }
+              }
+            } catch {
+              Write-Host "    AI validation error: $_ - accepting match by default" -ForegroundColor Yellow
+              return @{ IsCorrect = $true }  # Optimistic fallback on API failure
+            }
+          }
+
           # Helper function to query OpenAI Responses API with web search for winget ID
           function Get-WingetIdFromOpenAI {
             param(
@@ -475,6 +531,7 @@ jobs:
           $validated = 0
           $discovered = 0
           $aiDiscovered = 0
+          $aiRejected = 0
           $notInWinget = 0
           $failed = 0
 
@@ -611,6 +668,20 @@ jobs:
                   $match = Get-BestMatch -AppName $app.name -Publisher $app.publisher -ExistingWingetId $wingetId -SearchResults $searchResults
                 }
 
+                if ($match -and $match.Score -lt 100) {
+                  Write-Host "  Validating match with AI (score $($match.Score) < 100)..." -ForegroundColor Magenta
+                  $validation = Confirm-WingetMatch -AppName $app.name -Publisher $app.publisher `
+                    -ExistingWingetId $wingetId -CandidateId $match.Id -CandidateName $match.Name
+
+                  if (-not $validation.IsCorrect) {
+                    Write-Host "  AI REJECTED: $($match.Id) is not $($app.name)" -ForegroundColor Yellow
+                    $aiRejected++
+                    $match = $null  # Fall through to Stage 5
+                  } else {
+                    Write-Host "  AI CONFIRMED: $($match.Id)" -ForegroundColor Green
+                  }
+                }
+
                 if ($match) {
                   $result.discovered_id = $match.Id
                   $result.match_score = $match.Score
@@ -657,6 +728,7 @@ jobs:
           Write-Host "Validated (existing ID works): $validated"
           Write-Host "Discovered (winget search): $discovered"
           Write-Host "Discovered (AI web search): $aiDiscovered"
+          Write-Host "AI rejected (wrong match): $aiRejected"
           Write-Host "Not in winget: $notInWinget"
           Write-Host "Failed (unknown): $failed"
 
@@ -668,6 +740,7 @@ jobs:
           echo "validated=$validated" >> $env:GITHUB_OUTPUT
           echo "discovered=$totalDiscovered" >> $env:GITHUB_OUTPUT
           echo "ai_discovered=$aiDiscovered" >> $env:GITHUB_OUTPUT
+          echo "ai_rejected=$aiRejected" >> $env:GITHUB_OUTPUT
           echo "not_in_winget=$notInWinget" >> $env:GITHUB_OUTPUT
           echo "failed=$failed" >> $env:GITHUB_OUTPUT
 
@@ -813,6 +886,7 @@ jobs:
             VALID=$(jq '[.[] | select(.is_valid == true)] | length' validation-results.json)
             DISCOVERED_WINGET=$(jq '[.[] | select(.discovered_id != null and .discovery_method == "winget_search")] | length' validation-results.json)
             DISCOVERED_AI=$(jq '[.[] | select(.discovered_id != null and .discovery_method == "openai_websearch")] | length' validation-results.json)
+            AI_REJECTED=${{ steps.validate.outputs.ai_rejected || '0' }}
             NOT_IN_WINGET=$(jq '[.[] | select(.not_in_winget == true)] | length' validation-results.json)
             FAILED=$(jq '[.[] | select(.is_valid == false and .discovered_id == null and .not_in_winget != true)] | length' validation-results.json)
 
@@ -822,6 +896,7 @@ jobs:
             echo "| Valid (existing ID works) | $VALID |" >> $GITHUB_STEP_SUMMARY
             echo "| Discovered (winget search) | $DISCOVERED_WINGET |" >> $GITHUB_STEP_SUMMARY
             echo "| Discovered (AI web search) | $DISCOVERED_AI |" >> $GITHUB_STEP_SUMMARY
+            echo "| AI rejected (wrong match) | $AI_REJECTED |" >> $GITHUB_STEP_SUMMARY
             echo "| Not available in winget | $NOT_IN_WINGET |" >> $GITHUB_STEP_SUMMARY
             echo "| Failed (unknown) | $FAILED |" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
