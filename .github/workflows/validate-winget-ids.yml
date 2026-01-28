@@ -507,9 +507,9 @@ jobs:
 
               # Check if it looks like a valid winget ID (Publisher.Name format)
               if ($answer -match '^[A-Za-z0-9_-]+\.[A-Za-z0-9._-]+$') {
-                # Verify the ID actually exists in winget
-                $verifyOutput = winget show --id $answer --exact --source winget --accept-source-agreements 2>&1 | Out-String
-                if ($LASTEXITCODE -eq 0 -and $verifyOutput -notmatch 'No package found') {
+                # Verify the ID actually exists in winget (use search instead of show to avoid installer applicability checks)
+                $verifyOutput = winget search --id $answer --exact --source winget --accept-source-agreements 2>&1 | Out-String
+                if ($LASTEXITCODE -eq 0 -and $verifyOutput -match $answer) {
                   return @{ Status = "FOUND"; Id = $answer }
                 } else {
                   Write-Host "    OpenAI suggested '$answer' but it doesn't exist in winget" -ForegroundColor Yellow
@@ -566,9 +566,11 @@ jobs:
 
                 while ($retryCount -lt $maxRetries -and -not $isValid) {
                   $retryCount++
-                  $showOutput = winget show --id $wingetId --exact --source winget --accept-source-agreements 2>&1 | Out-String
+                  # Use winget search instead of winget show to avoid installer applicability checks
+                  # This ensures IDs like Webex.Meetings validate correctly even on GitHub runners
+                  $searchOutput = winget search --id $wingetId --exact --source winget --accept-source-agreements 2>&1 | Out-String
 
-                  if ($LASTEXITCODE -eq 0 -and $showOutput -notmatch 'No package found') {
+                  if ($LASTEXITCODE -eq 0 -and $searchOutput -match $wingetId) {
                     $isValid = $true
                   } elseif ($retryCount -lt $maxRetries) {
                     Write-Host "  Retry $retryCount/$maxRetries..." -ForegroundColor Gray
@@ -582,8 +584,8 @@ jobs:
                   Write-Host "  VALID" -ForegroundColor Green
                 } else {
                   Write-Host "  INVALID - ID not found in winget (exit code: $LASTEXITCODE)" -ForegroundColor Yellow
-                  Write-Host "  Debug - winget show output:" -ForegroundColor Gray
-                  Write-Host $showOutput -ForegroundColor Gray
+                  Write-Host "  Debug - winget search output:" -ForegroundColor Gray
+                  Write-Host $searchOutput -ForegroundColor Gray
                 }
               }
 
