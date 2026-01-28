@@ -55,7 +55,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Winget
+      - name: Setup Winget
         shell: pwsh
         run: |
           # Check if winget is available
@@ -71,11 +71,40 @@ jobs:
             $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
           }
 
+          Write-Host "Winget version:"
           winget --version
 
-          # Update winget sources to ensure we have latest package data
-          Write-Host "Updating winget sources..."
+          # List current sources
+          Write-Host "`nCurrent winget sources:"
+          winget source list
+
+          # Reset and update the winget source to ensure clean state
+          Write-Host "`nResetting winget source..."
+          winget source reset --force winget
+
+          # Accept source agreements by running a search (this initializes everything properly)
+          Write-Host "`nInitializing sources (accepting agreements)..."
+          $null = winget search --id Microsoft.PowerShell --source winget --accept-source-agreements 2>&1
+
+          # Update sources
+          Write-Host "`nUpdating winget sources..."
           winget source update
+
+          # Wait for source index to be ready
+          Start-Sleep -Seconds 5
+
+          # Verify winget is working by checking a known package
+          Write-Host "`nVerifying winget setup with known package (Microsoft.Skype)..."
+          $testOutput = winget show --id Microsoft.Skype --exact --source winget --accept-source-agreements 2>&1 | Out-String
+          if ($testOutput -match 'Microsoft.Skype') {
+            Write-Host "Winget verification PASSED - Microsoft.Skype found" -ForegroundColor Green
+          } else {
+            Write-Host "Winget verification WARNING - Microsoft.Skype not found in initial test" -ForegroundColor Yellow
+            Write-Host "Output: $testOutput"
+            # Try one more time after additional wait
+            Start-Sleep -Seconds 10
+            winget source update
+          }
 
       - name: Fetch apps from Supabase
         id: fetch
@@ -506,7 +535,9 @@ jobs:
                   $validated++
                   Write-Host "  VALID" -ForegroundColor Green
                 } else {
-                  Write-Host "  INVALID - ID not found in winget" -ForegroundColor Yellow
+                  Write-Host "  INVALID - ID not found in winget (exit code: $LASTEXITCODE)" -ForegroundColor Yellow
+                  Write-Host "  Debug - winget show output:" -ForegroundColor Gray
+                  Write-Host $showOutput -ForegroundColor Gray
                 }
               }
 
@@ -519,7 +550,10 @@ jobs:
                 # Stage 0: Try searching by exact ID first (winget show may have failed but search works)
                 Write-Host "  Stage 0: Verifying existing ID via search..."
                 $idSearchOutput = winget search --id $wingetId --exact --source winget --accept-source-agreements 2>&1 | Out-String
+                Write-Host "  Debug - Stage 0 search output:" -ForegroundColor Gray
+                Write-Host $idSearchOutput -ForegroundColor Gray
                 $idSearchResults = Parse-WingetSearch $idSearchOutput
+                Write-Host "  Debug - Stage 0 parsed results: $($idSearchResults.Count)" -ForegroundColor Gray
                 if ($idSearchResults.Count -gt 0) {
                   # The existing ID is actually valid - mark it as such
                   $result.is_valid = $true
@@ -533,13 +567,21 @@ jobs:
                 # Stage 1: Search with cleaned app name
                 $cleanedName = Clean-AppName $app.name
                 Write-Host "  Stage 1: Searching for cleaned name '$cleanedName'..."
-                $searchOutput = winget search --name "$cleanedName" --accept-source-agreements 2>&1 | Out-String
+                $searchOutput = winget search --name "$cleanedName" --source winget --accept-source-agreements 2>&1 | Out-String
+                Write-Host "  Debug - Stage 1 raw output:" -ForegroundColor Gray
+                Write-Host $searchOutput -ForegroundColor Gray
                 $searchResults = Parse-WingetSearch $searchOutput
+                if ($searchResults.Count -gt 0) {
+                  Write-Host "  Debug - Stage 1 parsed results:" -ForegroundColor Gray
+                  foreach ($sr in $searchResults) {
+                    Write-Host "    - $($sr.Id): $($sr.Name)" -ForegroundColor Gray
+                  }
+                }
 
                 # Stage 2: If no results, try app name extracted from existing winget ID
                 if ($searchResults.Count -eq 0 -and $idParts) {
                   Write-Host "  Stage 2: Searching for ID component '$($idParts.AppName)'..."
-                  $searchOutput = winget search --name "$($idParts.AppName)" --accept-source-agreements 2>&1 | Out-String
+                  $searchOutput = winget search --name "$($idParts.AppName)" --source winget --accept-source-agreements 2>&1 | Out-String
                   $searchResults = Parse-WingetSearch $searchOutput
                 }
 
@@ -547,14 +589,14 @@ jobs:
                 if ($searchResults.Count -eq 0 -and $idParts) {
                   $combinedSearch = "$($idParts.Publisher) $($idParts.AppName)"
                   Write-Host "  Stage 3: Searching for '$combinedSearch'..."
-                  $searchOutput = winget search "$combinedSearch" --accept-source-agreements 2>&1 | Out-String
+                  $searchOutput = winget search "$combinedSearch" --source winget --accept-source-agreements 2>&1 | Out-String
                   $searchResults = Parse-WingetSearch $searchOutput
                 }
 
                 # Stage 4: Last resort - broader search with original name
                 if ($searchResults.Count -eq 0) {
                   Write-Host "  Stage 4: Broader search for '$($app.name)'..."
-                  $searchOutput = winget search "$($app.name)" --accept-source-agreements 2>&1 | Out-String
+                  $searchOutput = winget search "$($app.name)" --source winget --accept-source-agreements 2>&1 | Out-String
                   $searchResults = Parse-WingetSearch $searchOutput
                 }
 
@@ -572,6 +614,10 @@ jobs:
                 $match = $null
                 if ($searchResults.Count -gt 0) {
                   Write-Host "  Found $($searchResults.Count) potential matches"
+                  Write-Host "  Debug - All matches:" -ForegroundColor Gray
+                  foreach ($sr in $searchResults) {
+                    Write-Host "    - $($sr.Id): $($sr.Name)" -ForegroundColor Gray
+                  }
                   $match = Get-BestMatch -AppName $app.name -Publisher $app.publisher -ExistingWingetId $wingetId -SearchResults $searchResults
                 }
 
