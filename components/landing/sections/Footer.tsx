@@ -162,15 +162,12 @@ export function Footer() {
               <ul className="space-y-3">
                 {footerLinks.legal.map((link) => (
                   <li key={link.label}>
-                    <a
+                    <Link
                       href={link.href}
-                      target={link.external ? "_blank" : undefined}
-                      rel={link.external ? "noopener noreferrer" : undefined}
-                      className="text-sm text-stone-500 hover:text-stone-900 transition-colors inline-flex items-center gap-1"
+                      className="text-sm text-stone-500 hover:text-stone-900 transition-colors"
                     >
                       {link.label}
-                      {link.external && <ExternalLink className="w-3 h-3" />}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
