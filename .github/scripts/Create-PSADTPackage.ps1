@@ -546,7 +546,7 @@ if ($useRegistryUninstall) {
         '            }'
         ''
         '            Write-ADTLogEntry -Message "Executing EXE uninstall: $uninstallExe $finalArgs" -Severity ''Info'''
-        '            Start-ADTProcess -FilePath $uninstallExe -ArgumentList $finalArgs -WindowStyle Hidden -Timeout (New-TimeSpan -Minutes 15) -IgnoreExitCodes @(0, 3010, 1605)'
+        '            Start-ADTProcess -FilePath $uninstallExe -ArgumentList $finalArgs -WindowStyle Hidden -WaitForMsiExec -Timeout (New-TimeSpan -Minutes 15) -TimeoutAction Stop -IgnoreExitCodes @(0, 3010, 1641, 1605)'
         '        }'
         '    } else {'
         '        Write-ADTLogEntry -Message "No uninstall entry found for: $appName" -Severity ''Warning'''
@@ -627,7 +627,7 @@ if ($useRegistryUninstall) {
         '        }'
         ''
         '        Write-ADTLogEntry -Message "Executing EXE uninstall: $uninstallExe $uninstallArgs" -Severity ''Info'''
-        '        Start-ADTProcess -FilePath $uninstallExe -ArgumentList $uninstallArgs -WindowStyle Hidden -Timeout (New-TimeSpan -Minutes 15) -IgnoreExitCodes @(0, 3010, 1641, 1605)'
+        '        Start-ADTProcess -FilePath $uninstallExe -ArgumentList $uninstallArgs -WindowStyle Hidden -WaitForMsiExec -Timeout (New-TimeSpan -Minutes 15) -TimeoutAction Stop -IgnoreExitCodes @(0, 3010, 1641, 1605)'
         '    }'
     )
 }
