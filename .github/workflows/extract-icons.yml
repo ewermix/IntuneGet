@@ -236,7 +236,7 @@ jobs:
                   $latestVersion = $app.latest_version
                   Write-Host "Tier 2: Using latest_version '$latestVersion' with raw URL"
                   $installerYamlUrl = "$rawBaseUrl/$latestVersion/$wingetId.installer.yaml"
-                  $yamlContent = Invoke-WebRequest -Uri $installerYamlUrl -UseBasicParsing -ErrorAction Stop
+                  $yamlContent = Invoke-WebRequest -Uri $installerYamlUrl -UseBasicParsing -ErrorAction Stop -TimeoutSec 30
 
                   $lines = $yamlContent.Content -split "`n"
                   foreach ($line in $lines) {
@@ -254,7 +254,7 @@ jobs:
               if (-not $installerUrl) {
                 try {
                   Write-Host "Tier 3: Listing versions via GitHub API"
-                  $versions = Invoke-RestMethod -Uri $apiBaseUrl -Headers @{ 'User-Agent' = 'IntuneGet' } -ErrorAction Stop
+                  $versions = Invoke-RestMethod -Uri $apiBaseUrl -Headers @{ 'User-Agent' = 'IntuneGet' } -ErrorAction Stop -TimeoutSec 30
                   $versionDirs = $versions | Where-Object { $_.type -eq 'dir' -and $_.name -match '^\d' }
                   $latestVersion = ($versionDirs | Sort-Object { [version]($_.name -replace '[^\d.]', '.') } -Descending -ErrorAction SilentlyContinue | Select-Object -First 1).name
                   if (-not $latestVersion) {
@@ -263,7 +263,7 @@ jobs:
 
                   if ($latestVersion) {
                     $installerYamlUrl = "$rawBaseUrl/$latestVersion/$wingetId.installer.yaml"
-                    $yamlContent = Invoke-WebRequest -Uri $installerYamlUrl -UseBasicParsing -ErrorAction Stop
+                    $yamlContent = Invoke-WebRequest -Uri $installerYamlUrl -UseBasicParsing -ErrorAction Stop -TimeoutSec 30
 
                     $lines = $yamlContent.Content -split "`n"
                     foreach ($line in $lines) {
@@ -294,11 +294,38 @@ jobs:
               $installerPath = "$env:TEMP\installer_$([System.IO.Path]::GetRandomFileName())$extension"
 
               Write-Host "Downloading installer from $installerUrl"
-              Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath -UseBasicParsing -MaximumRedirection 5
+              try {
+                Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath -UseBasicParsing -MaximumRedirection 5 -TimeoutSec 90
+              } catch {
+                Write-Warning "Download failed or timed out for ${wingetId}: $_"
+                $failed++
+                $results += @{
+                  winget_id = $wingetId
+                  status = 'failed'
+                  error = "Download timeout or error"
+                }
+                continue
+              }
 
               if (-not (Test-Path $installerPath)) {
                 Write-Warning "Failed to download installer for $wingetId"
                 $failed++
+                continue
+              }
+
+              # Skip excessively large installers (>500MB) - not worth processing for icon extraction
+              $fileSize = (Get-Item $installerPath).Length
+              $fileSizeMB = [math]::Round($fileSize / 1MB, 1)
+              Write-Host "Downloaded $fileSizeMB MB"
+              if ($fileSize -gt 500MB) {
+                Write-Warning "Installer too large ($fileSizeMB MB) for $wingetId, skipping"
+                Remove-Item $installerPath -Force -ErrorAction SilentlyContinue
+                $failed++
+                $results += @{
+                  winget_id = $wingetId
+                  status = 'failed'
+                  error = "Installer too large: ${fileSizeMB}MB"
+                }
                 continue
               }
 
