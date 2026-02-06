@@ -11,13 +11,21 @@ import { onJobCompleted } from '@/lib/msp/batch-orchestrator';
 
 interface PackageCallbackBody {
   jobId: string;
-  status: 'packaging' | 'uploading' | 'deployed' | 'failed';
+  status: 'packaging' | 'uploading' | 'deployed' | 'failed' | 'duplicate_skipped';
   message?: string;
   progress?: number;
 
-  // Success fields (deployed status)
+  // Success fields (deployed / duplicate_skipped status)
   intuneAppId?: string;
   intuneAppUrl?: string;
+
+  // Duplicate detection fields
+  duplicateInfo?: {
+    matchType: 'exact' | 'partial';
+    existingAppId: string;
+    existingVersion?: string;
+    createdAt?: string;
+  };
 
   // GitHub Actions run info
   runId?: string;
@@ -111,6 +119,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Handle duplicate_skipped status
+    if (data.status === 'duplicate_skipped') {
+      updateData.intune_app_id = data.intuneAppId;
+      updateData.intune_app_url = data.intuneAppUrl;
+      updateData.completed_at = new Date().toISOString();
+      updateData.progress_percent = 100;
+
+      // Store duplicate info in error_details for UI display
+      if (data.duplicateInfo) {
+        updateData.error_details = data.duplicateInfo;
+      }
+
+      // Do NOT create uploadHistory record (no new app was created)
+    }
+
     // Handle failure
     if (data.status === 'failed') {
       updateData.error_message = data.message || 'Unknown error';
@@ -149,8 +172,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if this job belongs to a batch deployment item
-    if (data.status === 'deployed' || data.status === 'failed') {
-      const jobStatus = data.status === 'deployed' ? 'completed' : 'failed';
+    if (data.status === 'deployed' || data.status === 'failed' || data.status === 'duplicate_skipped') {
+      const jobStatus = data.status === 'failed' ? 'failed' : 'completed';
       // Fire and forget - don't block the callback response
       onJobCompleted(data.jobId, jobStatus, data.message).catch((err) => {
         console.error('[Callback] Batch orchestrator error:', err);

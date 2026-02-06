@@ -27,6 +27,7 @@ jobs:
       DETECTION_RULES: ${{ github.event.client_payload.config.detectionRules }}
       ASSIGNMENTS: ${{ github.event.client_payload.config.assignments }}
       INSTALL_SCOPE: ${{ github.event.client_payload.config.installScope }}
+      FORCE_CREATE: ${{ github.event.client_payload.config.forceCreate }}
 
     steps:
       - name: Checkout public repository for scripts
@@ -294,7 +295,19 @@ jobs:
           Write-Host "::add-mask::$token"
           echo "GRAPH_TOKEN=$token" >> $env:GITHUB_ENV
 
+      - name: Check for duplicate app in Intune
+        env:
+          CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
+          INPUT_DISPLAY_NAME: ${{ github.event.client_payload.app.displayName }}
+          INPUT_WINGET_ID: ${{ github.event.client_payload.app.wingetId }}
+          INPUT_FORCE_CREATE: ${{ github.event.client_payload.config.forceCreate }}
+          INPUT_JOB_ID: ${{ github.event.client_payload.job.jobId }}
+          INPUT_CALLBACK_URL: ${{ github.event.client_payload.job.callbackUrl }}
+        run: |
+          & "$env:GITHUB_WORKSPACE\intuneget\.github\scripts\Check-DuplicateApp.ps1"
+
       - name: Upload to Intune
+        if: env.DUPLICATE_FOUND != 'true'
         env:
           CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
         run: |
@@ -653,7 +666,7 @@ jobs:
           Write-Host "========================================"
 
       - name: Apply assignments
-        if: success()
+        if: success() && env.DUPLICATE_FOUND != 'true'
         env:
           CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
         run: |
@@ -715,7 +728,7 @@ jobs:
           Write-Host "Applied $($graphAssignments.Count) assignment(s) to app"
 
       - name: Send success callback
-        if: success()
+        if: success() && env.DUPLICATE_FOUND != 'true'
         env:
           CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
         run: |
@@ -750,7 +763,7 @@ jobs:
           $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
 
       - name: Send failure callback
-        if: failure()
+        if: failure() && env.DUPLICATE_FOUND != 'true'
         env:
           CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
         run: |

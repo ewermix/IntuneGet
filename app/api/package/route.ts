@@ -20,6 +20,7 @@ import type { CartItem } from '@/types/upload';
 
 interface PackageRequestBody {
   items: CartItem[];
+  forceCreate?: boolean;
 }
 
 interface PackagingJobRecord {
@@ -145,7 +146,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body: PackageRequestBody = await request.json();
-    const { items } = body;
+    const { items, forceCreate } = body;
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -264,6 +265,7 @@ export async function POST(request: NextRequest) {
           detectionRules: item.detectionRules ? JSON.stringify(item.detectionRules) : undefined,
           assignments: item.assignments ? JSON.stringify(item.assignments) : undefined,
           installScope: item.installScope,
+          forceCreate,
         };
 
         // Trigger the GitHub Actions workflow and capture run ID

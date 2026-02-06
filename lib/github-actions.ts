@@ -21,6 +21,7 @@ export interface WorkflowInputs {
   detectionRules?: string; // JSON-serialized DetectionRule[]
   assignments?: string; // JSON-serialized PackageAssignment[]
   installScope?: 'machine' | 'user'; // Install scope for per-user vs per-machine
+  forceCreate?: boolean; // Skip duplicate check and force create new app
 }
 
 export interface GitHubActionsConfig {
@@ -125,6 +126,7 @@ export async function triggerPackagingWorkflow(
           detectionRules: inputs.detectionRules || '[]',
           assignments: inputs.assignments || '[]',
           installScope: inputs.installScope || 'machine',
+          forceCreate: inputs.forceCreate ? 'true' : 'false',
         },
       },
     }),

@@ -111,11 +111,16 @@ export function UploadCart() {
         body: JSON.stringify({ items }),
       });
 
-      const data: PackageApiResponse = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to queue packaging jobs');
+        const contentType = response.headers.get('content-type');
+        if (contentType?.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || errorData.error || 'Failed to queue packaging jobs');
+        }
+        throw new Error(`Deployment failed (${response.status})`);
       }
+
+      const data: PackageApiResponse = await response.json();
 
       if (!data.success || !data.jobs || data.jobs.length === 0) {
         throw new Error(data.message || 'No jobs were created');

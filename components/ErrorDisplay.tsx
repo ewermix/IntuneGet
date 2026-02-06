@@ -45,6 +45,7 @@ const stageConfig: Record<string, { icon: typeof Download; label: string }> = {
   upload: { icon: Upload, label: 'Upload' },
   authenticate: { icon: Key, label: 'Authentication' },
   finalize: { icon: CheckCircle, label: 'Finalize' },
+  duplicate_check: { icon: CheckCircle, label: 'Duplicate Check' },
   unknown: { icon: Server, label: 'Unknown' },
 };
 
@@ -67,6 +68,9 @@ const categoryHints: Record<string, { message: string; showReVerify?: boolean }>
   },
   system: {
     message: 'An unexpected system error occurred. Please try again or contact support if the issue persists.',
+  },
+  duplicate: {
+    message: 'An app with the same name already exists in your Intune tenant. You can view the existing app or force deploy a new copy.',
   },
 };
 

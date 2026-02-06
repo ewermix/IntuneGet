@@ -49,7 +49,7 @@ interface PackagingJob {
   publisher: string;
   architecture: string;
   installer_type: string;
-  status: 'queued' | 'packaging' | 'completed' | 'failed' | 'uploading' | 'deployed' | 'cancelled';
+  status: 'queued' | 'packaging' | 'completed' | 'failed' | 'uploading' | 'deployed' | 'cancelled' | 'duplicate_skipped';
   status_message?: string;
   progress_percent: number;
   error_message?: string;
@@ -84,6 +84,7 @@ export default function UploadsPage() {
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'failed'>('all');
   const [error, setError] = useState<string | null>(null);
   const [cancellingJobId, setCancellingJobId] = useState<string | null>(null);
+  const [redeployingJobId, setRedeployingJobId] = useState<string | null>(null);
 
   // Get job IDs from URL if present (from recent deployment)
   const highlightedJobIds = searchParams.get('jobs')?.split(',') || [];
@@ -97,12 +98,17 @@ export default function UploadsPage() {
 
     try {
       const response = await fetch(`/api/package?userId=${user.id}`);
-      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch jobs');
+        const contentType = response.headers.get('content-type');
+        if (contentType?.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch jobs');
+        }
+        throw new Error(`Failed to fetch jobs (${response.status})`);
       }
 
+      const data = await response.json();
       setJobs(data.jobs || []);
       setError(null);
     } catch (err) {
@@ -153,10 +159,13 @@ export default function UploadsPage() {
         body: JSON.stringify({ jobId }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to cancel job');
+        const contentType = response.headers.get('content-type');
+        if (contentType?.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to cancel job');
+        }
+        throw new Error(`Failed to cancel job (${response.status})`);
       }
 
       // Refresh jobs to get updated status
@@ -169,12 +178,49 @@ export default function UploadsPage() {
     }
   };
 
+  const handleForceRedeploy = async (job: PackagingJob) => {
+    const accessToken = await getAccessToken();
+    if (!accessToken) return;
+
+    setRedeployingJobId(job.id);
+    try {
+      const response = await fetch('/api/package', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          items: [job.package_config],
+          forceCreate: true,
+        }),
+      });
+
+      if (!response.ok) {
+        const contentType = response.headers.get('content-type');
+        if (contentType?.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to redeploy');
+        }
+        throw new Error(`Failed to redeploy (${response.status})`);
+      }
+
+      // Refresh jobs to show the new job
+      await fetchJobs();
+    } catch (err) {
+      console.error('Failed to force redeploy:', err);
+      setError(err instanceof Error ? err.message : 'Failed to redeploy');
+    } finally {
+      setRedeployingJobId(null);
+    }
+  };
+
   const filteredJobs = jobs.filter((job) => {
     switch (filter) {
       case 'active':
         return ['queued', 'packaging', 'uploading'].includes(job.status);
       case 'completed':
-        return ['completed', 'deployed'].includes(job.status);
+        return ['completed', 'deployed', 'duplicate_skipped'].includes(job.status);
       case 'failed':
         return ['failed', 'cancelled'].includes(job.status);
       default:
@@ -187,7 +233,7 @@ export default function UploadsPage() {
     active: jobs.filter((j) =>
       ['queued', 'packaging', 'uploading'].includes(j.status)
     ).length,
-    completed: jobs.filter((j) => ['completed', 'deployed'].includes(j.status)).length,
+    completed: jobs.filter((j) => ['completed', 'deployed', 'duplicate_skipped'].includes(j.status)).length,
     failed: jobs.filter((j) => ['failed', 'cancelled'].includes(j.status)).length,
   };
 
@@ -353,6 +399,8 @@ export default function UploadsPage() {
                 isHighlighted={highlightedJobIds.includes(job.id)}
                 onCancel={handleCancelJob}
                 isCancelling={cancellingJobId === job.id}
+                onForceRedeploy={handleForceRedeploy}
+                isRedeploying={redeployingJobId === job.id}
               />
             ))}
           </AnimatePresence>
@@ -368,12 +416,16 @@ function UploadJobCard({
   isHighlighted,
   onCancel,
   isCancelling,
+  onForceRedeploy,
+  isRedeploying,
 }: {
   job: PackagingJob;
   index: number;
   isHighlighted?: boolean;
   onCancel: (jobId: string) => void;
   isCancelling?: boolean;
+  onForceRedeploy: (job: PackagingJob) => void;
+  isRedeploying?: boolean;
 }) {
   const prefersReducedMotion = useReducedMotion();
 
@@ -420,6 +472,12 @@ function UploadJobCard({
       color: 'text-status-warning',
       bg: 'bg-status-warning/10',
     },
+    duplicate_skipped: {
+      icon: AlertCircle,
+      label: 'Duplicate Found',
+      color: 'text-status-warning',
+      bg: 'bg-status-warning/10',
+    },
   };
 
   const config = statusConfig[job.status] || statusConfig.queued;
@@ -427,7 +485,7 @@ function UploadJobCard({
   const isActive = ['queued', 'packaging', 'uploading'].includes(job.status);
   // Allow cancelling active jobs or dismissing completed/failed jobs
   const isCancellable = ['queued', 'packaging', 'uploading'].includes(job.status);
-  const isDismissable = ['completed', 'failed'].includes(job.status);
+  const isDismissable = ['completed', 'failed', 'duplicate_skipped'].includes(job.status);
   const canRemove = isCancellable || isDismissable;
 
   const itemVariants = {
@@ -608,6 +666,57 @@ function UploadJobCard({
             </div>
           )}
 
+          {/* Duplicate found - show existing app link and force deploy option */}
+          {job.status === 'duplicate_skipped' && (() => {
+            const details = job.error_details as Record<string, unknown> | undefined;
+            const existingVersion = details?.existingVersion ? String(details.existingVersion) : null;
+            return (
+            <div className="mt-4 p-3 bg-status-warning/10 border border-status-warning/20 rounded-lg">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-status-warning flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-status-warning font-medium text-sm">
+                    Duplicate app already exists in Intune
+                  </p>
+                  <p className="text-status-warning/70 text-xs mt-1">
+                    An app with the same name and Winget ID was found in your tenant.
+                    {existingVersion && (
+                      <span> Existing version: {existingVersion}</span>
+                    )}
+                  </p>
+                  <div className="flex items-center gap-3 mt-3">
+                    {job.intune_app_url && (
+                      <a
+                        href={job.intune_app_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-status-warning/20 text-status-warning hover:bg-status-warning/30 transition-colors"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        View existing app
+                      </a>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-accent-cyan/30 text-accent-cyan hover:bg-accent-cyan/10 hover:border-accent-cyan/50 text-xs"
+                      onClick={() => onForceRedeploy(job)}
+                      disabled={isRedeploying}
+                    >
+                      {isRedeploying ? (
+                        <Loader2 className="w-3 h-3 animate-spin mr-1.5" />
+                      ) : (
+                        <Play className="w-3 h-3 mr-1.5" />
+                      )}
+                      Deploy as new app anyway
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            );
+          })()}
+
           {/* Package ready - show upload to Intune option */}
           {job.status === 'completed' && job.intunewin_url && !job.intune_app_id && (
             <div className="mt-4 p-3 bg-status-success/10 border border-status-success/20 rounded-lg">
@@ -632,7 +741,7 @@ function UploadJobCard({
           )}
 
           {/* Success - deployed to Intune */}
-          {job.intune_app_url && (
+          {job.intune_app_url && job.status !== 'duplicate_skipped' && (
             <div className="mt-4">
               <a
                 href={job.intune_app_url}
