@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/sections/Footer";
-import { Github, Twitter, Linkedin, Heart, Target, Users, Code } from "lucide-react";
+import { Github, Linkedin, Heart, Target, Users, Code } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "About IntuneGet | Free Open-Source Intune Deployment Tool",
@@ -153,16 +153,7 @@ export default function AboutPage() {
                   <Github className="w-4 h-4" />
                 </a>
                 <a
-                  href="https://x.com/intikidev"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-9 h-9 flex items-center justify-center rounded-lg bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-stone-900 transition-colors"
-                  aria-label="Twitter / X"
-                >
-                  <Twitter className="w-4 h-4" />
-                </a>
-                <a
-                  href="https://linkedin.com/in/intiki"
+                  href="https://www.linkedin.com/in/ugurkocde/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-9 h-9 flex items-center justify-center rounded-lg bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-stone-900 transition-colors"

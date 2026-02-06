@@ -71,7 +71,6 @@ export const metadata: Metadata = {
     description:
       "Deploy 10,000+ Winget apps to Microsoft Intune in minutes. Free, open-source tool with no scripting required.",
     images: ["/og-image.png"],
-    creator: "@ugurkoc",
   },
   icons: {
     icon: [
@@ -92,14 +91,6 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
       "max-image-preview": "large",
       "max-snippet": -1,
-    },
-  },
-  verification: {
-    // TODO: Replace with actual Google Search Console verification token
-    google: "verification_token",
-    // TODO: Replace with actual Bing Webmaster verification token
-    other: {
-      "msvalidate.01": "BING_VERIFICATION_TOKEN",
     },
   },
 };
@@ -125,8 +116,7 @@ const organizationJsonLd = {
     url: "https://ugurlabs.com",
     sameAs: [
       "https://github.com/ugurkocde",
-      "https://x.com/intikidev",
-      "https://linkedin.com/in/intiki",
+      "https://www.linkedin.com/in/ugurkocde/",
     ],
     jobTitle: "Software Engineer & IT Automation Expert",
     knowsAbout: [
@@ -147,8 +137,7 @@ const personJsonLd = {
   url: "https://ugurlabs.com",
   sameAs: [
     "https://github.com/ugurkocde",
-    "https://x.com/intikidev",
-    "https://linkedin.com/in/intiki",
+    "https://www.linkedin.com/in/ugurkocde/",
   ],
   jobTitle: "Software Engineer & IT Automation Expert",
   knowsAbout: [
