@@ -129,7 +129,7 @@ function buildSchema(expectedSize) {
         items: {
           type: 'object',
           additionalProperties: false,
-          required: ['winget_id', 'category'],
+          required: ['winget_id', 'category', 'confidence'],
           properties: {
             winget_id: { type: 'string' },
             category: { type: 'string', enum: ALLOWED_CATEGORIES },
