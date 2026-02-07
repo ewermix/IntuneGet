@@ -54,7 +54,7 @@ const policyOptions: {
     label: 'Ignore',
     description: 'Skip all updates',
     icon: BellOff,
-    color: 'text-zinc-500',
+    color: 'text-text-muted',
   },
   {
     type: 'pin_version',
@@ -94,7 +94,7 @@ export function UpdatePolicySelector({
           variant="ghost"
           disabled={disabled || isUpdating}
           className={cn(
-            'text-zinc-300 hover:text-white hover:bg-white/5',
+            'text-text-secondary hover:text-text-primary hover:bg-black/5',
             size === 'sm' && 'h-8 px-2 text-sm'
           )}
         >
@@ -113,7 +113,7 @@ export function UpdatePolicySelector({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-56 bg-bg-elevated border-white/10"
+        className="w-56 bg-bg-elevated border-black/10 shadow-soft-lg"
       >
         {policyOptions.map((option) => (
           <DropdownMenuItem
@@ -121,20 +121,20 @@ export function UpdatePolicySelector({
             onClick={() => handleSelect(option.type)}
             className={cn(
               'flex items-start gap-3 p-3 cursor-pointer',
-              'hover:bg-white/5 focus:bg-white/5'
+              'hover:bg-black/5 focus:bg-black/5'
             )}
           >
             <option.icon className={cn('w-4 h-4 mt-0.5', option.color)} />
             <div className="flex-1">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-white">
+                <span className="text-sm font-medium text-text-primary">
                   {option.label}
                 </span>
                 {option.type === currentPolicy && (
                   <Check className="w-4 h-4 text-status-success" />
                 )}
               </div>
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <p className="text-xs text-text-muted mt-0.5">
                 {option.description}
               </p>
             </div>

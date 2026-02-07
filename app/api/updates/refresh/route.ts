@@ -74,6 +74,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Reuse the live Intune matching route, then sync results into update_check_results.
+    // The live route calls the Graph API list endpoint which returns largeIcon data inline.
     const forwardHeaders = new Headers({
       Authorization: authHeader,
     });

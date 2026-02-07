@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
   RefreshCw,
   AlertTriangle,
@@ -25,6 +25,7 @@ import {
   useUpdatePolicy,
 } from '@/hooks/use-updates';
 import { useMspOptional } from '@/hooks/useMspOptional';
+import { fadeIn } from '@/lib/animations/variants';
 import { cn } from '@/lib/utils';
 import type { AvailableUpdate, UpdatePolicyType } from '@/types/update-policies';
 
@@ -34,6 +35,7 @@ export default function UpdatesPage() {
   const [showCriticalOnly, setShowCriticalOnly] = useState(false);
   const [activeTab, setActiveTab] = useState<'available' | 'history'>('available');
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
+  const shouldReduceMotion = useReducedMotion();
   const { isMspUser, selectedTenantId, managedTenants } = useMspOptional();
   const tenantId = isMspUser ? selectedTenantId || undefined : undefined;
   const hasGrantedManagedTenants = managedTenants.some(
@@ -89,6 +91,21 @@ export default function UpdatesPage() {
   const failedUpdates = history.filter(
     (h) => h.status === 'failed' && isWithinDays(h.triggered_at, 7)
   ).length;
+
+  // Oldest critical update age
+  const oldestCriticalAge = (() => {
+    const criticals = updates.filter((u) => u.is_critical);
+    if (criticals.length === 0) return null;
+    const oldest = criticals.reduce((prev, curr) =>
+      new Date(prev.detected_at) < new Date(curr.detected_at) ? prev : curr
+    );
+    const days = Math.floor(
+      (Date.now() - new Date(oldest.detected_at).getTime()) / (1000 * 60 * 60 * 24)
+    );
+    if (days === 0) return 'detected today';
+    if (days === 1) return 'oldest: 1 day ago';
+    return `oldest: ${days} days ago`;
+  })();
 
   // Handlers
   const handleTriggerUpdate = useCallback(async (update: AvailableUpdate) => {
@@ -202,6 +219,23 @@ export default function UpdatesPage() {
         }
       />
 
+      {/* Critical Updates Banner */}
+      {criticalCount > 0 && (
+        <motion.div
+          variants={shouldReduceMotion ? undefined : fadeIn}
+          initial={shouldReduceMotion ? { opacity: 1 } : 'hidden'}
+          animate={shouldReduceMotion ? { opacity: 1 } : 'visible'}
+          className="glass-light rounded-xl p-4 border-l-4 border-l-status-warning border-t border-r border-b border-black/[0.08] bg-gradient-to-r from-status-warning/5 to-transparent"
+        >
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-status-warning flex-shrink-0" />
+            <p className="text-sm font-medium text-text-primary">
+              {criticalCount} critical update{criticalCount !== 1 ? 's' : ''} require{criticalCount === 1 ? 's' : ''} attention
+            </p>
+          </div>
+        </motion.div>
+      )}
+
       {/* Stats Cards */}
       <StatCardGrid columns={4}>
         <AnimatedStatCard
@@ -219,6 +253,7 @@ export default function UpdatesPage() {
           color={criticalCount > 0 ? 'warning' : 'neutral'}
           delay={0.1}
           loading={isLoadingUpdates}
+          description={oldestCriticalAge || undefined}
         />
         <AnimatedStatCard
           title="Auto-Update Enabled"
@@ -227,6 +262,7 @@ export default function UpdatesPage() {
           color="success"
           delay={0.2}
           loading={isLoadingUpdates}
+          description={availableCount > 0 ? `${autoUpdateCount} of ${availableCount}` : undefined}
         />
         <AnimatedStatCard
           title="Updated (7 days)"
@@ -255,11 +291,14 @@ export default function UpdatesPage() {
               Update History
             </TabsTrigger>
           </TabsList>
+        </div>
 
-          {activeTab === 'available' && (
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              {/* Search */}
-              <div className="relative flex-1 sm:w-64">
+        {/* Available Updates Tab */}
+        <TabsContent value="available" className="mt-0">
+          {/* Search & Filter Bar */}
+          {activeTab === 'available' && !mspTenantSelectionRequired && (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
+              <div className="relative flex-1 w-full">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                 <Input
                   placeholder="Search updates..."
@@ -269,26 +308,30 @@ export default function UpdatesPage() {
                 />
               </div>
 
-              {/* Critical Filter */}
-              <Button
-                variant={showCriticalOnly ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setShowCriticalOnly(!showCriticalOnly)}
-                className={cn(
-                  showCriticalOnly
-                    ? 'bg-status-warning/20 text-status-warning hover:bg-status-warning/30'
-                    : 'text-text-secondary hover:text-text-primary'
+              <div className="flex items-center gap-3">
+                <Button
+                  variant={showCriticalOnly ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setShowCriticalOnly(!showCriticalOnly)}
+                  className={cn(
+                    showCriticalOnly
+                      ? 'bg-status-warning/20 text-status-warning hover:bg-status-warning/30'
+                      : 'text-text-secondary hover:text-text-primary'
+                  )}
+                >
+                  <AlertTriangle className="w-4 h-4 mr-1.5" />
+                  Critical
+                </Button>
+
+                {!isLoadingUpdates && updates.length > 0 && (
+                  <span className="text-xs text-text-muted whitespace-nowrap">
+                    Showing {filteredUpdates.length} of {updates.length}
+                  </span>
                 )}
-              >
-                <AlertTriangle className="w-4 h-4 mr-1.5" />
-                Critical
-              </Button>
+              </div>
             </div>
           )}
-        </div>
 
-        {/* Available Updates Tab */}
-        <TabsContent value="available" className="mt-0">
           {mspTenantSelectionRequired ? (
             <AnimatedEmptyState
               icon={Package}
@@ -298,7 +341,7 @@ export default function UpdatesPage() {
               showOrbs={false}
             />
           ) : isLoadingUpdates ? (
-            <UpdateCardSkeleton count={5} />
+            <UpdateCardSkeleton count={6} />
           ) : updatesError ? (
             <AnimatedEmptyState
               icon={XCircle}
@@ -315,15 +358,16 @@ export default function UpdatesPage() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="space-y-4"
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
             >
-              {filteredUpdates.map((update) => (
+              {filteredUpdates.map((update, index) => (
                 <UpdateCard
                   key={update.id}
                   update={update}
                   onTriggerUpdate={handleTriggerUpdate}
                   onPolicyChange={handlePolicyChange}
                   isUpdating={updatingIds.has(update.id)}
+                  index={index}
                 />
               ))}
             </motion.div>
