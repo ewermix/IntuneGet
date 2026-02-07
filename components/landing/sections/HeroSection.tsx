@@ -17,9 +17,12 @@ const MotionLink = motion.create(Link);
 
 export function HeroSection() {
   const { stars } = useGitHubStats();
-  const { signinClicks } = useLandingStats();
+  const { signinClicks, appsSupported } = useLandingStats();
   const shouldReduceMotion = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
+  const starsDisplay = stars.toLocaleString();
+  const signinsDisplay = signinClicks.toLocaleString();
+  const supportedAppsDisplay = appsSupported.toLocaleString();
 
   // 3B: Parallax for gradient orbs
   const { scrollY } = useScroll();
@@ -57,14 +60,14 @@ export function HeroSection() {
               transition={shouldReduceMotion ? { duration: 0 } : springPresets.bouncy}
             >
               <Badge icon={<Github className="h-4 w-4" />} variant="dark">
-                100% Free & Open Source
+                Free & Open Source
               </Badge>
             </motion.div>
 
             {/* Headline - 1A: TextReveal with word-by-word blur effect */}
             <TextReveal
               as="h1"
-              text="Deploy 10,000+ Winget Apps to Intune - Free & Open Source"
+              text="From Winget to Intune in Minutes"
               className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-stone-900 tracking-tight"
               animateOnMount
               delay={0.05}
@@ -74,9 +77,9 @@ export function HeroSection() {
             {/* Subheadline with authoritative statement */}
             <FadeIn delay={0.1} animateOnMount duration={0.4} direction="up">
               <p className="max-w-lg text-lg md:text-xl text-stone-600 leading-relaxed">
-                IntuneGet is the leading free, open-source tool for deploying Winget
-                applications to Microsoft Intune. No scripting, no IntuneWin
-                packaging. Search apps and deploy in minutes.
+                Search {supportedAppsDisplay}+ packages, package automatically, and
+                deploy without scripting. Built for IT teams that want speed
+                without hidden costs.
               </p>
             </FadeIn>
 
@@ -91,28 +94,38 @@ export function HeroSection() {
                     whileTap={shouldReduceMotion ? {} : { scale: 0.97 }}
                     transition={springPresets.snappy}
                   >
-                    Start Deploying — It&apos;s Free
+                    Start Free Deployment
                     <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                   </MotionLink>
-                  <motion.a
-                    href="https://github.com/ugurkocde/IntuneGet"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <MotionLink
+                    href="/#how-it-works"
                     className="inline-flex items-center justify-center gap-2 px-6 py-4 text-base font-semibold text-stone-700 bg-white border border-stone-200 rounded-xl hover:border-stone-300 hover:bg-stone-50 transition-all duration-300"
                     whileHover={shouldReduceMotion ? {} : { scale: 1.02 }}
                     whileTap={shouldReduceMotion ? {} : { scale: 0.97 }}
                     transition={springPresets.snappy}
                   >
-                    <Github className="h-5 w-5" />
+                    See How It Works
+                  </MotionLink>
+                </div>
+                <div className="flex items-center gap-4 text-sm">
+                  <motion.a
+                    href="https://github.com/ugurkocde/IntuneGet"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-stone-500 hover:text-stone-700 transition-colors"
+                    whileHover={shouldReduceMotion ? {} : { x: 2 }}
+                    transition={springPresets.snappy}
+                  >
+                    <Github className="h-4 w-4" />
                     View on GitHub
                   </motion.a>
+                  <Link
+                    href="/docs/docker"
+                    className="text-stone-500 hover:text-stone-700 transition-colors"
+                  >
+                    Self-host with Docker
+                  </Link>
                 </div>
-                <Link
-                  href="/docs/docker"
-                  className="text-sm text-stone-500 hover:text-stone-700 transition-colors"
-                >
-                  or self-host it
-                </Link>
               </div>
             </FadeIn>
 
@@ -121,15 +134,15 @@ export function HeroSection() {
               <div className="flex items-center gap-4 text-sm text-stone-500">
                 <span className="flex items-center gap-1.5">
                   <Star className="w-3.5 h-3.5 text-amber-500" />
-                  {stars} stars
+                  {starsDisplay} stars
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Users className="w-3.5 h-3.5 text-accent-cyan" />
-                  {signinClicks}+ users
+                  {signinsDisplay}+ active users
                 </span>
                 <span className="flex items-center gap-1.5">
                   <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
-                  Open Source
+                  Open source
                 </span>
               </div>
             </FadeIn>
