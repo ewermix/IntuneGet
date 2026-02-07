@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   RefreshCw,
@@ -134,6 +134,21 @@ export default function UpdatesPage() {
     await refreshUpdates();
     await refetchUpdates();
   }, [refreshUpdates, refetchUpdates]);
+
+  // Auto-refresh when initial load returns empty results
+  const hasTriggeredAutoRefresh = useRef(false);
+  useEffect(() => {
+    if (
+      !isLoadingUpdates &&
+      !isRefreshing &&
+      !hasTriggeredAutoRefresh.current &&
+      !mspTenantSelectionRequired &&
+      updates.length === 0
+    ) {
+      hasTriggeredAutoRefresh.current = true;
+      void handleRefresh();
+    }
+  }, [isLoadingUpdates, isRefreshing, mspTenantSelectionRequired, updates.length, handleRefresh]);
 
   return (
     <div className="space-y-6">

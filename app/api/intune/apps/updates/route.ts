@@ -36,6 +36,7 @@ interface CuratedPackageRow {
 interface UploadHistoryMappingRow {
   intune_app_id: string;
   winget_id: string;
+  version: string | null;
 }
 
 function extractWingetIdFromDescription(description: string | null): string | null {
@@ -167,9 +168,10 @@ export async function GET(request: NextRequest) {
 
     // Build explicit app-id to winget-id mappings from deployment history.
     const uploadHistoryWingetMap = new Map<string, string>();
+    const uploadHistoryVersionMap = new Map<string, string>();
     const { data: tenantHistoryRows } = await supabase
       .from('upload_history')
-      .select('intune_app_id, winget_id')
+      .select('intune_app_id, winget_id, version')
       .eq('user_id', userId)
       .eq('intune_tenant_id', tenantId);
 
@@ -177,6 +179,9 @@ export async function GET(request: NextRequest) {
       for (const row of tenantHistoryRows as UploadHistoryMappingRow[]) {
         if (row.intune_app_id && row.winget_id) {
           uploadHistoryWingetMap.set(row.intune_app_id, row.winget_id);
+        }
+        if (row.intune_app_id && row.version) {
+          uploadHistoryVersionMap.set(row.intune_app_id, row.version);
         }
       }
     }
@@ -305,7 +310,7 @@ export async function GET(request: NextRequest) {
       if (updateAvailable) {
         updates.push({
           intuneApp: newestCandidate.app,
-          currentVersion: newestCandidate.app.displayVersion || 'Unknown',
+          currentVersion: newestCandidate.app.displayVersion || uploadHistoryVersionMap.get(newestCandidate.app.id) || 'Unknown',
           latestVersion: latestVersion,
           wingetId,
           hasUpdate: true,
