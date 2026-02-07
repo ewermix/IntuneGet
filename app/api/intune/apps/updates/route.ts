@@ -7,7 +7,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase';
 import { resolveTargetTenantId } from '@/lib/msp/tenant-resolution';
-import { matchAppToWinget, matchAppToWingetWithDatabase } from '@/lib/app-matching';
+import {
+  isValidWingetId,
+  matchAppToWinget,
+  matchAppToWingetWithDatabase,
+} from '@/lib/app-matching';
 import { compareVersions, hasUpdate, normalizeVersion } from '@/lib/version-compare';
 import type { IntuneWin32App, AppUpdateInfo } from '@/types/inventory';
 
@@ -27,6 +31,28 @@ interface MatchedApp {
 interface CuratedPackageRow {
   winget_id: string;
   latest_version: string | null;
+}
+
+interface UploadHistoryMappingRow {
+  intune_app_id: string;
+  winget_id: string;
+}
+
+function extractWingetIdFromDescription(description: string | null): string | null {
+  if (!description) {
+    return null;
+  }
+
+  const match = description.match(
+    /Winget:\s*([A-Za-z0-9]+\.[A-Za-z0-9]+(?:\.[A-Za-z0-9-]+)*)/i
+  );
+
+  if (!match) {
+    return null;
+  }
+
+  const candidate = match[1].trim();
+  return isValidWingetId(candidate) ? candidate : null;
 }
 
 // Extend timeout for Vercel (Pro plan: up to 60s)
@@ -139,12 +165,46 @@ export async function GET(request: NextRequest) {
     const graphData = await graphResponse.json();
     const apps: IntuneWin32App[] = graphData.value || [];
 
+    // Build explicit app-id to winget-id mappings from deployment history.
+    const uploadHistoryWingetMap = new Map<string, string>();
+    const { data: tenantHistoryRows } = await supabase
+      .from('upload_history')
+      .select('intune_app_id, winget_id')
+      .eq('user_id', userId)
+      .eq('intune_tenant_id', tenantId);
+
+    if (tenantHistoryRows) {
+      for (const row of tenantHistoryRows as UploadHistoryMappingRow[]) {
+        if (row.intune_app_id && row.winget_id) {
+          uploadHistoryWingetMap.set(row.intune_app_id, row.winget_id);
+        }
+      }
+    }
+
     // Match apps to Winget IDs
     const updates: AppUpdateInfo[] = [];
     const checked: CheckedResult[] = [];
     const matchedApps: MatchedApp[] = [];
 
     for (const app of apps) {
+      const historyWingetId = uploadHistoryWingetMap.get(app.id);
+      if (historyWingetId) {
+        matchedApps.push({
+          app,
+          wingetId: historyWingetId,
+        });
+        continue;
+      }
+
+      const descriptionWingetId = extractWingetIdFromDescription(app.description);
+      if (descriptionWingetId) {
+        matchedApps.push({
+          app,
+          wingetId: descriptionWingetId,
+        });
+        continue;
+      }
+
       let match = matchAppToWinget(app);
 
       if (!match || match.confidence === 'low') {

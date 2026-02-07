@@ -18,6 +18,11 @@ interface RefreshRequestBody {
 interface LiveUpdatesResponse {
   updates: AppUpdateInfo[];
   updateCount: number;
+  checkedApps?: Array<{
+    app: string;
+    wingetId: string | null;
+    result: string;
+  }>;
 }
 
 interface UpdateCheckRow {
@@ -157,6 +162,12 @@ export async function POST(request: NextRequest) {
       refreshedCount: rows.length,
       removedCount: staleIds.length,
       updateCount: liveData.updateCount,
+      matchingSummary: {
+        totalChecked: liveData.checkedApps?.length || 0,
+        noMatch: liveData.checkedApps?.filter((item) => item.result === 'No match found').length || 0,
+        lowConfidenceSkipped: liveData.checkedApps?.filter((item) => item.result.includes('Low confidence')).length || 0,
+        packageNotInCache: liveData.checkedApps?.filter((item) => item.result === 'Package not in cache').length || 0,
+      },
     });
   } catch {
     return NextResponse.json(

@@ -43,6 +43,15 @@ function createSupabaseMock(curatedRows: Array<{ winget_id: string; latest_versi
         return chain;
       }
 
+      if (table === 'upload_history') {
+        const chain: Record<string, unknown> = {};
+        chain.select = vi.fn(() => chain);
+        chain.eq = vi.fn(() => chain);
+        chain.then = (resolve: (value: { data: unknown; error: unknown }) => unknown) =>
+          Promise.resolve({ data: [], error: null }).then(resolve);
+        return chain;
+      }
+
       if (table === 'curated_apps') {
         return {
           select: vi.fn(() => ({
