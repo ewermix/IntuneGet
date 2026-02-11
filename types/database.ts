@@ -1231,6 +1231,8 @@ export interface Database {
           status: 'pending' | 'approved' | 'rejected' | 'implemented';
           github_issue_number: number | null;
           github_issue_url: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -1244,6 +1246,8 @@ export interface Database {
           status?: 'pending' | 'approved' | 'rejected' | 'implemented';
           github_issue_number?: number | null;
           github_issue_url?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1257,6 +1261,8 @@ export interface Database {
           status?: 'pending' | 'approved' | 'rejected' | 'implemented';
           github_issue_number?: number | null;
           github_issue_url?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };

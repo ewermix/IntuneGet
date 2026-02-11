@@ -95,3 +95,74 @@ export async function createAppSuggestionIssue(
     issueUrl: data.html_url,
   };
 }
+
+/**
+ * Post a comment on a GitHub issue.
+ */
+export async function addIssueComment(issueNumber: number, comment: string): Promise<void> {
+  const config = getGitHubIssueConfig();
+
+  const response = await fetch(
+    `https://api.github.com/repos/${config.owner}/${config.repo}/issues/${issueNumber}/comments`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${config.token}`,
+        Accept: 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+      body: JSON.stringify({ body: comment }),
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to comment on GitHub issue #${issueNumber}: ${response.status} ${response.statusText} - ${errorText}`
+    );
+  }
+}
+
+/**
+ * Close a GitHub issue and add a label.
+ */
+export async function closeIssueWithLabel(issueNumber: number, label: string): Promise<void> {
+  const config = getGitHubIssueConfig();
+  const headers = {
+    Authorization: `Bearer ${config.token}`,
+    Accept: 'application/vnd.github.v3+json',
+    'Content-Type': 'application/json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+
+  const baseUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/issues/${issueNumber}`;
+
+  // Close the issue and add the label in parallel
+  const [closeResponse, labelResponse] = await Promise.all([
+    fetch(baseUrl, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({ state: 'closed' }),
+    }),
+    fetch(`${baseUrl}/labels`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ labels: [label] }),
+    }),
+  ]);
+
+  if (!closeResponse.ok) {
+    const errorText = await closeResponse.text();
+    throw new Error(
+      `Failed to close GitHub issue #${issueNumber}: ${closeResponse.status} ${closeResponse.statusText} - ${errorText}`
+    );
+  }
+
+  if (!labelResponse.ok) {
+    const errorText = await labelResponse.text();
+    console.error(
+      `Failed to add label "${label}" to issue #${issueNumber}: ${labelResponse.status} ${labelResponse.statusText} - ${errorText}`
+    );
+  }
+}
