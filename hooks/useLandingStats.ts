@@ -87,7 +87,7 @@ export function useLandingStats(): LandingStats {
   }, []);
 
   useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let timeoutId: number | null = null;
     let cancelled = false;
 
     const getNextDelay = (lastFetchSucceeded: boolean): number => {
