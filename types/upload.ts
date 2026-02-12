@@ -96,6 +96,11 @@ export interface PackageAssignment {
   groupName?: string;    // Display name for UI
 }
 
+export interface IntuneAppCategorySelection {
+  id: string;
+  displayName: string;
+}
+
 // Package configuration form data
 export interface PackageConfiguration {
   wingetId: string;
@@ -135,6 +140,9 @@ export interface CartItem {
 
   // Assignment configuration
   assignments?: PackageAssignment[];
+
+  // Intune category configuration
+  categories?: IntuneAppCategorySelection[];
 
   // Cart metadata
   addedAt: string;

@@ -226,6 +226,13 @@ export interface GraphApiResponse<T> {
   value?: T[];
 }
 
+// Intune mobile app category
+export interface IntuneMobileAppCategory {
+  id: string;
+  displayName: string;
+  lastModifiedDateTime?: string;
+}
+
 // Entra ID Group
 export interface EntraIDGroup {
   id: string;

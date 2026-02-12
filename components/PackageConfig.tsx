@@ -18,11 +18,13 @@ import {
   HardDrive,
   MessageSquare,
   Clock,
+  FolderTree,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { AppIcon } from '@/components/AppIcon';
 import { AssignmentConfig } from '@/components/AssignmentConfig';
+import { CategoryConfig } from '@/components/CategoryConfig';
 import type { NormalizedPackage, NormalizedInstaller, WingetScope, WingetArchitecture } from '@/types/winget';
 import type {
   PSADTConfig,
@@ -35,7 +37,7 @@ import type {
   CustomPrompt,
   BalloonTipConfig,
 } from '@/types/psadt';
-import type { PackageAssignment } from '@/types/upload';
+import type { IntuneAppCategorySelection, PackageAssignment } from '@/types/upload';
 import { DEFAULT_PSADT_CONFIG, getDefaultProcessesToClose } from '@/types/psadt';
 import { useCartStore } from '@/stores/cart-store';
 import { generateDetectionRules, generateInstallCommand, generateUninstallCommand } from '@/lib/detection-rules';
@@ -46,7 +48,7 @@ interface PackageConfigProps {
   onClose: () => void;
 }
 
-type ConfigSection = 'behavior' | 'deferral' | 'progress' | 'prompts' | 'restart' | 'diskspace' | 'detection' | 'assignment' | 'advanced';
+type ConfigSection = 'behavior' | 'deferral' | 'progress' | 'prompts' | 'restart' | 'diskspace' | 'detection' | 'assignment' | 'category' | 'advanced';
 
 export function PackageConfig({ package: pkg, installers, onClose }: PackageConfigProps) {
   // Selection state
@@ -63,6 +65,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
 
   // Assignment configuration state
   const [assignments, setAssignments] = useState<PackageAssignment[]>([]);
+  const [categories, setCategories] = useState<IntuneAppCategorySelection[]>([]);
 
   // UI state
   const [expandedSection, setExpandedSection] = useState<ConfigSection | null>('behavior');
@@ -118,6 +121,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
         detectionRules: config.detectionRules,
         psadtConfig: config,
         assignments: assignments.length > 0 ? assignments : undefined,
+        categories: categories.length > 0 ? categories : undefined,
       });
       onClose();
     } finally {
@@ -1043,6 +1047,19 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                 <AssignmentConfig
                   assignments={assignments}
                   onChange={setAssignments}
+                />
+              </ConfigSection>
+
+              {/* Category Configuration */}
+              <ConfigSection
+                title="Category Configuration"
+                icon={<FolderTree className="w-4 h-4" />}
+                expanded={expandedSection === 'category'}
+                onToggle={() => toggleSection('category')}
+              >
+                <CategoryConfig
+                  categories={categories}
+                  onChange={setCategories}
                 />
               </ConfigSection>
 

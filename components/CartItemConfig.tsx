@@ -16,11 +16,13 @@ import {
   HardDrive,
   MessageSquare,
   Clock,
+  FolderTree,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { AssignmentConfig } from '@/components/AssignmentConfig';
-import type { CartItem, PackageAssignment } from '@/types/upload';
+import { CategoryConfig } from '@/components/CategoryConfig';
+import type { CartItem, IntuneAppCategorySelection, PackageAssignment } from '@/types/upload';
 import type {
   PSADTConfig,
   ProcessToClose,
@@ -39,7 +41,7 @@ interface CartItemConfigProps {
   onClose: () => void;
 }
 
-type ConfigSection = 'behavior' | 'deferral' | 'progress' | 'prompts' | 'restart' | 'diskspace' | 'assignment' | 'advanced';
+type ConfigSection = 'behavior' | 'deferral' | 'progress' | 'prompts' | 'restart' | 'diskspace' | 'assignment' | 'category' | 'advanced';
 
 export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
   const updateItem = useCartStore((state) => state.updateItem);
@@ -51,6 +53,9 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
   }));
   const [assignments, setAssignments] = useState<PackageAssignment[]>(
     item.assignments || []
+  );
+  const [categories, setCategories] = useState<IntuneAppCategorySelection[]>(
+    item.categories || []
   );
   const [installCommand, setInstallCommand] = useState(item.installCommand);
   const [uninstallCommand, setUninstallCommand] = useState(item.uninstallCommand);
@@ -100,6 +105,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
         installScope: selectedScope,
         psadtConfig: config,
         assignments: assignments.length > 0 ? assignments : undefined,
+        categories: categories.length > 0 ? categories : undefined,
         installCommand,
         uninstallCommand,
       });
@@ -902,6 +908,19 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                 <AssignmentConfig
                   assignments={assignments}
                   onChange={setAssignments}
+                />
+              </ConfigSection>
+
+              {/* Category Configuration */}
+              <ConfigSection
+                title="Category Configuration"
+                icon={<FolderTree className="w-4 h-4" />}
+                expanded={expandedSection === 'category'}
+                onToggle={() => toggleSection('category')}
+              >
+                <CategoryConfig
+                  categories={categories}
+                  onChange={setCategories}
                 />
               </ConfigSection>
 

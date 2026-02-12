@@ -264,6 +264,7 @@ export async function POST(request: NextRequest) {
           psadtConfig: item.psadtConfig ? JSON.stringify(item.psadtConfig) : undefined,
           detectionRules: item.detectionRules ? JSON.stringify(item.detectionRules) : undefined,
           assignments: item.assignments ? JSON.stringify(item.assignments) : undefined,
+          categories: item.categories ? JSON.stringify(item.categories) : undefined,
           installScope: item.installScope,
           forceCreate,
         };

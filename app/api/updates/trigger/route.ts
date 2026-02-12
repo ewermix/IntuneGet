@@ -16,12 +16,14 @@ import type {
   AppUpdatePolicy,
   DeploymentConfig,
 } from '@/types/update-policies';
-import type { PackageAssignment } from '@/types/upload';
+import type { IntuneAppCategorySelection, PackageAssignment } from '@/types/upload';
 import type { DetectionRule } from '@/types/intune';
 import type { Json } from '@/types/database';
 
 interface PackageConfigWithAssignments {
   assignments?: PackageAssignment[];
+  categories?: IntuneAppCategorySelection[];
+  categoryIds?: string[];
   assignedGroups?: Array<{
     groupId?: string;
     groupName?: string;
@@ -116,6 +118,58 @@ function parseAssignmentMigration(packageConfig: unknown): DeploymentConfig['ass
     carryOverAssignments,
     removeAssignmentsFromPreviousApp,
   };
+}
+
+function parsePackageCategories(packageConfig: unknown): IntuneAppCategorySelection[] {
+  if (!isObject(packageConfig)) {
+    return [];
+  }
+
+  const typedConfig = packageConfig as PackageConfigWithAssignments;
+  const parsedCategories: IntuneAppCategorySelection[] = [];
+
+  if (Array.isArray(typedConfig.categories)) {
+    for (const category of typedConfig.categories) {
+      if (!isObject(category)) {
+        continue;
+      }
+
+      if (typeof category.id !== 'string' || category.id.length === 0) {
+        continue;
+      }
+
+      if (typeof category.displayName !== 'string' || category.displayName.length === 0) {
+        continue;
+      }
+
+      parsedCategories.push({
+        id: category.id,
+        displayName: category.displayName,
+      });
+    }
+  }
+
+  // Backward-compatible support for legacy shape with category IDs only
+  if (parsedCategories.length === 0 && Array.isArray(typedConfig.categoryIds)) {
+    for (const categoryId of typedConfig.categoryIds) {
+      if (typeof categoryId !== 'string' || categoryId.length === 0) {
+        continue;
+      }
+      parsedCategories.push({
+        id: categoryId,
+        displayName: categoryId,
+      });
+    }
+  }
+
+  const seen = new Set<string>();
+  return parsedCategories.filter((category) => {
+    if (seen.has(category.id)) {
+      return false;
+    }
+    seen.add(category.id);
+    return true;
+  });
 }
 
 function parseDetectionRules(value: unknown): DetectionRule[] {
@@ -264,6 +318,7 @@ export async function POST(request: NextRequest) {
           // Create deployment config from packaging job
           const packageConfig = packagingJob.package_config;
           const parsedAssignments = parsePackageAssignments(packageConfig);
+          const parsedCategories = parsePackageCategories(packageConfig);
           const assignmentMigration = parseAssignmentMigration(packageConfig);
 
           const deploymentConfig: DeploymentConfig = {
@@ -276,6 +331,7 @@ export async function POST(request: NextRequest) {
             installScope: packagingJob.install_scope || 'system',
             detectionRules: parseDetectionRules(packagingJob.detection_rules),
             assignments: parsedAssignments,
+            categories: parsedCategories,
             forceCreateNewApp: true,
             assignmentMigration,
           };

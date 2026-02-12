@@ -9,6 +9,7 @@ import type {
   Win32LobAppAssignment,
   WindowsMinimumOperatingSystem,
   EntraIDGroup,
+  IntuneMobileAppCategory,
   GraphApiResponse,
 } from '@/types/intune';
 import type { PackageAssignment } from '@/types/upload';
@@ -442,6 +443,31 @@ export async function getEntraIDGroups(
 
   const data: GraphApiResponse<EntraIDGroup> = await response.json();
   return data.value || [];
+}
+
+/**
+ * Get Intune mobile app categories
+ */
+export async function getMobileAppCategories(
+  accessToken: string
+): Promise<IntuneMobileAppCategory[]> {
+  const url = new URL(`${GRAPH_API_BASE}/deviceAppManagement/mobileAppCategories`);
+  url.searchParams.set('$select', 'id,displayName,lastModifiedDateTime');
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to get Intune app categories');
+  }
+
+  const data: GraphApiResponse<IntuneMobileAppCategory> = await response.json();
+  return (data.value || [])
+    .filter((category) => Boolean(category.id && category.displayName))
+    .sort((a, b) => a.displayName.localeCompare(b.displayName));
 }
 
 /**

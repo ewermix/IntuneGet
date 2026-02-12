@@ -20,6 +20,7 @@ export interface WorkflowInputs {
   psadtConfig?: string; // JSON-serialized PSADTConfig
   detectionRules?: string; // JSON-serialized DetectionRule[]
   assignments?: string; // JSON-serialized PackageAssignment[]
+  categories?: string; // JSON-serialized IntuneAppCategorySelection[]
   installScope?: 'machine' | 'user'; // Install scope for per-user vs per-machine
   forceCreate?: boolean; // Skip duplicate check and force create new app
 }
@@ -125,6 +126,7 @@ export async function triggerPackagingWorkflow(
           psadtConfig: inputs.psadtConfig || '{}',
           detectionRules: inputs.detectionRules || '[]',
           assignments: inputs.assignments || '[]',
+          categories: inputs.categories || '[]',
           installScope: inputs.installScope || 'machine',
           forceCreate: inputs.forceCreate ? 'true' : 'false',
         },

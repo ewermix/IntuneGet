@@ -5,7 +5,7 @@
 
 import type { Json } from './database';
 import type { DetectionRule } from './intune';
-import type { PackageAssignment } from './upload';
+import type { IntuneAppCategorySelection, PackageAssignment } from './upload';
 
 // Policy type options
 export type UpdatePolicyType = 'auto_update' | 'notify' | 'ignore' | 'pin_version';
@@ -44,6 +44,9 @@ export interface DeploymentConfig {
 
   // Normalized assignment shape used by packaging workflows
   assignments?: PackageAssignment[];
+
+  // Intune app categories (optional)
+  categories?: IntuneAppCategorySelection[];
 
   // Update deployment behavior (optional)
   forceCreateNewApp?: boolean;

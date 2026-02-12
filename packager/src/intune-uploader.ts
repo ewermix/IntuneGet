@@ -36,6 +36,11 @@ interface PackageAssignment {
   groupName?: string;
 }
 
+interface IntuneAppCategorySelection {
+  id: string;
+  displayName?: string;
+}
+
 interface AssignmentMigrationConfig {
   carryOverAssignments: boolean;
   removeAssignmentsFromPreviousApp: boolean;
@@ -169,6 +174,10 @@ export class IntuneUploader {
     // Step 10: Apply assignment configuration (99%)
     await onProgress?.(99, 'Applying assignments...');
     await this.applyAssignments(graphClient, app.id, job);
+
+    // Step 11: Apply category configuration (99%)
+    await onProgress?.(99, 'Applying categories...');
+    await this.applyCategories(graphClient, app.id, job);
 
     await onProgress?.(100, 'Upload complete');
 
@@ -514,6 +523,72 @@ export class IntuneUploader {
         });
       }
     }
+  }
+
+  private extractCategories(job: PackagingJob): IntuneAppCategorySelection[] {
+    const packageConfig = this.asRecord(job.package_config);
+    if (!packageConfig) {
+      return [];
+    }
+
+    const parsed: IntuneAppCategorySelection[] = [];
+
+    if (Array.isArray(packageConfig.categories)) {
+      for (const item of packageConfig.categories) {
+        const category = this.asRecord(item);
+        if (!category || typeof category.id !== 'string' || category.id.length === 0) {
+          continue;
+        }
+
+        parsed.push({
+          id: category.id,
+          displayName: typeof category.displayName === 'string' ? category.displayName : undefined,
+        });
+      }
+    }
+
+    // Backward compatibility for payloads that only include IDs
+    if (parsed.length === 0 && Array.isArray(packageConfig.categoryIds)) {
+      for (const categoryId of packageConfig.categoryIds) {
+        if (typeof categoryId !== 'string' || categoryId.length === 0) {
+          continue;
+        }
+        parsed.push({ id: categoryId });
+      }
+    }
+
+    const seen = new Set<string>();
+    return parsed.filter((category) => {
+      if (seen.has(category.id)) {
+        return false;
+      }
+      seen.add(category.id);
+      return true;
+    });
+  }
+
+  private async applyCategories(
+    graphClient: GraphClient,
+    appId: string,
+    job: PackagingJob
+  ): Promise<void> {
+    const categories = this.extractCategories(job);
+    if (categories.length === 0) {
+      this.logger.debug('No categories to apply', { appId });
+      return;
+    }
+
+    for (const category of categories) {
+      await graphClient.post(`/deviceAppManagement/mobileApps/${appId}/categories/$ref`, {
+        '@odata.id': `https://graph.microsoft.com/beta/deviceAppManagement/mobileAppCategories/${category.id}`,
+      });
+    }
+
+    this.logger.info('Applied categories to app', {
+      appId,
+      categoryCount: categories.length,
+      categoryIds: categories.map((category) => category.id),
+    });
   }
 
   private extractExplicitAssignments(job: PackagingJob): PackageAssignment[] {

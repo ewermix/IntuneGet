@@ -13,7 +13,7 @@ import {
   classifyUpdateType,
   canAutoUpdate,
 } from '@/types/update-policies';
-import type { PackageAssignment } from '@/types/upload';
+import type { IntuneAppCategorySelection, PackageAssignment } from '@/types/upload';
 
 interface TriggerResult {
   success: boolean;
@@ -58,6 +58,35 @@ function normalizeAssignments(config: DeploymentConfig): PackageAssignment[] {
       groupName: group.groupName,
       intent: group.assignmentType,
     }));
+}
+
+function normalizeCategories(config: DeploymentConfig): IntuneAppCategorySelection[] {
+  if (!Array.isArray(config.categories) || config.categories.length === 0) {
+    return [];
+  }
+
+  const seen = new Set<string>();
+  const normalized: IntuneAppCategorySelection[] = [];
+
+  for (const category of config.categories) {
+    if (!category || typeof category.id !== 'string' || category.id.length === 0) {
+      continue;
+    }
+    if (!category.displayName || typeof category.displayName !== 'string') {
+      continue;
+    }
+    if (seen.has(category.id)) {
+      continue;
+    }
+
+    seen.add(category.id);
+    normalized.push({
+      id: category.id,
+      displayName: category.displayName,
+    });
+  }
+
+  return normalized;
 }
 
 /**
@@ -319,6 +348,7 @@ export class AutoUpdateTrigger {
   ): Promise<{ id: string }> {
     const config = policy.deployment_config as DeploymentConfig;
     const assignments = normalizeAssignments(config);
+    const categories = normalizeCategories(config);
     const assignmentMigration = config.assignmentMigration || {
       carryOverAssignments: false,
       removeAssignmentsFromPreviousApp: false,
@@ -350,6 +380,7 @@ export class AutoUpdateTrigger {
       detection_rules: config.detectionRules,
       package_config: {
         assignments,
+        categories,
         assignedGroups: config.assignedGroups,
         forceCreate: config.forceCreateNewApp !== false,
         sourceIntuneAppId,
