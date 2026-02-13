@@ -32,6 +32,7 @@ import {
   useCategories,
   useInfinitePackages,
 } from '@/hooks/use-packages';
+import { useDeployedPackages } from '@/hooks/use-deployed-packages';
 import type { NormalizedPackage } from '@/types/winget';
 import { getCategoryLabel } from '@/lib/category-utils';
 
@@ -93,6 +94,7 @@ export default function AppCatalogPage() {
     hasNextPage,
     fetchNextPage,
   } = useInfinitePackages(20, selectedCategory, sortBy);
+  const { deployedSet } = useDeployedPackages();
 
   const { data: manifestData, isLoading: isLoadingInstallers } = usePackageManifest(
     selectedPackage?.id || '',
@@ -369,7 +371,11 @@ export default function AppCatalogPage() {
               className={mounted ? 'animate-fade-up' : 'opacity-0'}
               style={{ animationDelay: `${Math.min(index * 30, 220)}ms` }}
             >
-              <AppCard package={pkg} onSelect={handleSelectPackage} />
+              <AppCard
+                package={pkg}
+                onSelect={handleSelectPackage}
+                isDeployed={deployedSet.has(pkg.id)}
+              />
             </div>
           ))}
         </div>
@@ -384,7 +390,11 @@ export default function AppCatalogPage() {
             className={mounted ? 'animate-fade-up' : 'opacity-0'}
             style={{ animationDelay: `${Math.min(index * 24, 180)}ms` }}
           >
-            <AppListItem package={pkg} onSelect={handleSelectPackage} />
+            <AppListItem
+              package={pkg}
+              onSelect={handleSelectPackage}
+              isDeployed={deployedSet.has(pkg.id)}
+            />
           </div>
         ))}
       </div>
@@ -621,6 +631,7 @@ export default function AppCatalogPage() {
                         packages={featuredPackages}
                         onSelect={handleSelectPackage}
                         isLoading={isLoadingFeatured}
+                        deployedSet={deployedSet}
                       />
                     </div>
 
@@ -631,6 +642,7 @@ export default function AppCatalogPage() {
                           category={category}
                           onSelect={handleSelectPackage}
                           onSeeAll={handleSeeAll}
+                          deployedSet={deployedSet}
                         />
                       ))}
                     </div>

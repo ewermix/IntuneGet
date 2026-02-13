@@ -39,9 +39,10 @@ function getInstallerLabel(type: string): string {
 interface AppListItemProps {
   package: NormalizedPackage;
   onSelect?: (pkg: NormalizedPackage) => void;
+  isDeployed?: boolean;
 }
 
-function AppListItemComponent({ package: pkg, onSelect }: AppListItemProps) {
+function AppListItemComponent({ package: pkg, onSelect, isDeployed = false }: AppListItemProps) {
   const [isLoading, setIsLoading] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
 
@@ -56,7 +57,7 @@ function AppListItemComponent({ package: pkg, onSelect }: AppListItemProps) {
 
   const handleQuickAdd = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (inCart) return;
+    if (isDeployed || inCart) return;
 
     setIsLoading(true);
     try {
@@ -157,15 +158,19 @@ function AppListItemComponent({ package: pkg, onSelect }: AppListItemProps) {
           <Button
             size="sm"
             onClick={handleQuickAdd}
-            disabled={isLoading || inCart}
+            disabled={isLoading || isDeployed || inCart}
+            title={isDeployed ? 'Already Deployed' : undefined}
+            aria-label={isDeployed ? 'Already Deployed' : undefined}
             className={`h-7 px-2 flex-shrink-0 ${
-              inCart
+              isDeployed || inCart
                 ? 'bg-status-success/10 text-status-success hover:bg-status-success/10 cursor-default border border-status-success/20'
                 : 'bg-accent-cyan hover:bg-accent-cyan-dim text-white border-0'
             }`}
           >
             {isLoading ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : isDeployed ? (
+              <Check className="w-3.5 h-3.5" />
             ) : inCart ? (
               <Check className="w-3.5 h-3.5" />
             ) : (
@@ -180,5 +185,6 @@ function AppListItemComponent({ package: pkg, onSelect }: AppListItemProps) {
 
 export const AppListItem = memo(AppListItemComponent, (prevProps, nextProps) => {
   return prevProps.package.id === nextProps.package.id &&
-         prevProps.package.version === nextProps.package.version;
+         prevProps.package.version === nextProps.package.version &&
+         prevProps.isDeployed === nextProps.isDeployed;
 });

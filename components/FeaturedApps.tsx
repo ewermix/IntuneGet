@@ -14,9 +14,10 @@ interface FeaturedAppsProps {
   packages: NormalizedPackage[];
   onSelect?: (pkg: NormalizedPackage) => void;
   isLoading?: boolean;
+  deployedSet?: Set<string>;
 }
 
-export function FeaturedApps({ packages, onSelect, isLoading }: FeaturedAppsProps) {
+export function FeaturedApps({ packages, onSelect, isLoading, deployedSet }: FeaturedAppsProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-[minmax(140px,auto)]">
@@ -39,13 +40,18 @@ export function FeaturedApps({ packages, onSelect, isLoading }: FeaturedAppsProp
       {/* Main featured card - spans 2 columns and 2 rows */}
       {mainFeature && (
         <div className="md:col-span-2 md:row-span-2">
-          <FeaturedMainCard package={mainFeature} onSelect={onSelect} />
+          <FeaturedMainCard package={mainFeature} onSelect={onSelect} isDeployed={deployedSet?.has(mainFeature.id)} />
         </div>
       )}
 
       {/* Secondary featured cards */}
       {secondaryFeatures.map((pkg) => (
-        <FeaturedSecondaryCard key={pkg.id} package={pkg} onSelect={onSelect} />
+        <FeaturedSecondaryCard
+          key={pkg.id}
+          package={pkg}
+          onSelect={onSelect}
+          isDeployed={deployedSet?.has(pkg.id)}
+        />
       ))}
     </div>
   );
@@ -54,9 +60,10 @@ export function FeaturedApps({ packages, onSelect, isLoading }: FeaturedAppsProp
 interface FeaturedCardProps {
   package: NormalizedPackage;
   onSelect?: (pkg: NormalizedPackage) => void;
+  isDeployed?: boolean;
 }
 
-function FeaturedMainCardComponent({ package: pkg, onSelect }: FeaturedCardProps) {
+function FeaturedMainCardComponent({ package: pkg, onSelect, isDeployed = false }: FeaturedCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
 
@@ -71,7 +78,7 @@ function FeaturedMainCardComponent({ package: pkg, onSelect }: FeaturedCardProps
 
   const handleQuickAdd = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (inCart) return;
+    if (isDeployed || inCart) return;
 
     setIsLoading(true);
     try {
@@ -173,15 +180,20 @@ function FeaturedMainCardComponent({ package: pkg, onSelect }: FeaturedCardProps
           <Button
             size="lg"
             onClick={handleQuickAdd}
-            disabled={isLoading || inCart}
+            disabled={isLoading || isDeployed || inCart}
             className={
-              inCart
+              isDeployed || inCart
                 ? 'bg-status-success/10 text-status-success hover:bg-status-success/10 cursor-default border border-status-success/20'
                 : 'bg-accent-cyan hover:bg-accent-cyan-dim text-white border-0'
             }
           >
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
+            ) : isDeployed ? (
+              <>
+                <Check className="w-5 h-5 mr-2" />
+                Already Deployed
+              </>
             ) : inCart ? (
               <>
                 <Check className="w-5 h-5 mr-2" />
@@ -212,10 +224,12 @@ function FeaturedMainCardComponent({ package: pkg, onSelect }: FeaturedCardProps
 }
 
 const FeaturedMainCard = memo(FeaturedMainCardComponent, (prev, next) =>
-  prev.package.id === next.package.id && prev.package.version === next.package.version
+  prev.package.id === next.package.id &&
+  prev.package.version === next.package.version &&
+  prev.isDeployed === next.isDeployed
 );
 
-function FeaturedSecondaryCardComponent({ package: pkg, onSelect }: FeaturedCardProps) {
+function FeaturedSecondaryCardComponent({ package: pkg, onSelect, isDeployed = false }: FeaturedCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
 
@@ -230,7 +244,7 @@ function FeaturedSecondaryCardComponent({ package: pkg, onSelect }: FeaturedCard
 
   const handleQuickAdd = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (inCart) return;
+    if (isDeployed || inCart) return;
 
     setIsLoading(true);
     try {
@@ -306,15 +320,19 @@ function FeaturedSecondaryCardComponent({ package: pkg, onSelect }: FeaturedCard
         <Button
           size="sm"
           onClick={handleQuickAdd}
-          disabled={isLoading || inCart}
+          disabled={isLoading || isDeployed || inCart}
+          title={isDeployed ? 'Already Deployed' : undefined}
+          aria-label={isDeployed ? 'Already Deployed' : undefined}
           className={`h-7 px-2 ${
-            inCart
+            isDeployed || inCart
               ? 'bg-status-success/10 text-status-success hover:bg-status-success/10 cursor-default border border-status-success/20'
               : 'bg-accent-cyan hover:bg-accent-cyan-dim text-white border-0'
           }`}
         >
           {isLoading ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : isDeployed ? (
+            <Check className="w-3.5 h-3.5" />
           ) : inCart ? (
             <Check className="w-3.5 h-3.5" />
           ) : (
@@ -327,5 +345,7 @@ function FeaturedSecondaryCardComponent({ package: pkg, onSelect }: FeaturedCard
 }
 
 const FeaturedSecondaryCard = memo(FeaturedSecondaryCardComponent, (prev, next) =>
-  prev.package.id === next.package.id && prev.package.version === next.package.version
+  prev.package.id === next.package.id &&
+  prev.package.version === next.package.version &&
+  prev.isDeployed === next.isDeployed
 );

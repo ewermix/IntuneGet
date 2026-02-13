@@ -35,9 +35,10 @@ function getInstallerLabel(type: string): string {
 interface AppCardProps {
   package: NormalizedPackage;
   onSelect?: (pkg: NormalizedPackage) => void;
+  isDeployed?: boolean;
 }
 
-function AppCardComponent({ package: pkg, onSelect }: AppCardProps) {
+function AppCardComponent({ package: pkg, onSelect, isDeployed = false }: AppCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
 
@@ -54,7 +55,7 @@ function AppCardComponent({ package: pkg, onSelect }: AppCardProps) {
   const handleQuickAdd = async (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    if (inCart) return;
+    if (isDeployed || inCart) return;
 
     setIsLoading(true);
 
@@ -193,15 +194,20 @@ function AppCardComponent({ package: pkg, onSelect }: AppCardProps) {
         <Button
           size="sm"
           onClick={handleQuickAdd}
-          disabled={isLoading || inCart}
+          disabled={isLoading || isDeployed || inCart}
           className={
-            inCart
+            isDeployed || inCart
               ? 'bg-status-success/10 text-status-success hover:bg-status-success/10 cursor-default border border-status-success/20'
               : 'bg-accent-cyan hover:bg-accent-cyan-dim text-white border-0'
           }
         >
           {isLoading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
+          ) : isDeployed ? (
+            <>
+              <Check className="w-4 h-4 mr-1.5" />
+              Already Deployed
+            </>
           ) : inCart ? (
             <>
               <Check className="w-4 h-4 mr-1.5" />
@@ -222,5 +228,6 @@ function AppCardComponent({ package: pkg, onSelect }: AppCardProps) {
 // Memoize the component - only re-render when package.id changes
 export const AppCard = memo(AppCardComponent, (prevProps, nextProps) => {
   return prevProps.package.id === nextProps.package.id &&
-         prevProps.package.version === nextProps.package.version;
+         prevProps.package.version === nextProps.package.version &&
+         prevProps.isDeployed === nextProps.isDeployed;
 });
