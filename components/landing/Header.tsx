@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
-import { Menu, X, Github, Star, Apple, ExternalLink } from "lucide-react";
+import { Menu, X, Github, Star, Apple, ExternalLink, Book } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DocsDropdown } from "./DocsDropdown";
 import { useMicrosoftAuth } from "@/hooks/useMicrosoftAuth";
 import { useProfileStore } from "@/stores/profile-store";
 
@@ -138,6 +139,7 @@ export function Header() {
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent-cyan transition-all duration-300 group-hover:w-full" />
               </Link>
             ))}
+            <DocsDropdown />
             <a
               href="https://intunebrew.com"
               target="_blank"
@@ -231,6 +233,14 @@ export function Header() {
               {link.label}
             </Link>
           ))}
+          <Link
+            href="/docs"
+            onClick={() => setIsMenuOpen(false)}
+            className="inline-flex items-center gap-2 text-lg font-medium text-text-secondary hover:text-accent-cyan transition-colors py-3"
+          >
+            <Book className="h-5 w-5" />
+            <span>Documentation</span>
+          </Link>
           <a
             href="https://intunebrew.com"
             target="_blank"
