@@ -17,7 +17,7 @@ interface RecentFailuresTableProps {
 export function RecentFailuresTable({ data }: RecentFailuresTableProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+      <div className="flex flex-col items-center justify-center py-12 text-text-muted">
         <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center mb-3">
           <svg
             className="w-6 h-6 text-green-500"
@@ -34,7 +34,7 @@ export function RecentFailuresTable({ data }: RecentFailuresTableProps) {
           </svg>
         </div>
         <p>No recent failures</p>
-        <p className="text-sm text-slate-500 mt-1">All deployments successful</p>
+        <p className="text-sm text-text-muted mt-1">All deployments successful</p>
       </div>
     );
   }
@@ -58,17 +58,17 @@ export function RecentFailuresTable({ data }: RecentFailuresTableProps) {
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-slate-700">
-            <th className="text-left py-3 px-4 text-sm font-medium text-slate-400">
+          <tr className="border-b border-overlay/15">
+            <th className="text-left py-3 px-4 text-sm font-medium text-text-muted">
               Application
             </th>
-            <th className="text-left py-3 px-4 text-sm font-medium text-slate-400">
+            <th className="text-left py-3 px-4 text-sm font-medium text-text-muted">
               Error
             </th>
-            <th className="text-left py-3 px-4 text-sm font-medium text-slate-400">
+            <th className="text-left py-3 px-4 text-sm font-medium text-text-muted">
               Time
             </th>
-            <th className="text-right py-3 px-4 text-sm font-medium text-slate-400">
+            <th className="text-right py-3 px-4 text-sm font-medium text-text-muted">
               Actions
             </th>
           </tr>
@@ -77,16 +77,16 @@ export function RecentFailuresTable({ data }: RecentFailuresTableProps) {
           {data.map((failure) => (
             <tr
               key={failure.id}
-              className="border-b border-slate-800 hover:bg-slate-800/30 transition-colors"
+              className="border-b border-overlay/10 hover:bg-bg-elevated/30 transition-colors"
             >
               <td className="py-3 px-4">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
                   <div>
-                    <p className="text-white text-sm font-medium">
+                    <p className="text-text-primary text-sm font-medium">
                       {failure.displayName}
                     </p>
-                    <p className="text-slate-500 text-xs">{failure.wingetId}</p>
+                    <p className="text-text-muted text-xs">{failure.wingetId}</p>
                   </div>
                 </div>
               </td>
@@ -99,7 +99,7 @@ export function RecentFailuresTable({ data }: RecentFailuresTableProps) {
                 </p>
               </td>
               <td className="py-3 px-4">
-                <p className="text-slate-400 text-sm whitespace-nowrap">
+                <p className="text-text-muted text-sm whitespace-nowrap">
                   {formatDate(failure.createdAt)}
                 </p>
               </td>

@@ -178,9 +178,9 @@ export function getRoleColor(role: MspRole): string {
     owner: 'text-purple-500 bg-purple-500/10',
     admin: 'text-blue-500 bg-blue-500/10',
     operator: 'text-green-500 bg-green-500/10',
-    viewer: 'text-gray-500 bg-gray-500/10',
+    viewer: 'text-text-muted bg-bg-surface0/10',
   };
-  return colors[role] || 'text-gray-500 bg-gray-500/10';
+  return colors[role] || 'text-text-muted bg-bg-surface0/10';
 }
 
 // ============================================

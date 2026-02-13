@@ -153,7 +153,7 @@ export default function TroubleshootingPage() {
               The redirect URI in your request doesn&apos;t match the configured
               URIs.
             </p>
-            <div className="rounded bg-white p-3">
+            <div className="rounded bg-bg-elevated p-3">
               <p className="text-xs font-semibold text-text-secondary mb-2">Solution:</p>
               <ol className="list-decimal list-inside text-xs text-text-secondary space-y-1">
                 <li>Go to Azure Portal &gt; Your App Registration &gt; Authentication</li>
@@ -175,7 +175,7 @@ export default function TroubleshootingPage() {
             <p className="text-sm text-text-secondary mb-3">
               Admin consent has not been granted for your tenant.
             </p>
-            <div className="rounded bg-white p-3">
+            <div className="rounded bg-bg-elevated p-3">
               <p className="text-xs font-semibold text-text-secondary mb-2">Solution:</p>
               <ol className="list-decimal list-inside text-xs text-text-secondary space-y-1">
                 <li>Contact your Global Administrator</li>
@@ -200,7 +200,7 @@ export default function TroubleshootingPage() {
               The MSAL authentication URLs are missing the client ID. This
               typically occurs in Docker deployments running an older version.
             </p>
-            <div className="rounded bg-white p-3">
+            <div className="rounded bg-bg-elevated p-3">
               <p className="text-xs font-semibold text-text-secondary mb-2">Solution:</p>
               <ol className="list-decimal list-inside text-xs text-text-secondary space-y-1">
                 <li>
@@ -228,7 +228,7 @@ export default function TroubleshootingPage() {
             <p className="text-sm text-text-secondary mb-3">
               The client ID is incorrect or the app was deleted.
             </p>
-            <div className="rounded bg-white p-3">
+            <div className="rounded bg-bg-elevated p-3">
               <p className="text-xs font-semibold text-text-secondary mb-2">Solution:</p>
               <ol className="list-decimal list-inside text-xs text-text-secondary space-y-1">
                 <li>
@@ -257,7 +257,7 @@ export default function TroubleshootingPage() {
             <p className="text-sm text-text-secondary mb-3">
               The SQLite database file cannot be accessed or created.
             </p>
-            <div className="rounded bg-white p-3">
+            <div className="rounded bg-bg-elevated p-3">
               <p className="text-xs font-semibold text-text-secondary mb-2">Solution:</p>
               <ol className="list-decimal list-inside text-xs text-text-secondary space-y-1">
                 <li>Verify DATABASE_MODE is set to &quot;sqlite&quot;</li>
@@ -276,7 +276,7 @@ export default function TroubleshootingPage() {
             <p className="text-sm text-text-secondary mb-3">
               The local packager cannot authenticate or connect to the web app.
             </p>
-            <div className="rounded bg-white p-3">
+            <div className="rounded bg-bg-elevated p-3">
               <p className="text-xs font-semibold text-text-secondary mb-2">Solution:</p>
               <ol className="list-decimal list-inside text-xs text-text-secondary space-y-1">
                 <li>Verify PACKAGER_MODE is set to &quot;local&quot;</li>
@@ -302,7 +302,7 @@ export default function TroubleshootingPage() {
             <p className="text-sm text-text-secondary mb-3">
               Missing DeviceManagementManagedDevices.Read.All permission.
             </p>
-            <div className="rounded bg-white p-3">
+            <div className="rounded bg-bg-elevated p-3">
               <p className="text-xs font-semibold text-text-secondary mb-2">Solution:</p>
               <ol className="list-decimal list-inside text-xs text-text-secondary space-y-1">
                 <li>Go to Settings &gt; Permissions tab and run &quot;Check Permissions&quot;</li>
@@ -320,7 +320,7 @@ export default function TroubleshootingPage() {
             <p className="text-sm text-text-secondary mb-3">
               Webhook notifications are not being received by the target endpoint.
             </p>
-            <div className="rounded bg-white p-3">
+            <div className="rounded bg-bg-elevated p-3">
               <p className="text-xs font-semibold text-text-secondary mb-2">Solution:</p>
               <ol className="list-decimal list-inside text-xs text-text-secondary space-y-1">
                 <li>Verify the webhook URL is correct and publicly accessible</li>
@@ -346,7 +346,7 @@ export default function TroubleshootingPage() {
             <p className="text-sm text-text-secondary mb-3">
               Deployments get stuck in &quot;pending&quot; status.
             </p>
-            <div className="rounded bg-white p-3">
+            <div className="rounded bg-bg-elevated p-3">
               <p className="text-xs font-semibold text-text-secondary mb-2">Solution:</p>
               <ol className="list-decimal list-inside text-xs text-text-secondary space-y-1">
                 <li>Verify GITHUB_PAT has repo and workflow scopes</li>
@@ -365,7 +365,7 @@ export default function TroubleshootingPage() {
             <p className="text-sm text-text-secondary mb-3">
               Pipeline completes but status doesn&apos;t update.
             </p>
-            <div className="rounded bg-white p-3">
+            <div className="rounded bg-bg-elevated p-3">
               <p className="text-xs font-semibold text-text-secondary mb-2">Solution:</p>
               <ol className="list-decimal list-inside text-xs text-text-secondary space-y-1">
                 <li>
@@ -385,7 +385,7 @@ export default function TroubleshootingPage() {
             <p className="text-sm text-text-secondary mb-3">
               Packaging fails for specific apps.
             </p>
-            <div className="rounded bg-white p-3">
+            <div className="rounded bg-bg-elevated p-3">
               <p className="text-xs font-semibold text-text-secondary mb-2">Solution:</p>
               <ol className="list-decimal list-inside text-xs text-text-secondary space-y-1">
                 <li>Check the app exists in Winget: winget show {"{app-id}"}</li>
@@ -405,7 +405,7 @@ export default function TroubleshootingPage() {
         </h2>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h3 className="font-semibold text-text-primary mb-2">Check Logs</h3>
             <p className="text-sm text-text-secondary mb-3">
               Vercel: Dashboard &gt; Your Project &gt; Logs
@@ -415,7 +415,7 @@ export default function TroubleshootingPage() {
             </p>
           </div>
 
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h3 className="font-semibold text-text-primary mb-2">Browser Console</h3>
             <p className="text-sm text-text-secondary">
               Press F12 and check the Console and Network tabs for errors and
@@ -423,7 +423,7 @@ export default function TroubleshootingPage() {
             </p>
           </div>
 
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h3 className="font-semibold text-text-primary mb-2">GitHub Actions</h3>
             <p className="text-sm text-text-secondary">
               Check your fork&apos;s Actions tab for workflow run details and
@@ -431,7 +431,7 @@ export default function TroubleshootingPage() {
             </p>
           </div>
 
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h3 className="font-semibold text-text-primary mb-2">Environment Check</h3>
             <p className="text-sm text-text-secondary">
               Verify all environment variables are set. Missing or incorrect
@@ -554,7 +554,7 @@ export default function TroubleshootingPage() {
             href="https://github.com/ugurkocde/IntuneGet/issues"
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-lg border border-black/10 bg-white p-6 hover:border-accent-cyan/30 hover:bg-bg-elevated transition-all"
+            className="rounded-lg border border-overlay/10 bg-bg-elevated p-6 hover:border-accent-cyan/30 hover:bg-bg-elevated transition-all"
           >
             <div className="flex items-center gap-3 mb-3">
               <Github className="h-6 w-6 text-accent-cyan" />
@@ -579,7 +579,7 @@ export default function TroubleshootingPage() {
       </section>
 
       {/* Back to Docs */}
-      <section className="rounded-lg border border-black/10 bg-white p-6">
+      <section className="rounded-lg border border-overlay/10 bg-bg-elevated p-6">
         <h2 className="text-xl font-semibold text-text-primary mb-3">
           Still Need Help?
         </h2>

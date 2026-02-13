@@ -249,7 +249,7 @@ export default function UploadsPage() {
         <SkeletonGrid count={4} columns={4} variant="stat" />
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="glass-light rounded-xl p-5 border border-black/5 animate-pulse h-32" />
+            <div key={i} className="glass-light rounded-xl p-5 border border-overlay/5 animate-pulse h-32" />
           ))}
         </div>
       </div>
@@ -269,7 +269,7 @@ export default function UploadsPage() {
             onClick={handleRefresh}
             disabled={isRefreshing}
             variant="outline"
-            className="border-black/10 text-text-secondary hover:bg-black/5 hover:border-black/20"
+            className="border-overlay/10 text-text-secondary hover:bg-overlay/5 hover:border-black/20"
           >
             {isRefreshing ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -346,7 +346,7 @@ export default function UploadsPage() {
               'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
               filter === f
                 ? 'bg-gradient-to-r from-accent-cyan to-accent-violet text-bg-elevated'
-                : 'bg-black/5 text-text-secondary hover:text-text-primary hover:bg-black/10 border border-black/5'
+                : 'bg-overlay/5 text-text-secondary hover:text-text-primary hover:bg-overlay/10 border border-overlay/5'
             )}
           >
             {f.charAt(0).toUpperCase() + f.slice(1)}
@@ -434,7 +434,7 @@ function UploadJobCard({
       icon: Clock,
       label: 'Queued',
       color: 'text-text-secondary',
-      bg: 'bg-black/5',
+      bg: 'bg-overlay/5',
     },
     packaging: {
       icon: Package,
@@ -513,7 +513,7 @@ function UploadJobCard({
         'glass-light border rounded-xl p-5 transition-all contain-layout',
         isHighlighted
           ? 'border-accent-cyan/50 ring-1 ring-accent-cyan/20 shadow-glow-cyan'
-          : 'border-black/5 hover:border-black/10'
+          : 'border-overlay/5 hover:border-overlay/10'
       )}
     >
       <div className="flex items-start gap-4">
@@ -571,7 +571,7 @@ function UploadJobCard({
                       variant="outline"
                       className={cn(
                         isDismissable
-                          ? "border-black/10 text-text-secondary hover:bg-black/10 hover:border-black/20"
+                          ? "border-overlay/10 text-text-secondary hover:bg-overlay/10 hover:border-black/20"
                           : "border-status-error/30 text-status-error hover:bg-status-error/10 hover:border-status-error/50"
                       )}
                       disabled={isCancelling}

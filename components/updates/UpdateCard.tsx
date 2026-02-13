@@ -45,7 +45,7 @@ const policyLabels: Record<string, string> = {
 const policyColors: Record<string, string> = {
   auto_update: 'text-status-success bg-status-success/10 border-status-success/20',
   notify: 'text-accent-cyan bg-accent-cyan/10 border-accent-cyan/20',
-  ignore: 'text-text-muted bg-black/5 border-black/10',
+  ignore: 'text-text-muted bg-overlay/5 border-overlay/10',
   pin_version: 'text-status-warning bg-status-warning/10 border-status-warning/20',
 };
 
@@ -131,7 +131,7 @@ export function UpdateCard({
           <span
             className={cn(
               'flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-lg border flex-shrink-0',
-              policyColors[policyStatus.policy_type] || 'text-text-muted bg-black/5 border-black/10'
+              policyColors[policyStatus.policy_type] || 'text-text-muted bg-overlay/5 border-overlay/10'
             )}
           >
             <PolicyIcon className="w-3 h-3" />
@@ -142,7 +142,7 @@ export function UpdateCard({
 
       {/* Version comparison */}
       <div className="flex items-center gap-3 mb-4">
-        <span className="px-3 py-1.5 text-sm font-mono bg-black/[0.04] text-text-secondary border border-black/[0.08] rounded-lg">
+        <span className="px-3 py-1.5 text-sm font-mono bg-overlay/[0.04] text-text-secondary border border-black/[0.08] rounded-lg">
           {update.current_version}
         </span>
 

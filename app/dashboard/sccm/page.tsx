@@ -123,7 +123,7 @@ export default function SccmMigrationsPage() {
         <SkeletonGrid count={4} columns={4} variant="stat" />
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="glass-light rounded-xl p-5 border border-black/5 animate-pulse h-32" />
+            <div key={i} className="glass-light rounded-xl p-5 border border-overlay/5 animate-pulse h-32" />
           ))}
         </div>
       </div>
@@ -144,7 +144,7 @@ export default function SccmMigrationsPage() {
               onClick={() => fetchMigrations(true)}
               disabled={isRefreshing}
               variant="outline"
-              className="border-black/10 text-text-secondary hover:bg-black/5 hover:border-black/20"
+              className="border-overlay/10 text-text-secondary hover:bg-overlay/5 hover:border-black/20"
             >
               {isRefreshing ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -287,7 +287,7 @@ function MigrationCard({
         hidden: { opacity: 0, y: 20 },
         visible: { opacity: 1, y: 0 },
       }}
-      className="glass-light border border-black/5 rounded-xl p-5 hover:border-black/10 transition-all group"
+      className="glass-light border border-overlay/5 rounded-xl p-5 hover:border-overlay/10 transition-all group"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
@@ -334,7 +334,7 @@ function MigrationCard({
                 <span className="text-text-muted">Migration Progress</span>
                 <span className="text-text-secondary">{migrationRate}%</span>
               </div>
-              <div className="h-2 bg-black/5 rounded-full overflow-hidden">
+              <div className="h-2 bg-overlay/5 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-accent-cyan to-accent-violet transition-all duration-500"
                   style={{ width: `${migrationRate}%` }}

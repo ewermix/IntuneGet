@@ -140,21 +140,25 @@ const config: Config = {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
-        // Light theme colors (Evernote-inspired)
-        "bg-deepest": "#fafaf9",
-        "bg-surface": "#f5f5f4",
-        "bg-elevated": "#ffffff",
-        // Electric Cyan accent system (adjusted for light bg contrast)
+        // Semantic theme colors wired to CSS variables (switch light/dark)
+        "bg-deepest": "rgb(var(--bg-deepest) / <alpha-value>)",
+        "bg-surface": "rgb(var(--bg-surface) / <alpha-value>)",
+        "bg-elevated": "rgb(var(--bg-elevated) / <alpha-value>)",
+        // Overlay token - black in light, white in dark
+        "overlay": "rgb(var(--overlay) / <alpha-value>)",
+        // Inverse surface for Badge dark variant
+        "surface-inverse": "rgb(var(--surface-inverse) / <alpha-value>)",
+        // Electric Cyan accent system (static - same in both themes)
         "accent-cyan": "#0891b2",
         "accent-cyan-bright": "#06b6d4",
         "accent-cyan-dim": "#0e7490",
         "accent-violet": "#7c3aed",
         "accent-violet-bright": "#8b5cf6",
-        // Text colors for light theme
-        "text-primary": "#1c1917",
-        "text-secondary": "#57534e",
-        "text-muted": "#a8a29e",
-        // Status indicators
+        // Text colors wired to CSS variables (switch light/dark)
+        "text-primary": "rgb(var(--text-primary) / <alpha-value>)",
+        "text-secondary": "rgb(var(--text-secondary) / <alpha-value>)",
+        "text-muted": "rgb(var(--text-muted) / <alpha-value>)",
+        // Status indicators (static)
         status: {
           success: "#10b981",
           warning: "#f59e0b",

@@ -158,15 +158,15 @@ export function WebhookFormModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg mx-4 bg-bg-elevated border border-black/10 rounded-xl shadow-2xl">
+      <div className="relative w-full max-w-lg mx-4 bg-bg-elevated border border-overlay/10 rounded-xl shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-black/5">
+        <div className="flex items-center justify-between p-4 border-b border-overlay/5">
           <h2 className="text-lg font-semibold text-text-primary">
             {initialData ? 'Edit Webhook' : 'Add Webhook'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-black/5 transition-colors"
+            className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-overlay/5 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -183,7 +183,7 @@ export function WebhookFormModal({
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="My Slack Webhook"
-              className="bg-bg-elevated border-black/10 text-text-primary"
+              className="bg-bg-elevated border-overlay/10 text-text-primary"
             />
           </div>
 
@@ -204,7 +204,7 @@ export function WebhookFormModal({
                     'px-3 py-2 rounded-lg border text-sm transition-all',
                     formData.webhook_type === type.value
                       ? 'bg-accent-violet/20 border-accent-violet/50 text-accent-violet'
-                      : 'bg-bg-elevated border-black/10 text-text-secondary hover:border-black/20'
+                      : 'bg-bg-elevated border-overlay/10 text-text-secondary hover:border-black/20'
                   )}
                 >
                   {type.label}
@@ -222,7 +222,7 @@ export function WebhookFormModal({
               value={formData.url}
               onChange={(e) => setFormData({ ...formData, url: e.target.value })}
               placeholder={selectedType?.placeholder}
-              className="bg-bg-elevated border-black/10 text-text-primary font-mono text-sm"
+              className="bg-bg-elevated border-overlay/10 text-text-primary font-mono text-sm"
             />
           </div>
 
@@ -239,7 +239,7 @@ export function WebhookFormModal({
                   setFormData({ ...formData, secret: e.target.value })
                 }
                 placeholder={initialData?.secret ? '(unchanged)' : 'For HMAC signature'}
-                className="bg-bg-elevated border-black/10 text-text-primary pr-10 placeholder:text-text-muted"
+                className="bg-bg-elevated border-overlay/10 text-text-primary pr-10 placeholder:text-text-muted"
               />
               <button
                 type="button"
@@ -270,7 +270,7 @@ export function WebhookFormModal({
                   onClick={addHeader}
                   size="sm"
                   variant="outline"
-                  className="border-black/10 text-xs"
+                  className="border-overlay/10 text-xs"
                 >
                   <Plus className="w-3 h-3 mr-1" />
                   Add Header
@@ -287,13 +287,13 @@ export function WebhookFormModal({
                         value={header.key}
                         onChange={(e) => updateHeader(index, 'key', e.target.value)}
                         placeholder="Header name"
-                        className="bg-bg-elevated border-black/10 text-text-primary text-sm flex-1"
+                        className="bg-bg-elevated border-overlay/10 text-text-primary text-sm flex-1"
                       />
                       <Input
                         value={header.value}
                         onChange={(e) => updateHeader(index, 'value', e.target.value)}
                         placeholder="Value"
-                        className="bg-bg-elevated border-black/10 text-text-primary text-sm flex-1"
+                        className="bg-bg-elevated border-overlay/10 text-text-primary text-sm flex-1"
                       />
                       <button
                         type="button"
@@ -322,7 +322,7 @@ export function WebhookFormModal({
               type="button"
               onClick={onClose}
               variant="outline"
-              className="border-black/10"
+              className="border-overlay/10"
             >
               Cancel
             </Button>

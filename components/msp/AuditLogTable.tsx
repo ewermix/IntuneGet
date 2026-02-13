@@ -195,7 +195,7 @@ export function AuditLogTable() {
   };
 
   const getActionInfo = (action: string) => {
-    return actionLabels[action] || { label: action, color: 'text-gray-500 bg-gray-500/10' };
+    return actionLabels[action] || { label: action, color: 'text-text-muted bg-bg-surface0/10' };
   };
 
   const getResourceIcon = (resourceType: string | null) => {
@@ -256,7 +256,7 @@ export function AuditLogTable() {
             variant="outline"
             size="sm"
             onClick={() => setShowFilters(!showFilters)}
-            className={cn(showFilters && 'bg-black/5')}
+            className={cn(showFilters && 'bg-overlay/5')}
           >
             <Filter className="w-4 h-4" />
           </Button>
@@ -268,14 +268,14 @@ export function AuditLogTable() {
 
       {/* Filters */}
       {showFilters && (
-        <div className="flex flex-wrap gap-3 p-4 bg-black/5 rounded-xl">
+        <div className="flex flex-wrap gap-3 p-4 bg-overlay/5 rounded-xl">
           <select
             value={filters.action || ''}
             onChange={(e) => {
               setFilters({ ...filters, action: e.target.value || undefined });
               setPage(1);
             }}
-            className="px-3 py-1.5 bg-bg-elevated border border-black/10 rounded-lg text-sm"
+            className="px-3 py-1.5 bg-bg-elevated border border-overlay/10 rounded-lg text-sm"
           >
             <option value="">All Actions</option>
             {Object.entries(actionLabels).map(([value, { label }]) => (
@@ -291,7 +291,7 @@ export function AuditLogTable() {
               setFilters({ ...filters, resource_type: e.target.value || undefined });
               setPage(1);
             }}
-            className="px-3 py-1.5 bg-bg-elevated border border-black/10 rounded-lg text-sm"
+            className="px-3 py-1.5 bg-bg-elevated border border-overlay/10 rounded-lg text-sm"
           >
             <option value="">All Resources</option>
             <option value="tenant">Tenant</option>
@@ -334,9 +334,9 @@ export function AuditLogTable() {
             return (
               <div
                 key={log.id}
-                className="flex items-center gap-4 p-4 bg-bg-elevated rounded-xl border border-black/10"
+                className="flex items-center gap-4 p-4 bg-bg-elevated rounded-xl border border-overlay/10"
               >
-                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-black/5 flex items-center justify-center">
+                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-overlay/5 flex items-center justify-center">
                   <ResourceIcon className="w-5 h-5 text-text-muted" />
                 </div>
 

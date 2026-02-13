@@ -202,7 +202,7 @@ export default function NewMigrationPage() {
               </Button>
               <span className="text-text-muted text-sm">Export-SCCMApps.ps1</span>
             </div>
-            <div className="mt-4 p-3 bg-black/5 rounded-lg border border-black/5">
+            <div className="mt-4 p-3 bg-overlay/5 rounded-lg border border-overlay/5">
               <p className="text-xs text-text-muted font-mono">
                 # Run on SCCM server with ConfigMgr console installed
               </p>
@@ -216,9 +216,9 @@ export default function NewMigrationPage() {
 
       {/* Divider */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="flex-1 h-px bg-black/10" />
+        <div className="flex-1 h-px bg-overlay/10" />
         <span className="text-text-muted text-sm">or upload existing export</span>
-        <div className="flex-1 h-px bg-black/10" />
+        <div className="flex-1 h-px bg-overlay/10" />
       </div>
 
       {/* Dropzone */}
@@ -232,7 +232,7 @@ export default function NewMigrationPage() {
             ? 'border-accent-cyan bg-accent-cyan/5'
             : state.fileContent
               ? 'border-status-success/50 bg-status-success/5'
-              : 'border-black/10 hover:border-black/20 bg-black/2'
+              : 'border-overlay/10 hover:border-black/20 bg-black/2'
         )}
       >
         <input
@@ -278,7 +278,7 @@ export default function NewMigrationPage() {
             </>
           ) : (
             <>
-              <div className="w-16 h-16 mx-auto bg-black/5 rounded-xl flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto bg-overlay/5 rounded-xl flex items-center justify-center">
                 <Upload className="w-8 h-8 text-text-secondary" />
               </div>
               <div>
@@ -321,7 +321,7 @@ export default function NewMigrationPage() {
               type="text"
               value={state.migrationName}
               onChange={(e) => setState(prev => ({ ...prev, migrationName: e.target.value }))}
-              className="w-full px-4 py-2 bg-black/5 border border-black/10 rounded-lg text-text-primary placeholder-text-muted focus:border-accent-cyan focus:outline-none focus:ring-1 focus:ring-accent-cyan"
+              className="w-full px-4 py-2 bg-overlay/5 border border-overlay/10 rounded-lg text-text-primary placeholder-text-muted focus:border-accent-cyan focus:outline-none focus:ring-1 focus:ring-accent-cyan"
               placeholder="Enter migration name"
             />
           </div>
@@ -333,7 +333,7 @@ export default function NewMigrationPage() {
               value={state.migrationDescription}
               onChange={(e) => setState(prev => ({ ...prev, migrationDescription: e.target.value }))}
               rows={3}
-              className="w-full px-4 py-2 bg-black/5 border border-black/10 rounded-lg text-text-primary placeholder-text-muted focus:border-accent-cyan focus:outline-none focus:ring-1 focus:ring-accent-cyan resize-none"
+              className="w-full px-4 py-2 bg-overlay/5 border border-overlay/10 rounded-lg text-text-primary placeholder-text-muted focus:border-accent-cyan focus:outline-none focus:ring-1 focus:ring-accent-cyan resize-none"
               placeholder="Describe this migration"
             />
           </div>
@@ -356,7 +356,7 @@ export default function NewMigrationPage() {
       <div className="mt-8 flex items-center justify-between">
         <Button
           variant="outline"
-          className="border-black/10 text-text-secondary"
+          className="border-overlay/10 text-text-secondary"
           onClick={() => router.push('/dashboard/sccm')}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -405,7 +405,7 @@ export default function NewMigrationPage() {
       <div className="flex items-center justify-center gap-4">
         <Button
           variant="outline"
-          className="border-black/10 text-text-secondary"
+          className="border-overlay/10 text-text-secondary"
           onClick={() => router.push('/dashboard/sccm')}
         >
           Back to Migrations
@@ -432,7 +432,7 @@ export default function NewMigrationPage() {
       <div className="flex items-center justify-center gap-4">
         <Button
           variant="outline"
-          className="border-black/10 text-text-secondary"
+          className="border-overlay/10 text-text-secondary"
           onClick={() => router.push('/dashboard/sccm')}
         >
           Back to Migrations
@@ -456,7 +456,7 @@ export default function NewMigrationPage() {
         gradientColors="cyan"
       />
 
-      <div className="glass-light rounded-xl p-8 border border-black/5">
+      <div className="glass-light rounded-xl p-8 border border-overlay/5">
         {state.step === 'upload' && renderUploadStep()}
         {state.step === 'importing' && renderImportingStep()}
         {state.step === 'complete' && renderCompleteStep()}

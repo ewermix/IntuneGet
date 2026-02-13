@@ -28,7 +28,7 @@ const WEBHOOK_TYPE_LABELS: Record<WebhookType, { label: string; color: string }>
   slack: { label: 'Slack', color: 'text-[#4A154B] bg-[#4A154B]/10' },
   teams: { label: 'Teams', color: 'text-[#6264A7] bg-[#6264A7]/10' },
   discord: { label: 'Discord', color: 'text-[#5865F2] bg-[#5865F2]/10' },
-  custom: { label: 'Custom', color: 'text-text-secondary bg-black/5' },
+  custom: { label: 'Custom', color: 'text-text-secondary bg-overlay/5' },
 };
 
 export function WebhookManager({ className }: WebhookManagerProps) {
@@ -242,7 +242,7 @@ export function WebhookManager({ className }: WebhookManagerProps) {
 
   if (isLoading) {
     return (
-      <div className={cn('glass-light rounded-xl p-6 border border-black/5', className)}>
+      <div className={cn('glass-light rounded-xl p-6 border border-overlay/5', className)}>
         <div className="flex items-center justify-center py-8">
           <Loader2 className="w-6 h-6 text-text-muted animate-spin" />
         </div>
@@ -251,7 +251,7 @@ export function WebhookManager({ className }: WebhookManagerProps) {
   }
 
   return (
-    <div className={cn('glass-light rounded-xl p-6 border border-black/5 hover:border-accent-violet/20 transition-colors', className)}>
+    <div className={cn('glass-light rounded-xl p-6 border border-overlay/5 hover:border-accent-violet/20 transition-colors', className)}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-accent-violet/10 flex items-center justify-center">
@@ -276,7 +276,7 @@ export function WebhookManager({ className }: WebhookManagerProps) {
 
       {webhooks.length === 0 ? (
         <div className="text-center py-8">
-          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-black/5 flex items-center justify-center">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-overlay/5 flex items-center justify-center">
             <Webhook className="w-6 h-6 text-text-muted" />
           </div>
           <p className="text-text-secondary mb-2">No webhooks configured</p>
@@ -292,8 +292,8 @@ export function WebhookManager({ className }: WebhookManagerProps) {
               className={cn(
                 'p-4 rounded-lg border transition-colors',
                 webhook.is_enabled
-                  ? 'bg-bg-elevated border-black/5'
-                  : 'bg-bg-surface border-black/5 opacity-60'
+                  ? 'bg-bg-elevated border-overlay/5'
+                  : 'bg-bg-surface border-overlay/5 opacity-60'
               )}
             >
               <div className="flex items-start justify-between">
@@ -357,7 +357,7 @@ export function WebhookManager({ className }: WebhookManagerProps) {
                   <button
                     onClick={() => handleTestWebhook(webhook.id)}
                     disabled={testingId === webhook.id || !webhook.is_enabled}
-                    className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-black/5 transition-colors disabled:opacity-50"
+                    className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-overlay/5 transition-colors disabled:opacity-50"
                     title="Send test"
                   >
                     {testingId === webhook.id ? (
@@ -370,7 +370,7 @@ export function WebhookManager({ className }: WebhookManagerProps) {
                   {/* Edit button */}
                   <button
                     onClick={() => openEditModal(webhook)}
-                    className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-black/5 transition-colors"
+                    className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-overlay/5 transition-colors"
                     title="Edit"
                   >
                     <Edit2 className="w-4 h-4" />
@@ -380,7 +380,7 @@ export function WebhookManager({ className }: WebhookManagerProps) {
                   <button
                     onClick={() => handleToggleWebhook(webhook)}
                     disabled={togglingId === webhook.id}
-                    className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-black/5 transition-colors disabled:opacity-50"
+                    className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-overlay/5 transition-colors disabled:opacity-50"
                     title={webhook.is_enabled ? 'Disable' : 'Enable'}
                   >
                     {togglingId === webhook.id ? (

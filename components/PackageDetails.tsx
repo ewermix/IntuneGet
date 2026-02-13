@@ -139,23 +139,23 @@ export function PackageDetails({ package: pkg, onClose }: PackageDetailsProps) {
       />
 
       {/* Modal */}
-      <div className="absolute right-0 top-0 bottom-0 w-full max-w-2xl bg-slate-900 border-l border-slate-800 shadow-2xl overflow-y-auto">
+      <div className="absolute right-0 top-0 bottom-0 w-full max-w-2xl bg-bg-surface border-l border-overlay/10 shadow-2xl overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800 px-6 py-4">
+        <div className="sticky top-0 z-10 bg-bg-surface/95 backdrop-blur-sm border-b border-overlay/10 px-6 py-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-4">
-              <div className="w-14 h-14 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0">
-                <Package className="w-7 h-7 text-slate-400" />
+              <div className="w-14 h-14 rounded-xl bg-bg-elevated flex items-center justify-center flex-shrink-0">
+                <Package className="w-7 h-7 text-text-muted" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">{pkg.name}</h2>
-                <p className="text-slate-400">{pkg.publisher}</p>
-                <p className="text-slate-600 text-sm font-mono mt-1">{pkg.id}</p>
+                <h2 className="text-xl font-bold text-text-primary">{pkg.name}</h2>
+                <p className="text-text-muted">{pkg.publisher}</p>
+                <p className="text-text-muted text-sm font-mono mt-1">{pkg.id}</p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white transition-colors"
+              className="text-text-muted hover:text-text-primary transition-colors"
             >
               <X className="w-6 h-6" />
             </button>
@@ -171,10 +171,10 @@ export function PackageDetails({ package: pkg, onClose }: PackageDetailsProps) {
             {/* Description */}
             {pkg.description && (
               <div>
-                <h3 className="text-sm font-medium text-slate-400 mb-2">
+                <h3 className="text-sm font-medium text-text-muted mb-2">
                   Description
                 </h3>
-                <p className="text-white">{pkg.description}</p>
+                <p className="text-text-primary">{pkg.description}</p>
               </div>
             )}
 
@@ -192,7 +192,7 @@ export function PackageDetails({ package: pkg, onClose }: PackageDetailsProps) {
                 </a>
               )}
               {pkg.license && (
-                <span className="flex items-center gap-2 text-sm text-slate-400">
+                <span className="flex items-center gap-2 text-sm text-text-muted">
                   <FileCode className="w-4 h-4" />
                   {pkg.license}
                 </span>
@@ -200,21 +200,21 @@ export function PackageDetails({ package: pkg, onClose }: PackageDetailsProps) {
             </div>
 
             {/* Configuration */}
-            <div className="border-t border-slate-800 pt-6">
-              <h3 className="text-lg font-semibold text-white mb-4">
+            <div className="border-t border-overlay/10 pt-6">
+              <h3 className="text-lg font-semibold text-text-primary mb-4">
                 Configuration
               </h3>
 
               <div className="space-y-4">
                 {/* Version selector */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">
+                  <label className="block text-sm font-medium text-text-muted mb-2">
                     Version
                   </label>
                   <div className="relative">
                     <button
                       onClick={() => setShowVersions(!showVersions)}
-                      className="w-full flex items-center justify-between px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white hover:border-slate-600 transition-colors"
+                      className="w-full flex items-center justify-between px-4 py-3 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary hover:border-overlay/20 transition-colors"
                     >
                       <span>{selectedVersion}</span>
                       <ChevronDown
@@ -225,7 +225,7 @@ export function PackageDetails({ package: pkg, onClose }: PackageDetailsProps) {
                       />
                     </button>
                     {showVersions && (
-                      <div className="absolute z-10 w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                      <div className="absolute z-10 w-full mt-1 bg-bg-elevated border border-overlay/15 rounded-lg shadow-xl max-h-60 overflow-y-auto">
                         {versions.map((version) => (
                           <button
                             key={version}
@@ -234,10 +234,10 @@ export function PackageDetails({ package: pkg, onClose }: PackageDetailsProps) {
                               setShowVersions(false);
                             }}
                             className={cn(
-                              'w-full px-4 py-2 text-left hover:bg-slate-700 transition-colors',
+                              'w-full px-4 py-2 text-left hover:bg-overlay/10 transition-colors',
                               version === selectedVersion
                                 ? 'text-blue-500 bg-blue-500/10'
-                                : 'text-white'
+                                : 'text-text-primary'
                             )}
                           >
                             {version}
@@ -250,7 +250,7 @@ export function PackageDetails({ package: pkg, onClose }: PackageDetailsProps) {
 
                 {/* Architecture selector */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">
+                  <label className="block text-sm font-medium text-text-muted mb-2">
                     <Cpu className="w-4 h-4 inline mr-1" />
                     Architecture
                   </label>
@@ -267,8 +267,8 @@ export function PackageDetails({ package: pkg, onClose }: PackageDetailsProps) {
                             selectedArch === arch
                               ? 'bg-blue-600 border-blue-500 text-white'
                               : available
-                              ? 'bg-slate-800 border-slate-700 text-white hover:border-slate-600'
-                              : 'bg-slate-800/50 border-slate-700/50 text-slate-600 cursor-not-allowed'
+                              ? 'bg-bg-elevated border-overlay/15 text-text-primary hover:border-overlay/20'
+                              : 'bg-bg-elevated/50 border-overlay/[0.07] text-text-muted cursor-not-allowed'
                           )}
                         >
                           {arch}
@@ -280,7 +280,7 @@ export function PackageDetails({ package: pkg, onClose }: PackageDetailsProps) {
 
                 {/* Install scope selector */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">
+                  <label className="block text-sm font-medium text-text-muted mb-2">
                     <HardDrive className="w-4 h-4 inline mr-1" />
                     Install Scope
                   </label>
@@ -293,14 +293,14 @@ export function PackageDetails({ package: pkg, onClose }: PackageDetailsProps) {
                           'flex-1 px-4 py-2 rounded-lg border transition-colors',
                           selectedScope === scope
                             ? 'bg-blue-600 border-blue-500 text-white'
-                            : 'bg-slate-800 border-slate-700 text-white hover:border-slate-600'
+                            : 'bg-bg-elevated border-overlay/15 text-text-primary hover:border-overlay/20'
                         )}
                       >
                         {scope === 'machine' ? 'Per-Machine' : 'Per-User'}
                       </button>
                     ))}
                   </div>
-                  <p className="text-slate-500 text-sm mt-2">
+                  <p className="text-text-muted text-sm mt-2">
                     {selectedScope === 'machine'
                       ? 'Installs for all users on the device (recommended for enterprise)'
                       : 'Installs only for the current user'}
@@ -311,28 +311,28 @@ export function PackageDetails({ package: pkg, onClose }: PackageDetailsProps) {
 
             {/* Installer details */}
             {selectedInstaller && (
-              <div className="border-t border-slate-800 pt-6">
-                <h3 className="text-lg font-semibold text-white mb-4">
+              <div className="border-t border-overlay/10 pt-6">
+                <h3 className="text-lg font-semibold text-text-primary mb-4">
                   Installer Details
                 </h3>
 
-                <div className="bg-slate-800/50 rounded-lg p-4 space-y-3">
+                <div className="bg-bg-elevated/50 rounded-lg p-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400 text-sm">Type</span>
-                    <span className="text-white font-mono text-sm uppercase">
+                    <span className="text-text-muted text-sm">Type</span>
+                    <span className="text-text-primary font-mono text-sm uppercase">
                       {selectedInstaller.type}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400 text-sm">SHA256</span>
-                    <span className="text-white font-mono text-xs truncate max-w-[200px]">
+                    <span className="text-text-muted text-sm">SHA256</span>
+                    <span className="text-text-primary font-mono text-xs truncate max-w-[200px]">
                       {selectedInstaller.sha256}
                     </span>
                   </div>
                   {selectedInstaller.silentArgs && (
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-400 text-sm">Silent Args</span>
-                      <span className="text-white font-mono text-sm">
+                      <span className="text-text-muted text-sm">Silent Args</span>
+                      <span className="text-text-primary font-mono text-sm">
                         {selectedInstaller.silentArgs}
                       </span>
                     </div>
@@ -342,8 +342,8 @@ export function PackageDetails({ package: pkg, onClose }: PackageDetailsProps) {
             )}
 
             {/* Detection rules preview */}
-            <div className="border-t border-slate-800 pt-6">
-              <h3 className="text-lg font-semibold text-white mb-4">
+            <div className="border-t border-overlay/10 pt-6">
+              <h3 className="text-lg font-semibold text-text-primary mb-4">
                 Detection Rules
               </h3>
 
@@ -351,14 +351,14 @@ export function PackageDetails({ package: pkg, onClose }: PackageDetailsProps) {
                 {detectionRules.map((rule, index) => (
                   <div
                     key={index}
-                    className="bg-slate-800/50 rounded-lg p-4"
+                    className="bg-bg-elevated/50 rounded-lg p-4"
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <span className="px-2 py-0.5 bg-blue-500/10 text-blue-500 text-xs font-medium rounded uppercase">
                         {rule.type}
                       </span>
                     </div>
-                    <pre className="text-slate-400 text-sm font-mono whitespace-pre-wrap break-all">
+                    <pre className="text-text-muted text-sm font-mono whitespace-pre-wrap break-all">
                       {JSON.stringify(rule, null, 2)}
                     </pre>
                   </div>
@@ -367,7 +367,7 @@ export function PackageDetails({ package: pkg, onClose }: PackageDetailsProps) {
             </div>
 
             {/* Add to cart button */}
-            <div className="sticky bottom-0 bg-slate-900 border-t border-slate-800 -mx-6 px-6 py-4 mt-6">
+            <div className="sticky bottom-0 bg-bg-surface border-t border-overlay/10 -mx-6 px-6 py-4 mt-6">
               <Button
                 onClick={handleAddToCart}
                 disabled={!selectedInstaller || inCart}

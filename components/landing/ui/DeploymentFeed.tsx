@@ -99,14 +99,14 @@ function StageIcon({ state }: { state: StageState }) {
       </motion.div>
     );
   }
-  return <Circle className="w-3 h-3 text-stone-300" />;
+  return <Circle className="w-3 h-3 text-overlay/20" />;
 }
 
 function StageIconStatic({ state }: { state: StageState }) {
   if (state === "complete") {
     return <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />;
   }
-  return <Circle className="w-3 h-3 text-stone-300" />;
+  return <Circle className="w-3 h-3 text-overlay/20" />;
 }
 
 // ---------------------------------------------------------------------------
@@ -115,7 +115,7 @@ function StageIconStatic({ state }: { state: StageState }) {
 
 function ProgressBar({ progress, calm = false }: { progress: number; calm?: boolean }) {
   return (
-    <div className="mt-0.5 h-0.5 w-full rounded-full bg-stone-200/60">
+    <div className="mt-0.5 h-0.5 w-full rounded-full bg-overlay/[0.08]">
       <div
         className={cn(
           "h-full rounded-full bg-[linear-gradient(90deg,#06b6d4_0%,#0891b2_72%,#7c3aed_100%)] transition-[width] ease-linear",
@@ -154,9 +154,9 @@ const AppRow = memo(function AppRow({ item, compact = false, isMobile = false, m
           ? "border-emerald-200/60"
           : isProcessing
             ? isHeroCalm
-              ? "border-accent-cyan/35 bg-[linear-gradient(125deg,rgba(8,145,178,0.04),rgba(255,255,255,0.97)_54%,rgba(124,58,237,0.03))] shadow-[0_0_0_1px_rgba(8,145,178,0.08),0_8px_18px_rgba(8,145,178,0.06)]"
-              : "border-accent-cyan/45 bg-[linear-gradient(125deg,rgba(8,145,178,0.06),rgba(255,255,255,0.96)_52%,rgba(124,58,237,0.04))] shadow-[0_0_0_1px_rgba(8,145,178,0.12),0_10px_24px_rgba(8,145,178,0.08)]"
-            : "border-stone-200 bg-white"
+              ? "border-accent-cyan/35 bg-bg-elevated shadow-[0_0_0_1px_rgba(8,145,178,0.08),0_8px_18px_rgba(8,145,178,0.06)] processing-gradient-calm"
+              : "border-accent-cyan/45 bg-bg-elevated shadow-[0_0_0_1px_rgba(8,145,178,0.12),0_10px_24px_rgba(8,145,178,0.08)] processing-gradient"
+            : "border-overlay/10 bg-bg-elevated"
       )}
     >
       {isProcessing && (
@@ -178,7 +178,7 @@ const AppRow = memo(function AppRow({ item, compact = false, isMobile = false, m
         <div className="mb-2 flex items-center gap-2">
           <div
             className={cn(
-              "flex flex-shrink-0 items-center justify-center rounded-md bg-stone-100",
+              "flex flex-shrink-0 items-center justify-center rounded-md bg-overlay/[0.06]",
               compact ? "h-6 w-6" : "h-7 w-7"
             )}
           >
@@ -194,7 +194,7 @@ const AppRow = memo(function AppRow({ item, compact = false, isMobile = false, m
           </div>
           <span
             className={cn(
-              "font-medium text-stone-800",
+              "font-medium text-text-primary",
               compact ? "text-xs" : "text-sm"
             )}
           >
@@ -224,9 +224,9 @@ const AppRow = memo(function AppRow({ item, compact = false, isMobile = false, m
                 <div
                   className={cn(
                     "flex items-center gap-1",
-                    state === "complete" && (isHeroCalm ? "text-stone-600" : "text-stone-700"),
+                    state === "complete" && (isHeroCalm ? "text-text-secondary" : "text-text-secondary"),
                     state === "active" && "text-accent-cyan font-medium",
-                    state === "waiting" && "text-stone-400"
+                    state === "waiting" && "text-text-muted"
                   )}
                 >
                   <StageIcon state={state} />
@@ -261,23 +261,23 @@ function DeploymentFeedStatic({ className = "", mode = "default" }: { className?
 
   return (
     <div className={cn("relative mx-auto w-full max-w-4xl", className)}>
-      <div className="relative overflow-hidden rounded-xl border border-stone-200/60 bg-white shadow-soft-xl">
+      <div className="relative overflow-hidden rounded-xl border border-overlay/[0.06] bg-bg-elevated shadow-soft-xl">
         {/* Browser chrome */}
-        <div className="flex items-center gap-2 border-b border-stone-200 bg-stone-50 px-3 py-2">
+        <div className="flex items-center gap-2 border-b border-overlay/10 bg-bg-surface px-3 py-2">
           <div className="flex gap-1.5">
-            <div className="h-2.5 w-2.5 rounded-full bg-stone-300" />
-            <div className="h-2.5 w-2.5 rounded-full bg-stone-300" />
-            <div className="h-2.5 w-2.5 rounded-full bg-stone-300" />
+            <div className="h-2.5 w-2.5 rounded-full bg-overlay/20" />
+            <div className="h-2.5 w-2.5 rounded-full bg-overlay/20" />
+            <div className="h-2.5 w-2.5 rounded-full bg-overlay/20" />
           </div>
           <div className="mx-4 flex-1">
-            <div className="mx-auto max-w-md rounded-lg border border-stone-200 bg-white px-3 py-1 text-xs text-stone-500">
+            <div className="mx-auto max-w-md rounded-lg border border-overlay/10 bg-bg-elevated px-3 py-1 text-xs text-text-muted">
               IntuneGet.com/dashboard
             </div>
           </div>
         </div>
 
         {/* Static feed */}
-        <div className={cn("bg-stone-50/50 p-3 md:p-4", isHeroCalm && "bg-stone-50/35")}>
+        <div className={cn("bg-bg-surface/50 p-3 md:p-4", isHeroCalm && "bg-bg-surface/35")}>
           {/* Desktop */}
           <div className="hidden flex-col gap-3 md:flex">
             {staticApps.map((app) => (
@@ -307,11 +307,11 @@ function StaticAppRow({
 }) {
   const isHeroCalm = mode === "heroCalm";
   return (
-    <div className={cn("rounded-lg border border-emerald-200/60 bg-white", compact ? "p-3" : isHeroCalm ? "p-3.5" : "p-3")}>
+    <div className={cn("rounded-lg border border-emerald-200/60 bg-bg-elevated", compact ? "p-3" : isHeroCalm ? "p-3.5" : "p-3")}>
       <div className="mb-2 flex items-center gap-2">
         <div
           className={cn(
-            "flex items-center justify-center rounded-md bg-stone-100",
+            "flex items-center justify-center rounded-md bg-overlay/[0.06]",
             compact ? "h-6 w-6" : "h-7 w-7"
           )}
         >
@@ -325,12 +325,12 @@ function StaticAppRow({
             }}
           />
         </div>
-        <span className={cn("font-medium text-stone-800", compact ? "text-xs" : "text-sm")}>{app.name}</span>
+        <span className={cn("font-medium text-text-primary", compact ? "text-xs" : "text-sm")}>{app.name}</span>
         <span className="ml-auto text-[10px] font-medium text-emerald-600">Complete</span>
       </div>
       <div className="grid grid-cols-4 gap-1.5">
         {STAGE_LABELS.map((stage) => (
-          <div key={stage.label} className="flex items-center gap-1 text-stone-700">
+          <div key={stage.label} className="flex items-center gap-1 text-text-secondary">
             <StageIconStatic state="complete" />
             <span
               className={cn(
@@ -448,7 +448,7 @@ export function DeploymentFeed({ className = "", mode = "default" }: DeploymentF
   return (
     <div className={cn("relative mx-auto w-full max-w-4xl", className)}>
       <motion.div
-        className="relative overflow-hidden rounded-xl border border-stone-200/60 bg-white shadow-soft-xl"
+        className="relative overflow-hidden rounded-xl border border-overlay/[0.06] bg-bg-elevated shadow-soft-xl"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{
@@ -509,7 +509,7 @@ export function DeploymentFeed({ className = "", mode = "default" }: DeploymentF
               />
               {!isMobile && (
                 <motion.div
-                  className="absolute -left-1/2 top-0 h-full w-1/2 bg-gradient-to-r from-transparent via-white/35 to-transparent mix-blend-soft-light"
+                  className="absolute -left-1/2 top-0 h-full w-1/2 bg-gradient-to-r from-transparent via-overlay/[0.06] to-transparent mix-blend-soft-light"
                   initial={{ x: "-120%" }}
                   animate={{ x: ["-120%", "250%"] }}
                   transition={{
@@ -528,19 +528,19 @@ export function DeploymentFeed({ className = "", mode = "default" }: DeploymentF
         <div
           className={cn(
             "relative z-10 flex items-center gap-2 border-b px-3 py-2",
-            isHeroCalm ? "border-stone-200/80 bg-stone-100/75" : "border-stone-200 bg-stone-50/90 backdrop-blur-[1px]"
+            isHeroCalm ? "border-overlay/[0.08] bg-overlay/[0.04]" : "border-overlay/10 bg-bg-surface/90 backdrop-blur-[1px]"
           )}
         >
           <div className="flex gap-1.5">
-            <div className="h-2.5 w-2.5 rounded-full bg-stone-300" />
-            <div className="h-2.5 w-2.5 rounded-full bg-stone-300" />
-            <div className="h-2.5 w-2.5 rounded-full bg-stone-300" />
+            <div className="h-2.5 w-2.5 rounded-full bg-overlay/20" />
+            <div className="h-2.5 w-2.5 rounded-full bg-overlay/20" />
+            <div className="h-2.5 w-2.5 rounded-full bg-overlay/20" />
           </div>
           <div className="mx-4 flex-1">
             <div
               className={cn(
-                "mx-auto max-w-md rounded-lg border bg-white px-3 py-1 text-xs text-stone-500",
-                isHeroCalm ? "border-stone-200/70" : "border-stone-200"
+                "mx-auto max-w-md rounded-lg border bg-bg-elevated px-3 py-1 text-xs text-text-muted",
+                isHeroCalm ? "border-overlay/[0.07]" : "border-overlay/10"
               )}
             >
               IntuneGet.com/dashboard
@@ -552,7 +552,7 @@ export function DeploymentFeed({ className = "", mode = "default" }: DeploymentF
         <div
           className={cn(
             "relative z-10 h-[200px] overflow-hidden p-3 md:h-[300px] md:p-4",
-            isHeroCalm ? "bg-stone-50/35" : "bg-stone-50/45"
+            isHeroCalm ? "bg-bg-surface/35" : "bg-bg-surface/45"
           )}
           style={{
             maskImage: "linear-gradient(to bottom, transparent, black 16px, black calc(100% - 16px), transparent)",

@@ -113,18 +113,18 @@ export function CategoryConfig({ categories, onChange }: CategoryConfigProps) {
       <button
         type="button"
         onClick={handleToggleEnabled}
-        className="flex items-center gap-3 w-full p-3 rounded-lg border border-slate-700 bg-slate-800/50 hover:bg-slate-800 transition-colors"
+        className="flex items-center gap-3 w-full p-3 rounded-lg border border-overlay/15 bg-bg-elevated/50 hover:bg-overlay/10 transition-colors"
       >
         {enabled ? (
           <ToggleRight className="w-6 h-6 text-blue-400 flex-shrink-0" />
         ) : (
-          <ToggleLeft className="w-6 h-6 text-slate-500 flex-shrink-0" />
+          <ToggleLeft className="w-6 h-6 text-text-muted flex-shrink-0" />
         )}
         <div className="flex-1 text-left">
-          <p className={cn('text-sm font-medium', enabled ? 'text-white' : 'text-slate-400')}>
+          <p className={cn('text-sm font-medium', enabled ? 'text-text-primary' : 'text-text-muted')}>
             Configure Categories
           </p>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-text-muted">
             {enabled
               ? 'Selected categories will be applied in Intune on deployment'
               : 'Deploy without categories'}
@@ -136,20 +136,20 @@ export function CategoryConfig({ categories, onChange }: CategoryConfigProps) {
         <div className="space-y-3">
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search Intune categories..."
-                className="w-full pl-10 pr-3 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm placeholder-slate-500 focus:border-slate-600 focus:outline-none"
+                className="w-full pl-10 pr-3 py-2.5 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm placeholder-text-muted focus:border-overlay/20 focus:outline-none"
               />
             </div>
             <button
               type="button"
               onClick={() => void loadCategories()}
               disabled={isLoading}
-              className="px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors disabled:opacity-50"
+              className="px-3 py-2.5 rounded-lg border border-overlay/15 bg-bg-elevated text-text-secondary hover:bg-overlay/10 transition-colors disabled:opacity-50"
               title="Refresh categories"
             >
               {isLoading ? (
@@ -167,14 +167,14 @@ export function CategoryConfig({ categories, onChange }: CategoryConfigProps) {
           )}
 
           {isLoading && availableCategories.length === 0 ? (
-            <div className="flex items-center gap-2 text-slate-400 text-sm py-2">
+            <div className="flex items-center gap-2 text-text-muted text-sm py-2">
               <Loader2 className="w-4 h-4 animate-spin" />
               Loading categories...
             </div>
           ) : (
             <div className="max-h-56 overflow-y-auto space-y-1 pr-1">
               {filteredCategories.length === 0 ? (
-                <p className="text-slate-500 text-sm py-2">
+                <p className="text-text-muted text-sm py-2">
                   {availableCategories.length === 0 ? 'No categories found in Intune' : 'No categories match your search'}
                 </p>
               ) : (
@@ -189,7 +189,7 @@ export function CategoryConfig({ categories, onChange }: CategoryConfigProps) {
                         'w-full text-left px-3 py-2.5 rounded-lg border transition-colors flex items-center gap-2',
                         selected
                           ? 'bg-blue-600/20 border-blue-500/40 text-blue-200'
-                          : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:border-slate-600 hover:bg-slate-800'
+                          : 'bg-bg-elevated/60 border-overlay/15 text-text-secondary hover:border-overlay/20 hover:bg-overlay/10'
                       )}
                     >
                       <FolderTree className="w-4 h-4 flex-shrink-0" />
@@ -201,7 +201,7 @@ export function CategoryConfig({ categories, onChange }: CategoryConfigProps) {
             </div>
           )}
 
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-text-muted">
             Selected: {categories.length}
           </p>
         </div>

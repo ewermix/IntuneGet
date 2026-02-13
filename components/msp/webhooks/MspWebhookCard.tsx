@@ -148,13 +148,13 @@ export function MspWebhookCard({ webhook, onEdit, onViewDeliveries }: MspWebhook
     <div
       className={cn(
         'p-4 rounded-xl glass-light border transition-all',
-        !webhook.is_enabled ? 'border-black/5 opacity-60' : 'border-black/5 hover:border-black/10'
+        !webhook.is_enabled ? 'border-overlay/5 opacity-60' : 'border-overlay/5 hover:border-overlay/10'
       )}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className={cn('p-2 rounded-lg', webhook.is_enabled ? 'bg-accent-cyan/10' : 'bg-black/5')}>
+          <div className={cn('p-2 rounded-lg', webhook.is_enabled ? 'bg-accent-cyan/10' : 'bg-overlay/5')}>
             <Webhook className={cn('w-5 h-5', webhook.is_enabled ? 'text-accent-cyan' : 'text-text-muted')} />
           </div>
           <div className="min-w-0">
@@ -182,21 +182,21 @@ export function MspWebhookCard({ webhook, onEdit, onViewDeliveries }: MspWebhook
               <div className="absolute right-0 top-full mt-1 w-40 bg-bg-surface border border-white/10 rounded-lg shadow-lg z-20 py-1">
                 <button
                   onClick={() => { onEdit(webhook); setShowMenu(false); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-primary hover:bg-black/5"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-primary hover:bg-overlay/5"
                 >
                   <Pencil className="w-4 h-4" />
                   Edit
                 </button>
                 <button
                   onClick={() => { toggleMutation.mutate(); setShowMenu(false); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-primary hover:bg-black/5"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-primary hover:bg-overlay/5"
                 >
                   <Power className="w-4 h-4" />
                   {webhook.is_enabled ? 'Disable' : 'Enable'}
                 </button>
                 <button
                   onClick={() => { onViewDeliveries(webhook); setShowMenu(false); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-primary hover:bg-black/5"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-primary hover:bg-overlay/5"
                 >
                   <Clock className="w-4 h-4" />
                   View Deliveries

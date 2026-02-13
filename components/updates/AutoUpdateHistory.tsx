@@ -174,7 +174,7 @@ export function AutoUpdateHistory({
                   >
                     <button
                       onClick={() => setExpandedId(isExpanded ? null : item.id)}
-                      className="w-full flex items-center justify-between p-4 text-left hover:bg-black/[0.02] transition-colors"
+                      className="w-full flex items-center justify-between p-4 text-left hover:bg-overlay/[0.02] transition-colors"
                     >
                       <div className="flex items-center gap-3">
                         {/* Status Icon */}
@@ -199,7 +199,7 @@ export function AutoUpdateHistory({
                                   ? 'text-status-warning bg-status-warning/10 border-status-warning/20'
                                   : item.update_type === 'minor'
                                   ? 'text-accent-cyan bg-accent-cyan/10 border-accent-cyan/20'
-                                  : 'text-text-muted bg-black/[0.04] border-black/[0.08]'
+                                  : 'text-text-muted bg-overlay/[0.04] border-black/[0.08]'
                               )}
                             >
                               {updateTypeLabels[item.update_type]}
@@ -224,7 +224,7 @@ export function AutoUpdateHistory({
                               item.status === 'failed' && 'bg-status-error/10',
                               item.status === 'packaging' && 'bg-accent-cyan/10',
                               item.status === 'deploying' && 'bg-accent-violet/10',
-                              (item.status === 'pending' || item.status === 'cancelled') && 'bg-black/[0.04]'
+                              (item.status === 'pending' || item.status === 'cancelled') && 'bg-overlay/[0.04]'
                             )}
                           >
                             {status.label}
@@ -246,7 +246,7 @@ export function AutoUpdateHistory({
                     {/* Expanded Content */}
                     {isExpanded && (
                       <div className="px-4 pb-4 pt-0 border-t border-black/[0.06]">
-                        <div className="mt-4 bg-black/[0.02] rounded-lg p-4 grid grid-cols-2 gap-4 text-sm">
+                        <div className="mt-4 bg-overlay/[0.02] rounded-lg p-4 grid grid-cols-2 gap-4 text-sm">
                           <div>
                             <span className="text-text-muted text-xs">Winget ID</span>
                             <p className="text-text-primary font-mono text-xs mt-1">

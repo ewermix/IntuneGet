@@ -18,10 +18,10 @@ export function Collapsible({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="my-4 rounded-lg border border-black/10 bg-white overflow-hidden">
+    <div className="my-4 rounded-lg border border-overlay/10 bg-bg-elevated overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-black/[0.02] transition-colors"
+        className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-overlay/[0.02] transition-colors"
       >
         <span className="font-medium text-text-primary">{title}</span>
         <ChevronDown
@@ -37,7 +37,7 @@ export function Collapsible({
           isOpen ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
         )}
       >
-        <div className="border-t border-black/5 px-4 py-4">{children}</div>
+        <div className="border-t border-overlay/5 px-4 py-4">{children}</div>
       </div>
     </div>
   );

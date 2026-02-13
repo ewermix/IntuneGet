@@ -180,7 +180,7 @@ export function AssignmentConfig({ assignments, onChange }: AssignmentConfigProp
       case 'uninstall':
         return 'text-red-400 bg-red-500/10 border-red-500/30';
       default:
-        return 'text-slate-400 bg-slate-500/10 border-slate-500/30';
+        return 'text-text-muted bg-slate-500/10 border-slate-500/30';
     }
   };
 
@@ -191,18 +191,18 @@ export function AssignmentConfig({ assignments, onChange }: AssignmentConfigProp
         <button
           type="button"
           onClick={handleToggle}
-          className="flex items-center gap-3 w-full p-3 rounded-lg border border-slate-700 bg-slate-800/50 hover:bg-slate-800 transition-colors"
+          className="flex items-center gap-3 w-full p-3 rounded-lg border border-overlay/15 bg-bg-elevated/50 hover:bg-overlay/10 transition-colors"
         >
           {enabled ? (
             <ToggleRight className="w-6 h-6 text-blue-400 flex-shrink-0" />
           ) : (
-            <ToggleLeft className="w-6 h-6 text-slate-500 flex-shrink-0" />
+            <ToggleLeft className="w-6 h-6 text-text-muted flex-shrink-0" />
           )}
           <div className="flex-1 text-left">
-            <p className={cn('text-sm font-medium', enabled ? 'text-white' : 'text-slate-400')}>
+            <p className={cn('text-sm font-medium', enabled ? 'text-text-primary' : 'text-text-muted')}>
               Configure Assignments
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-text-muted">
               {enabled
                 ? 'Assignments will be applied when deployed'
                 : 'Deploy without assignments - configure later in Intune'}
@@ -216,7 +216,7 @@ export function AssignmentConfig({ assignments, onChange }: AssignmentConfigProp
         <>
           {/* Quick Assignment Buttons */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-text-secondary mb-2">
               Quick Assignment
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -227,7 +227,7 @@ export function AssignmentConfig({ assignments, onChange }: AssignmentConfigProp
                   'flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors',
                   hasAllDevices
                     ? 'bg-blue-600 border-blue-500 text-white'
-                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600 hover:text-white'
+                    : 'bg-bg-elevated border-overlay/15 text-text-muted hover:border-overlay/20 hover:text-text-primary'
                 )}
               >
                 <Monitor className="w-4 h-4" />
@@ -240,14 +240,14 @@ export function AssignmentConfig({ assignments, onChange }: AssignmentConfigProp
                   'flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors',
                   hasAllUsers
                     ? 'bg-green-600 border-green-500 text-white'
-                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600 hover:text-white'
+                    : 'bg-bg-elevated border-overlay/15 text-text-muted hover:border-overlay/20 hover:text-text-primary'
                 )}
               >
                 <Users className="w-4 h-4" />
                 <span>All Users</span>
               </button>
             </div>
-            <p className="text-slate-500 text-xs mt-2">
+            <p className="text-text-muted text-xs mt-2">
               {hasAllDevices && hasAllUsers && 'Required for all devices, available for all users'}
               {hasAllDevices && !hasAllUsers && 'Required for all devices in tenant'}
               {!hasAllDevices && hasAllUsers && 'Available in Company Portal for all users'}
@@ -257,12 +257,12 @@ export function AssignmentConfig({ assignments, onChange }: AssignmentConfigProp
 
           {/* Group Search */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-text-secondary mb-2">
               Add Group Assignment
             </label>
             <div className="relative">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                 <input
                   type="text"
                   value={searchQuery}
@@ -272,20 +272,20 @@ export function AssignmentConfig({ assignments, onChange }: AssignmentConfigProp
                   }}
                   onFocus={() => setShowDropdown(true)}
                   placeholder="Search Entra ID groups..."
-                  className="w-full pl-10 pr-10 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm placeholder-slate-500 focus:border-slate-600 focus:outline-none"
+                  className="w-full pl-10 pr-10 py-2.5 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm placeholder-text-muted focus:border-overlay/20 focus:outline-none"
                 />
                 {isSearching && (
-                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 animate-spin" />
+                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted animate-spin" />
                 )}
               </div>
 
               {/* Search Results Dropdown */}
               {showDropdown && searchQuery.length >= 2 && (
-                <div className="absolute z-20 w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+                <div className="absolute z-20 w-full mt-1 bg-bg-elevated border border-overlay/15 rounded-lg shadow-xl max-h-48 overflow-y-auto">
                   {searchError ? (
                     <div className="px-4 py-3 text-red-400 text-sm">{searchError}</div>
                   ) : searchResults.length === 0 ? (
-                    <div className="px-4 py-3 text-slate-500 text-sm">
+                    <div className="px-4 py-3 text-text-muted text-sm">
                       {isSearching ? 'Searching...' : 'No groups found'}
                     </div>
                   ) : (
@@ -300,19 +300,19 @@ export function AssignmentConfig({ assignments, onChange }: AssignmentConfigProp
                           onClick={() => !isAdded && addGroupAssignment(group)}
                           disabled={isAdded}
                           className={cn(
-                            'w-full px-4 py-2 text-left hover:bg-slate-700 transition-colors flex items-center gap-3',
+                            'w-full px-4 py-2 text-left hover:bg-overlay/10 transition-colors flex items-center gap-3',
                             isAdded && 'opacity-50 cursor-not-allowed'
                           )}
                         >
-                          <UserCircle className="w-5 h-5 text-slate-400 flex-shrink-0" />
+                          <UserCircle className="w-5 h-5 text-text-muted flex-shrink-0" />
                           <div className="min-w-0 flex-1">
-                            <p className="text-white text-sm truncate">{group.displayName}</p>
+                            <p className="text-text-primary text-sm truncate">{group.displayName}</p>
                             {group.description && (
-                              <p className="text-slate-500 text-xs truncate">{group.description}</p>
+                              <p className="text-text-muted text-xs truncate">{group.description}</p>
                             )}
                           </div>
                           {isAdded && (
-                            <span className="text-xs text-slate-500 flex-shrink-0">Added</span>
+                            <span className="text-xs text-text-muted flex-shrink-0">Added</span>
                           )}
                         </button>
                       );
@@ -326,34 +326,34 @@ export function AssignmentConfig({ assignments, onChange }: AssignmentConfigProp
           {/* Assignment List */}
           {assignments.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
                 Configured Assignments ({assignments.length})
               </label>
               <div className="space-y-2">
                 {assignments.map((assignment, index) => (
                   <div
                     key={`${assignment.type}-${assignment.groupId || index}`}
-                    className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg border border-slate-700"
+                    className="flex items-center gap-3 p-3 bg-bg-elevated/50 rounded-lg border border-overlay/15"
                   >
                     {/* Target Icon */}
                     <div className="flex-shrink-0">
                       {assignment.type === 'allUsers' && (
-                        <Users className="w-5 h-5 text-slate-400" />
+                        <Users className="w-5 h-5 text-text-muted" />
                       )}
                       {assignment.type === 'allDevices' && (
-                        <Monitor className="w-5 h-5 text-slate-400" />
+                        <Monitor className="w-5 h-5 text-text-muted" />
                       )}
                       {assignment.type === 'group' && (
-                        <UserCircle className="w-5 h-5 text-slate-400" />
+                        <UserCircle className="w-5 h-5 text-text-muted" />
                       )}
                     </div>
 
                     {/* Target Name */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-white text-sm font-medium truncate">
+                      <p className="text-text-primary text-sm font-medium truncate">
                         {getTargetDisplay(assignment)}
                       </p>
-                      <p className="text-slate-500 text-xs capitalize">{assignment.type}</p>
+                      <p className="text-text-muted text-xs capitalize">{assignment.type}</p>
                     </div>
 
                     {/* Intent Dropdown */}
@@ -368,13 +368,13 @@ export function AssignmentConfig({ assignments, onChange }: AssignmentConfigProp
                           getIntentColor(assignment.intent)
                         )}
                       >
-                        <option value="required" className="bg-slate-800 text-white">
+                        <option value="required" className="bg-bg-elevated text-text-primary">
                           Required
                         </option>
-                        <option value="available" className="bg-slate-800 text-white">
+                        <option value="available" className="bg-bg-elevated text-text-primary">
                           Available
                         </option>
-                        <option value="uninstall" className="bg-slate-800 text-white">
+                        <option value="uninstall" className="bg-bg-elevated text-text-primary">
                           Uninstall
                         </option>
                       </select>
@@ -385,7 +385,7 @@ export function AssignmentConfig({ assignments, onChange }: AssignmentConfigProp
                     <button
                       type="button"
                       onClick={() => removeAssignment(index)}
-                      className="flex-shrink-0 text-slate-500 hover:text-red-400 transition-colors p-1"
+                      className="flex-shrink-0 text-text-muted hover:text-red-400 transition-colors p-1"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -397,8 +397,8 @@ export function AssignmentConfig({ assignments, onChange }: AssignmentConfigProp
 
           {/* Empty State when enabled but no assignments */}
           {assignments.length === 0 && (
-            <div className="p-4 bg-slate-800/30 rounded-lg border border-slate-700/50 text-center">
-              <p className="text-slate-500 text-sm">
+            <div className="p-4 bg-bg-elevated/30 rounded-lg border border-overlay/[0.07] text-center">
+              <p className="text-text-muted text-sm">
                 Select a quick assignment option or search for groups above.
               </p>
             </div>

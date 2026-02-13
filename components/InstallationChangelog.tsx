@@ -198,12 +198,12 @@ export function InstallationChangelog({
 
         {/* Install Path */}
         {changelog.install_path && (
-          <div className="mt-4 p-3 bg-slate-800/50 rounded-lg">
-            <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
+          <div className="mt-4 p-3 bg-bg-elevated/50 rounded-lg">
+            <div className="flex items-center gap-2 text-text-muted text-xs mb-1">
               <FolderOpen className="w-3 h-3" />
               <span>Install Path</span>
             </div>
-            <code className="text-slate-300 text-sm font-mono break-all">
+            <code className="text-text-secondary text-sm font-mono break-all">
               {changelog.install_path}
             </code>
           </div>
@@ -213,23 +213,23 @@ export function InstallationChangelog({
         {(changelog.uninstall_string || changelog.quiet_uninstall_string) && (
           <div className="mt-3 space-y-2">
             {changelog.uninstall_string && (
-              <div className="p-3 bg-slate-800/50 rounded-lg">
-                <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
+              <div className="p-3 bg-bg-elevated/50 rounded-lg">
+                <div className="flex items-center gap-2 text-text-muted text-xs mb-1">
                   <Terminal className="w-3 h-3" />
                   <span>Uninstall Command</span>
                 </div>
-                <code className="text-slate-300 text-xs font-mono break-all block">
+                <code className="text-text-secondary text-xs font-mono break-all block">
                   {changelog.uninstall_string}
                 </code>
               </div>
             )}
             {changelog.quiet_uninstall_string && (
-              <div className="p-3 bg-slate-800/50 rounded-lg">
-                <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
+              <div className="p-3 bg-bg-elevated/50 rounded-lg">
+                <div className="flex items-center gap-2 text-text-muted text-xs mb-1">
                   <Terminal className="w-3 h-3" />
                   <span>Quiet Uninstall Command</span>
                 </div>
-                <code className="text-slate-300 text-xs font-mono break-all block">
+                <code className="text-text-secondary text-xs font-mono break-all block">
                   {changelog.quiet_uninstall_string}
                 </code>
               </div>
@@ -253,39 +253,39 @@ export function InstallationChangelog({
           badge={changelog.registry_changes?.added?.length?.toString()}
         >
           <div className="space-y-3">
-            <div className="p-3 bg-slate-800/50 rounded-lg">
+            <div className="p-3 bg-bg-elevated/50 rounded-lg">
               <div className="grid grid-cols-2 gap-3 text-sm">
                 {registryEntry.display_name && (
                   <div>
-                    <span className="text-slate-500 text-xs">Display Name</span>
-                    <p className="text-slate-300">{registryEntry.display_name}</p>
+                    <span className="text-text-muted text-xs">Display Name</span>
+                    <p className="text-text-secondary">{registryEntry.display_name}</p>
                   </div>
                 )}
                 {registryEntry.display_version && (
                   <div>
-                    <span className="text-slate-500 text-xs">Version</span>
-                    <p className="text-slate-300">{registryEntry.display_version}</p>
+                    <span className="text-text-muted text-xs">Version</span>
+                    <p className="text-text-secondary">{registryEntry.display_version}</p>
                   </div>
                 )}
                 {registryEntry.publisher && (
                   <div>
-                    <span className="text-slate-500 text-xs">Publisher</span>
-                    <p className="text-slate-300">{registryEntry.publisher}</p>
+                    <span className="text-text-muted text-xs">Publisher</span>
+                    <p className="text-text-secondary">{registryEntry.publisher}</p>
                   </div>
                 )}
                 {registryEntry.estimated_size_kb && (
                   <div>
-                    <span className="text-slate-500 text-xs">Estimated Size</span>
-                    <p className="text-slate-300">
+                    <span className="text-text-muted text-xs">Estimated Size</span>
+                    <p className="text-text-secondary">
                       {formatBytes(registryEntry.estimated_size_kb * 1024)}
                     </p>
                   </div>
                 )}
               </div>
               {registryEntry.registry_path && (
-                <div className="mt-3 pt-3 border-t border-slate-700">
-                  <span className="text-slate-500 text-xs">Registry Path</span>
-                  <code className="text-slate-400 text-xs font-mono break-all block mt-1">
+                <div className="mt-3 pt-3 border-t border-overlay/15">
+                  <span className="text-text-muted text-xs">Registry Path</span>
+                  <code className="text-text-muted text-xs font-mono break-all block mt-1">
                     {registryEntry.registry_path}
                   </code>
                 </div>
@@ -308,18 +308,18 @@ export function InstallationChangelog({
             {changelog.file_changes.added.slice(0, 50).map((file, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between py-1 px-2 hover:bg-slate-800/30 rounded text-xs"
+                className="flex items-center justify-between py-1 px-2 hover:bg-bg-elevated/30 rounded text-xs"
               >
-                <span className="text-slate-400 font-mono truncate flex-1 mr-2">
+                <span className="text-text-muted font-mono truncate flex-1 mr-2">
                   {file.path}
                 </span>
-                <span className="text-slate-500 flex-shrink-0">
+                <span className="text-text-muted flex-shrink-0">
                   {formatBytes(file.size)}
                 </span>
               </div>
             ))}
             {changelog.file_changes.added.length > 50 && (
-              <p className="text-slate-500 text-xs text-center py-2">
+              <p className="text-text-muted text-xs text-center py-2">
                 + {changelog.file_changes.added.length - 50} more files
               </p>
             )}
@@ -338,9 +338,9 @@ export function InstallationChangelog({
         >
           <div className="space-y-2">
             {changelog.shortcuts_created.map((shortcut, index) => (
-              <div key={index} className="p-2 bg-slate-800/30 rounded">
-                <p className="text-slate-300 text-sm">{shortcut.name}</p>
-                <p className="text-slate-500 text-xs font-mono truncate">{shortcut.path}</p>
+              <div key={index} className="p-2 bg-bg-elevated/30 rounded">
+                <p className="text-text-secondary text-sm">{shortcut.name}</p>
+                <p className="text-text-muted text-xs font-mono truncate">{shortcut.path}</p>
               </div>
             ))}
           </div>
@@ -358,12 +358,12 @@ export function InstallationChangelog({
         >
           <div className="space-y-2">
             {changelog.services_created.map((service, index) => (
-              <div key={index} className="p-2 bg-slate-800/30 rounded flex items-center justify-between">
+              <div key={index} className="p-2 bg-bg-elevated/30 rounded flex items-center justify-between">
                 <div>
-                  <p className="text-slate-300 text-sm">{service.display_name}</p>
-                  <p className="text-slate-500 text-xs font-mono">{service.name}</p>
+                  <p className="text-text-secondary text-sm">{service.display_name}</p>
+                  <p className="text-text-muted text-xs font-mono">{service.name}</p>
                 </div>
-                <span className="text-xs px-2 py-0.5 bg-slate-700 text-slate-400 rounded">
+                <span className="text-xs px-2 py-0.5 bg-overlay/15 text-text-muted rounded">
                   {service.start_type}
                 </span>
               </div>
@@ -395,27 +395,27 @@ function CollapsibleSection({
   children,
 }: CollapsibleSectionProps) {
   return (
-    <div className="border border-slate-800 rounded-lg overflow-hidden">
+    <div className="border border-overlay/10 rounded-lg overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-4 py-3 bg-slate-800/50 hover:bg-slate-800 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 bg-bg-elevated/50 hover:bg-overlay/10 transition-colors"
       >
-        <div className="flex items-center gap-2 text-white">
+        <div className="flex items-center gap-2 text-text-primary">
           {icon}
           <span className="font-medium text-sm">{title}</span>
           {badge && (
-            <span className="px-1.5 py-0.5 bg-slate-700 text-slate-300 text-xs rounded">
+            <span className="px-1.5 py-0.5 bg-overlay/15 text-text-secondary text-xs rounded">
               {badge}
             </span>
           )}
         </div>
         {expanded ? (
-          <ChevronDown className="w-4 h-4 text-slate-400" />
+          <ChevronDown className="w-4 h-4 text-text-muted" />
         ) : (
-          <ChevronRight className="w-4 h-4 text-slate-400" />
+          <ChevronRight className="w-4 h-4 text-text-muted" />
         )}
       </button>
-      {expanded && <div className="p-4 bg-slate-900/50">{children}</div>}
+      {expanded && <div className="p-4 bg-bg-surface/50">{children}</div>}
     </div>
   );
 }
@@ -428,12 +428,12 @@ interface StatCardProps {
 
 function StatCard({ label, value, icon }: StatCardProps) {
   return (
-    <div className="p-3 bg-slate-800/50 rounded-lg">
-      <div className="flex items-center gap-2 text-slate-500 text-xs mb-1">
+    <div className="p-3 bg-bg-elevated/50 rounded-lg">
+      <div className="flex items-center gap-2 text-text-muted text-xs mb-1">
         {icon}
         <span>{label}</span>
       </div>
-      <p className="text-white font-semibold">{value}</p>
+      <p className="text-text-primary font-semibold">{value}</p>
     </div>
   );
 }

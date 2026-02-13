@@ -47,7 +47,7 @@ export default function DatabaseSetupPage() {
           The self-hosted version of IntuneGet uses SQLite, providing:
         </p>
         <div className="grid gap-4 sm:grid-cols-3 mb-6">
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <div className="flex items-center gap-3 mb-3">
               <Database className="h-5 w-5 text-accent-cyan" />
               <h3 className="font-semibold text-text-primary">Zero Configuration</h3>
@@ -56,7 +56,7 @@ export default function DatabaseSetupPage() {
               Database is created automatically on first run. No setup required.
             </p>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <div className="flex items-center gap-3 mb-3">
               <HardDrive className="h-5 w-5 text-accent-cyan" />
               <h3 className="font-semibold text-text-primary">Simple Backups</h3>
@@ -65,7 +65,7 @@ export default function DatabaseSetupPage() {
               Just copy the SQLite file. No complex database dumps needed.
             </p>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <div className="flex items-center gap-3 mb-3">
               <Shield className="h-5 w-5 text-accent-cyan" />
               <h3 className="font-semibold text-text-primary">Full Control</h3>
@@ -181,7 +181,7 @@ volumes:
         </p>
 
         <div className="space-y-4">
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h3 className="font-medium text-text-primary mb-2 flex items-center gap-2">
               <Database className="h-4 w-4 text-accent-cyan" />
               packaging_jobs
@@ -192,7 +192,7 @@ volumes:
             </p>
           </div>
 
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h3 className="font-medium text-text-primary mb-2 flex items-center gap-2">
               <Database className="h-4 w-4 text-accent-cyan" />
               upload_history
@@ -306,7 +306,7 @@ SELECT * FROM packaging_jobs WHERE status = 'failed';  # View failed jobs`}
           ].map((item, index) => (
             <div
               key={index}
-              className="flex items-center gap-3 p-3 rounded-lg border border-black/10 bg-white"
+              className="flex items-center gap-3 p-3 rounded-lg border border-overlay/10 bg-bg-elevated"
             >
               <CheckCircle className="h-5 w-5 text-status-success flex-shrink-0" />
               <span className="text-text-secondary">{item}</span>

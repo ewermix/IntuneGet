@@ -47,12 +47,12 @@ export function FeaturesSection() {
           <TextReveal
             as="h2"
             text="Everything You Need"
-            className="text-3xl md:text-4xl lg:text-5xl font-bold text-stone-900"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold text-text-primary"
             delay={0.1}
             staggerDelay={0.04}
           />
           <FadeIn delay={0.2}>
-            <p className="mx-auto max-w-2xl text-lg text-stone-600">
+            <p className="mx-auto max-w-2xl text-lg text-text-secondary">
               Powerful tools to streamline your Intune app deployment process
             </p>
           </FadeIn>

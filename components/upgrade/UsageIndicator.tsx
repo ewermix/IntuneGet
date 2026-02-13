@@ -52,7 +52,7 @@ export function UsageIndicator({
         </span>
       </div>
 
-      <div className="h-2 bg-black/10 rounded-full overflow-hidden">
+      <div className="h-2 bg-overlay/10 rounded-full overflow-hidden">
         <div
           className={cn(
             'h-full rounded-full transition-all duration-500',
@@ -100,14 +100,14 @@ interface UsageDashboardProps {
 
 export function UsageDashboard({ usage, className }: UsageDashboardProps) {
   return (
-    <div className={cn('space-y-4 p-4 bg-black/5 rounded-xl', className)}>
+    <div className={cn('space-y-4 p-4 bg-overlay/5 rounded-xl', className)}>
       <div className="flex items-center justify-between">
         <h3 className="font-medium text-text-primary">Usage</h3>
         <span
           className={cn(
             'px-2 py-0.5 text-xs rounded-full',
             usage.tier === 'free'
-              ? 'text-gray-500 bg-gray-500/10'
+              ? 'text-text-muted bg-bg-surface0/10'
               : usage.tier === 'pro'
               ? 'text-blue-500 bg-blue-500/10'
               : 'text-purple-500 bg-purple-500/10'

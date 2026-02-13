@@ -176,7 +176,7 @@ export function MspWebhookFormModal({ webhook, isOpen, onClose }: MspWebhookForm
               Your webhook has been created. Please save the secret below - it will not be shown again.
             </p>
 
-            <div className="p-4 rounded-lg bg-black/20 border border-white/10">
+            <div className="p-4 rounded-lg bg-overlay/20 border border-white/10">
               <div className="flex items-center justify-between gap-2 mb-2">
                 <span className="text-xs text-text-muted uppercase">Signing Secret</span>
                 <Button
@@ -246,7 +246,7 @@ export function MspWebhookFormModal({ webhook, isOpen, onClose }: MspWebhookForm
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="My Webhook"
-              className="w-full px-4 py-2 rounded-lg border border-black/10 bg-transparent text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan"
+              className="w-full px-4 py-2 rounded-lg border border-overlay/10 bg-transparent text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan"
             />
           </div>
 
@@ -259,7 +259,7 @@ export function MspWebhookFormModal({ webhook, isOpen, onClose }: MspWebhookForm
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://your-server.com/webhook"
-              className="w-full px-4 py-2 rounded-lg border border-black/10 bg-transparent text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan"
+              className="w-full px-4 py-2 rounded-lg border border-overlay/10 bg-transparent text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan"
             />
             <p className="text-xs text-text-muted mt-1">Must use HTTPS</p>
           </div>
@@ -281,7 +281,7 @@ export function MspWebhookFormModal({ webhook, isOpen, onClose }: MspWebhookForm
                 id="generateSecret"
                 checked={generateSecret}
                 onChange={(e) => setGenerateSecret(e.target.checked)}
-                className="rounded border-black/10 accent-accent-cyan"
+                className="rounded border-overlay/10 accent-accent-cyan"
               />
               <label htmlFor="generateSecret" className="text-sm text-text-secondary">
                 Generate signing secret (recommended)

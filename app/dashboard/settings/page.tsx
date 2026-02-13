@@ -23,10 +23,13 @@ import { useMicrosoftAuth } from '@/hooks/useMicrosoftAuth';
 import { PageHeader } from '@/components/dashboard';
 import { NotificationSettings } from '@/components/settings/NotificationSettings';
 import { WebhookManager } from '@/components/settings/WebhookManager';
+import { useTheme } from '@/components/providers/ThemeProvider';
+import { useUserSettings } from '@/components/providers/UserSettingsProvider';
 import { cn } from '@/lib/utils';
 import { useCartStore } from '@/stores/cart-store';
 
 type SettingsTab = 'general' | 'permissions' | 'notifications' | 'exports' | 'data';
+type PreferenceKey = 'theme' | 'cart';
 
 interface PermissionStatusState {
   checked: boolean;
@@ -60,8 +63,39 @@ export default function SettingsPage() {
   const [isChecking, setIsChecking] = useState(false);
   const [permissionStatus, setPermissionStatus] = useState<PermissionStatusState | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const autoOpenOnAdd = useCartStore((state) => state.autoOpenOnAdd);
-  const setAutoOpenOnAdd = useCartStore((state) => state.setAutoOpenOnAdd);
+  const [activePreferenceSave, setActivePreferenceSave] = useState<PreferenceKey | null>(null);
+  const [lastUpdatedPreference, setLastUpdatedPreference] = useState<PreferenceKey | null>(null);
+  const { settings: userSettings, isSaving, syncError, setCartAutoOpenOnAdd } = useUserSettings();
+  const autoOpenOnAdd = userSettings.cartAutoOpenOnAdd;
+  const setAutoOpenOnAddStore = useCartStore((state) => state.setAutoOpenOnAdd);
+  const { theme, setTheme } = useTheme();
+
+  const handleThemeToggle = useCallback(
+    async (isDark: boolean) => {
+      setActivePreferenceSave('theme');
+      setLastUpdatedPreference('theme');
+      try {
+        await setTheme(isDark ? 'dark' : 'light');
+      } finally {
+        setActivePreferenceSave(null);
+      }
+    },
+    [setTheme]
+  );
+
+  const handleCartToggle = useCallback(
+    async (value: boolean) => {
+      setAutoOpenOnAddStore(value);
+      setActivePreferenceSave('cart');
+      setLastUpdatedPreference('cart');
+      try {
+        await setCartAutoOpenOnAdd(value);
+      } finally {
+        setActivePreferenceSave(null);
+      }
+    },
+    [setAutoOpenOnAddStore, setCartAutoOpenOnAdd]
+  );
 
   const handleCheckPermissions = async () => {
     setIsChecking(true);
@@ -190,7 +224,7 @@ export default function SettingsPage() {
           transition={prefersReducedMotion ? { duration: 0.2 } : { duration: 0.4 }}
           className="lg:w-56 flex-shrink-0"
         >
-          <div className="glass-light rounded-xl border border-black/5 p-2 lg:sticky lg:top-24">
+          <div className="glass-light rounded-xl border border-overlay/5 p-2 lg:sticky lg:top-24">
             {/* Mobile: horizontal scroll, Desktop: vertical stack */}
             <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0 -mx-1 px-1 lg:mx-0 lg:px-0">
               {SETTINGS_TABS.map((tab) => {
@@ -257,7 +291,7 @@ export default function SettingsPage() {
                   {/* Account card */}
                   <motion.section
                     variants={itemVariants}
-                    className="glass-light rounded-xl p-6 border border-black/5 hover:border-accent-cyan/20 transition-colors"
+                    className="glass-light rounded-xl p-6 border border-overlay/5 hover:border-accent-cyan/20 transition-colors"
                   >
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-10 h-10 rounded-lg bg-accent-cyan/10 flex items-center justify-center">
@@ -278,12 +312,40 @@ export default function SettingsPage() {
                         noBorder
                       />
                     </div>
+                </motion.section>
+
+                  {/* Theme card */}
+                  <motion.section
+                    variants={itemVariants}
+                    className="glass-light rounded-xl p-6 border border-overlay/5 hover:border-accent-cyan/20 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-text-primary font-medium">Theme</p>
+                        <p className="text-sm text-text-muted">
+                          Choose dark mode for visual comfort
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <ToggleSwitch
+                          checked={theme === 'dark'}
+                          onChange={(value) => void handleThemeToggle(value)}
+                          disabled={isSaving && activePreferenceSave !== 'theme'}
+                        />
+                        {isSaving && activePreferenceSave === 'theme' && (
+                          <span className="text-xs text-text-muted">Saving...</span>
+                        )}
+                        {!isSaving && syncError && lastUpdatedPreference === 'theme' && (
+                          <span className="text-xs text-status-warning">Saved locally</span>
+                        )}
+                      </div>
+                    </div>
                   </motion.section>
 
                   {/* Intune connection card */}
                   <motion.section
                     variants={itemVariants}
-                    className="glass-light rounded-xl p-6 border border-black/5 hover:border-accent-violet/20 transition-colors"
+                    className="glass-light rounded-xl p-6 border border-overlay/5 hover:border-accent-violet/20 transition-colors"
                   >
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-10 h-10 rounded-lg bg-accent-violet/10 flex items-center justify-center">
@@ -296,7 +358,7 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="space-y-1">
-                      <div className="flex items-center justify-between py-3 border-b border-black/5">
+                      <div className="flex items-center justify-between py-3 border-b border-overlay/5">
                         <div>
                           <p className="text-text-secondary text-sm">Status</p>
                           <div className="flex items-center gap-2 mt-1">
@@ -306,7 +368,7 @@ export default function SettingsPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between py-3 border-b border-black/5">
+                      <div className="flex items-center justify-between py-3 border-b border-overlay/5">
                         <div>
                           <p className="text-text-secondary text-sm">Tenant ID</p>
                           <p className="text-text-primary mt-0.5 font-mono text-sm">
@@ -316,7 +378,7 @@ export default function SettingsPage() {
                         {user?.tenantId && (
                           <button
                             onClick={() => copyToClipboard(user.tenantId!, 'tenantId')}
-                            className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-black/5 transition-colors"
+                            className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-overlay/5 transition-colors"
                             title="Copy Tenant ID"
                           >
                             {copiedField === 'tenantId' ? (
@@ -348,7 +410,7 @@ export default function SettingsPage() {
                   {/* Cart behavior card */}
                   <motion.section
                     variants={itemVariants}
-                    className="glass-light rounded-xl p-6 border border-black/5 hover:border-accent-cyan/20 transition-colors"
+                    className="glass-light rounded-xl p-6 border border-overlay/5 hover:border-accent-cyan/20 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <div>
@@ -357,10 +419,19 @@ export default function SettingsPage() {
                           Control whether the cart opens automatically when adding apps
                         </p>
                       </div>
-                      <ToggleSwitch
-                        checked={autoOpenOnAdd}
-                        onChange={setAutoOpenOnAdd}
-                      />
+                      <div className="flex min-w-28 flex-col items-end gap-1">
+                        <ToggleSwitch
+                          checked={autoOpenOnAdd}
+                          onChange={(value) => void handleCartToggle(value)}
+                          disabled={isSaving && activePreferenceSave !== 'cart'}
+                        />
+                        {isSaving && activePreferenceSave === 'cart' && (
+                          <span className="text-xs text-text-muted">Saving...</span>
+                        )}
+                        {!isSaving && syncError && lastUpdatedPreference === 'cart' && (
+                          <span className="text-xs text-status-warning">Saved locally</span>
+                        )}
+                      </div>
                     </div>
                   </motion.section>
                 </motion.div>
@@ -383,7 +454,7 @@ export default function SettingsPage() {
                 >
                   <motion.section
                     variants={itemVariants}
-                    className="glass-light rounded-xl p-6 border border-black/5"
+                    className="glass-light rounded-xl p-6 border border-overlay/5"
                   >
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 mb-6">
                       <div className="flex items-center gap-3">
@@ -400,7 +471,7 @@ export default function SettingsPage() {
                         disabled={isChecking}
                         variant="outline"
                         size="sm"
-                        className="border-black/10 hover:border-accent-cyan/50 w-full sm:w-auto"
+                        className="border-overlay/10 hover:border-accent-cyan/50 w-full sm:w-auto"
                       >
                         {isChecking ? (
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -478,7 +549,7 @@ export default function SettingsPage() {
                       </div>
                     )}
 
-                    <div className="mt-6 p-4 bg-bg-surface rounded-lg border border-black/5">
+                    <div className="mt-6 p-4 bg-bg-surface rounded-lg border border-overlay/5">
                       <p className="text-text-secondary text-sm">
                         To modify permissions, visit your{' '}
                         <a
@@ -537,7 +608,7 @@ export default function SettingsPage() {
                 >
                   <motion.section
                     variants={itemVariants}
-                    className="glass-light rounded-xl p-6 border border-black/5"
+                    className="glass-light rounded-xl p-6 border border-overlay/5"
                   >
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-10 h-10 rounded-lg bg-accent-cyan/10 flex items-center justify-center">
@@ -571,7 +642,7 @@ export default function SettingsPage() {
                 >
                   <motion.section
                     variants={itemVariants}
-                    className="glass-light rounded-xl p-6 border border-black/5"
+                    className="glass-light rounded-xl p-6 border border-overlay/5"
                   >
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-10 h-10 rounded-lg bg-accent-violet/10 flex items-center justify-center">
@@ -612,7 +683,7 @@ function SettingRow({
     <div
       className={cn(
         'flex items-center justify-between py-3',
-        !noBorder && 'border-b border-black/5'
+        !noBorder && 'border-b border-overlay/5'
       )}
     >
       <div>
@@ -667,7 +738,7 @@ function PermissionItem({
       "flex items-start gap-3 p-4 bg-bg-elevated rounded-lg border transition-colors",
       granted === false
         ? "border-status-error/30 hover:border-status-error/50"
-        : "border-black/5 hover:border-black/10"
+        : "border-overlay/5 hover:border-overlay/10"
     )}>
       {renderIcon()}
       <div className="flex-1 min-w-0">
@@ -706,7 +777,7 @@ function ExportPreferencesSection() {
                 'px-4 py-2 rounded-lg border text-sm transition-all uppercase tracking-wide',
                 exportFormat === format
                   ? 'bg-accent-cyan/10 border-accent-cyan/50 text-accent-cyan font-medium'
-                  : 'bg-bg-elevated border-black/10 text-text-secondary hover:border-black/20'
+                  : 'bg-bg-elevated border-overlay/10 text-text-secondary hover:border-black/20'
               )}
             >
               {format}
@@ -786,7 +857,7 @@ function DataManagementSection() {
   return (
     <div className="space-y-6">
       {/* Cache management */}
-      <div className="p-4 bg-bg-elevated rounded-lg border border-black/5">
+      <div className="p-4 bg-bg-elevated rounded-lg border border-overlay/5">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-text-primary font-medium">Application Cache</p>
@@ -799,7 +870,7 @@ function DataManagementSection() {
             disabled={isClearing}
             variant="outline"
             size="sm"
-            className="border-black/10 hover:border-accent-cyan/50"
+            className="border-overlay/10 hover:border-accent-cyan/50"
           >
             {isClearing ? (
               <>
@@ -814,7 +885,7 @@ function DataManagementSection() {
       </div>
 
       {/* Force sync */}
-      <div className="p-4 bg-bg-elevated rounded-lg border border-black/5">
+      <div className="p-4 bg-bg-elevated rounded-lg border border-overlay/5">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-text-primary font-medium">Force Sync</p>
@@ -830,7 +901,7 @@ function DataManagementSection() {
             disabled={isSyncing}
             variant="outline"
             size="sm"
-            className="border-black/10 hover:border-accent-cyan/50"
+            className="border-overlay/10 hover:border-accent-cyan/50"
           >
             {isSyncing ? (
               <>
@@ -854,7 +925,7 @@ function DataManagementSection() {
       </div>
 
       {/* Storage info */}
-      <div className="p-4 bg-bg-surface rounded-lg border border-black/5">
+      <div className="p-4 bg-bg-surface rounded-lg border border-overlay/5">
         <p className="text-text-secondary text-sm">
           All application data is stored locally in your browser. No data is sent to
           third-party servers. To delete all stored data, clear your browser cache or
@@ -885,7 +956,7 @@ function AutoRefreshSelector() {
             'px-4 py-2 rounded-lg border text-sm transition-all',
             refreshInterval === option.value
               ? 'bg-accent-cyan/10 border-accent-cyan/50 text-accent-cyan font-medium'
-              : 'bg-bg-elevated border-black/10 text-text-secondary hover:border-black/20'
+              : 'bg-bg-elevated border-overlay/10 text-text-secondary hover:border-black/20'
           )}
         >
           {option.label}
@@ -905,7 +976,10 @@ function ToggleSwitch({
   disabled?: boolean;
 }) {
   return (
-    <label className="relative inline-flex items-center cursor-pointer">
+    <label className={cn(
+      'relative inline-flex items-center',
+      disabled ? 'cursor-not-allowed' : 'cursor-pointer'
+    )}>
       <input
         type="checkbox"
         checked={checked}
@@ -914,14 +988,15 @@ function ToggleSwitch({
         className="sr-only peer"
       />
       <div className={cn(
-        "w-11 h-6 rounded-full transition-colors",
-        "bg-black/10 peer-checked:bg-accent-cyan",
-        "peer-focus:ring-2 peer-focus:ring-accent-cyan/20",
-        "peer-disabled:opacity-50 peer-disabled:cursor-not-allowed",
-        "after:content-[''] after:absolute after:top-[2px] after:left-[2px]",
-        "after:bg-white after:rounded-full after:h-5 after:w-5",
-        "after:transition-transform peer-checked:after:translate-x-5",
-        "after:shadow-sm"
+        "h-6 w-11 rounded-full border transition-all duration-200 ease-out",
+        "bg-overlay/5 border-overlay/10 dark:bg-white/10 dark:border-white/20",
+        "peer-checked:bg-accent-cyan/90 peer-checked:border-accent-cyan/70",
+        "peer-focus-visible:ring-2 peer-focus-visible:ring-accent-cyan/35 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-bg-surface",
+        "peer-disabled:opacity-50",
+        "after:content-[''] after:absolute after:left-[3px] after:top-[3px]",
+        "after:h-4 after:w-4 after:rounded-full after:bg-white dark:after:bg-slate-100",
+        "after:shadow-[0_1px_3px_rgba(0,0,0,0.3)] after:transition-transform after:duration-200",
+        "peer-checked:after:translate-x-5"
       )} />
     </label>
   );

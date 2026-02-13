@@ -23,7 +23,7 @@ export default function MspReportsPage() {
   if (isLoadingOrganization) {
     return (
       <div className="space-y-6">
-        <div className="h-8 w-48 bg-black/10 rounded animate-pulse" />
+        <div className="h-8 w-48 bg-overlay/10 rounded animate-pulse" />
         <SkeletonGrid count={4} columns={4} variant="stat" />
       </div>
     );

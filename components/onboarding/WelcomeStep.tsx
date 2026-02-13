@@ -21,17 +21,17 @@ export function WelcomeStep({ userName, onNext }: WelcomeStepProps) {
       </div>
 
       {/* Heading */}
-      <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 mb-4">
+      <h1 className="text-2xl sm:text-3xl font-bold text-text-primary mb-4">
         Welcome, {firstName}!
       </h1>
 
-      <p className="text-lg text-stone-500 mb-8">
+      <p className="text-lg text-text-muted mb-8">
         Let's get your organization set up to deploy apps to Intune in minutes.
       </p>
 
       {/* What IntuneGet does */}
-      <div className="bg-white border border-stone-200 rounded-xl p-6 mb-8 text-left shadow-soft">
-        <h2 className="text-lg font-semibold text-stone-900 mb-4">
+      <div className="bg-bg-elevated border border-overlay/10 rounded-xl p-6 mb-8 text-left shadow-soft">
+        <h2 className="text-lg font-semibold text-text-primary mb-4">
           What IntuneGet does
         </h2>
         <div className="space-y-4">
@@ -40,8 +40,8 @@ export function WelcomeStep({ userName, onNext }: WelcomeStepProps) {
               <Package className="w-5 h-5 text-accent-cyan" />
             </div>
             <div>
-              <h3 className="font-medium text-stone-900">Browse Apps</h3>
-              <p className="text-sm text-stone-500">
+              <h3 className="font-medium text-text-primary">Browse Apps</h3>
+              <p className="text-sm text-text-muted">
                 Search and browse thousands of applications from the Windows
                 Package Manager (winget) repository.
               </p>
@@ -52,8 +52,8 @@ export function WelcomeStep({ userName, onNext }: WelcomeStepProps) {
               <Shield className="w-5 h-5 text-accent-violet" />
             </div>
             <div>
-              <h3 className="font-medium text-stone-900">Deploy to Intune</h3>
-              <p className="text-sm text-stone-500">
+              <h3 className="font-medium text-text-primary">Deploy to Intune</h3>
+              <p className="text-sm text-text-muted">
                 One-click deployment directly to your Microsoft Intune tenant.
                 No manual packaging required.
               </p>
@@ -63,9 +63,9 @@ export function WelcomeStep({ userName, onNext }: WelcomeStepProps) {
       </div>
 
       {/* Setup info */}
-      <div className="bg-stone-100 border border-stone-200 rounded-xl p-4 mb-8">
-        <p className="text-sm text-stone-600">
-          <strong className="text-stone-900">Quick setup:</strong> We need admin
+      <div className="bg-overlay/[0.04] border border-overlay/10 rounded-xl p-4 mb-8">
+        <p className="text-sm text-text-secondary">
+          <strong className="text-text-primary">Quick setup:</strong> We need admin
           consent to upload apps to your organization. This is a one-time step.
         </p>
       </div>

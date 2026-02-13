@@ -22,8 +22,8 @@ export default function AddTenantPage() {
   if (isLoadingOrganization) {
     return (
       <div className="max-w-lg mx-auto space-y-6">
-        <div className="h-6 w-32 bg-black/10 rounded animate-pulse" />
-        <div className="h-64 bg-black/5 rounded-xl animate-pulse" />
+        <div className="h-6 w-32 bg-overlay/10 rounded animate-pulse" />
+        <div className="h-64 bg-overlay/5 rounded-xl animate-pulse" />
       </div>
     );
   }

@@ -25,7 +25,7 @@ function UnmanagedAppCardComponent({
   const canLink = app.matchStatus === 'unmatched' || app.matchStatus === 'partial';
 
   return (
-    <div className="group glass-light rounded-xl p-5 transition-all duration-300 hover:shadow-xl hover:shadow-accent-cyan/5 hover:border-black/10">
+    <div className="group glass-light rounded-xl p-5 transition-all duration-300 hover:shadow-xl hover:shadow-accent-cyan/5 hover:border-overlay/10">
       <div className="flex items-start gap-4">
         {/* App icon */}
         <div className="relative">
@@ -54,7 +54,7 @@ function UnmanagedAppCardComponent({
               </p>
             </div>
             {app.version && (
-              <span className="text-xs text-text-secondary bg-bg-elevated px-2.5 py-1 rounded-md flex-shrink-0 border border-black/5">
+              <span className="text-xs text-text-secondary bg-bg-elevated px-2.5 py-1 rounded-md flex-shrink-0 border border-overlay/5">
                 v{app.version}
               </span>
             )}
@@ -81,7 +81,7 @@ function UnmanagedAppCardComponent({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-black/5">
+      <div className="flex items-center justify-between mt-4 pt-4 border-t border-overlay/5">
         <div className="flex items-center gap-2">
           {app.isClaimed && (
             <span className="text-xs text-status-success flex items-center gap-1">
@@ -103,7 +103,7 @@ function UnmanagedAppCardComponent({
               size="sm"
               variant="outline"
               onClick={() => onLink?.(app)}
-              className="border-black/10 hover:bg-black/5 text-text-secondary"
+              className="border-overlay/10 hover:bg-overlay/5 text-text-secondary"
             >
               <LinkIcon className="w-4 h-4 mr-1.5" />
               Link Package

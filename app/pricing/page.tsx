@@ -126,7 +126,7 @@ function CellValue({ value }: { value: string | boolean }) {
   if (value === "N/A") {
     return <Minus className="w-5 h-5 text-stone-300 mx-auto" />;
   }
-  return <span className="text-sm text-stone-700">{value}</span>;
+  return <span className="text-sm text-text-secondary">{value}</span>;
 }
 
 export default function PricingPage() {
@@ -148,10 +148,10 @@ export default function PricingPage() {
           <span className="inline-block font-mono text-xs tracking-wider text-accent-cyan uppercase mb-4">
             Pricing
           </span>
-          <h1 className="text-4xl md:text-5xl font-bold text-stone-900 mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-text-primary mb-4">
             Free. No Catch.
           </h1>
-          <p className="text-lg md:text-xl text-stone-600 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto">
             IntuneGet is 100% free and open source. Deploy 10,000+ Winget apps
             to Microsoft Intune without spending a cent.
           </p>
@@ -159,15 +159,15 @@ export default function PricingPage() {
 
         {/* Pricing card */}
         <div className="max-w-md mx-auto mb-16">
-          <div className="bg-white rounded-2xl border-2 border-accent-cyan/30 shadow-soft-xl p-8 text-center">
+          <div className="bg-bg-elevated rounded-2xl border-2 border-accent-cyan/30 shadow-soft-xl p-8 text-center">
             <div className="inline-block px-3 py-1 bg-accent-cyan/10 text-accent-cyan text-sm font-semibold rounded-full mb-4">
               Open Source
             </div>
             <div className="mb-2">
-              <span className="text-5xl font-bold text-stone-900">$0</span>
-              <span className="text-stone-500 ml-2">/always</span>
+              <span className="text-5xl font-bold text-text-primary">$0</span>
+              <span className="text-text-muted ml-2">/always</span>
             </div>
-            <p className="text-stone-600 mb-6">
+            <p className="text-text-secondary mb-6">
               All features included. No credit card required.
             </p>
             <ul className="text-left space-y-3 mb-8">
@@ -184,7 +184,7 @@ export default function PricingPage() {
               ].map((feature) => (
                 <li key={feature} className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-stone-700 text-sm">{feature}</span>
+                  <span className="text-text-secondary text-sm">{feature}</span>
                 </li>
               ))}
             </ul>
@@ -200,7 +200,7 @@ export default function PricingPage() {
                 href="https://github.com/ugurkocde/IntuneGet"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 text-base font-semibold text-stone-700 bg-white border border-stone-200 rounded-xl hover:bg-stone-50 transition-all"
+                className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 text-base font-semibold text-text-secondary bg-bg-elevated border border-overlay/10 rounded-xl hover:bg-overlay/[0.04] transition-all"
               >
                 <Github className="w-4 h-4" />
                 View Source Code
@@ -211,7 +211,7 @@ export default function PricingPage() {
 
         {/* Comparison table */}
         <div className="mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-stone-900 text-center mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-text-primary text-center mb-8">
             How IntuneGet Compares to Manual Deployment
           </h2>
           <div className="overflow-x-auto">
@@ -222,17 +222,17 @@ export default function PricingPage() {
                   <span className="sr-only">Feature</span>
                 </div>
                 <div className="p-3 text-center bg-accent-cyan/10 rounded-t-xl border-2 border-b-0 border-accent-cyan/30">
-                  <div className="font-bold text-stone-900">IntuneGet</div>
+                  <div className="font-bold text-text-primary">IntuneGet</div>
                   <div className="text-xs text-accent-cyan font-medium">Free & Open Source</div>
                 </div>
-                <div className="p-3 text-center bg-white rounded-t-xl border border-b-0 border-stone-200">
-                  <div className="font-semibold text-stone-700">Manual Process</div>
-                  <div className="text-xs text-stone-400">DIY Scripting</div>
+                <div className="p-3 text-center bg-bg-elevated rounded-t-xl border border-b-0 border-overlay/10">
+                  <div className="font-semibold text-text-secondary">Manual Process</div>
+                  <div className="text-xs text-text-muted">DIY Scripting</div>
                 </div>
               </div>
 
               {/* Table body */}
-              <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-soft">
+              <div className="bg-bg-elevated rounded-2xl border border-overlay/10 overflow-hidden shadow-soft">
                 {comparisonData.map((row, index) => (
                   <div
                     key={row.feature}
@@ -241,7 +241,7 @@ export default function PricingPage() {
                     }`}
                   >
                     <div className="p-4 flex items-center">
-                      <span className="text-sm font-medium text-stone-900">
+                      <span className="text-sm font-medium text-text-primary">
                         {row.feature}
                       </span>
                     </div>
@@ -260,10 +260,10 @@ export default function PricingPage() {
 
         {/* FAQ-style content */}
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl font-bold text-stone-900 mb-4">
+          <h2 className="text-2xl font-bold text-text-primary mb-4">
             Why Is IntuneGet Free?
           </h2>
-          <p className="text-stone-600 leading-relaxed mb-6">
+          <p className="text-text-secondary leading-relaxed mb-6">
             IntuneGet was built by an IT professional who experienced the pain of
             manual app packaging firsthand. The goal is simple: no IT team should
             have to waste hours on repetitive deployment tasks. By keeping IntuneGet
@@ -271,7 +271,7 @@ export default function PricingPage() {
             organization - from startups to enterprises - can deploy apps to Intune
             efficiently without budget constraints.
           </p>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-text-muted">
             Have questions?{" "}
             <a
               href="https://github.com/ugurkocde/IntuneGet/issues"

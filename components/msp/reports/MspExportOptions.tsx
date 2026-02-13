@@ -76,7 +76,7 @@ export function MspExportOptions({ startDate, endDate, tenantId }: MspExportOpti
       disabled={isExporting}
       variant="outline"
       size="sm"
-      className="border-black/20 text-text-primary hover:bg-black/5"
+      className="border-black/20 text-text-primary hover:bg-overlay/5"
     >
       {isExporting ? (
         <>

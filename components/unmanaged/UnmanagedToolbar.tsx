@@ -88,7 +88,7 @@ export function UnmanagedToolbar({
   };
 
   return (
-    <div className="glass-light rounded-xl p-4 border border-black/5 space-y-3">
+    <div className="glass-light rounded-xl p-4 border border-overlay/5 space-y-3">
       {/* Row 1: Search | Claim All | Sort | View Toggle */}
       <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center">
         {/* Search */}
@@ -98,7 +98,7 @@ export function UnmanagedToolbar({
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
             placeholder="Search by app name, publisher, or package ID..."
-            className="pl-10 bg-bg-elevated border-black/10 text-text-primary placeholder:text-text-muted focus:border-accent-cyan/50 focus:ring-accent-cyan/20"
+            className="pl-10 bg-bg-elevated border-overlay/10 text-text-primary placeholder:text-text-muted focus:border-accent-cyan/50 focus:ring-accent-cyan/20"
           />
           {localSearch && (
             <button
@@ -122,7 +122,7 @@ export function UnmanagedToolbar({
               'h-9 px-4 border-0 transition-all',
               claimableCount > 0
                 ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white'
-                : 'bg-black/5 text-text-muted cursor-not-allowed'
+                : 'bg-overlay/5 text-text-muted cursor-not-allowed'
             )}
           >
             <ShoppingCart className="w-4 h-4 mr-2" />
@@ -147,7 +147,7 @@ export function UnmanagedToolbar({
                   'text-sm transition-colors',
                   filters.sortBy === option.value
                     ? 'text-accent-cyan bg-accent-cyan/10'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-black/5'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-overlay/5'
                 )}
               >
                 {option.label}
@@ -162,7 +162,7 @@ export function UnmanagedToolbar({
                   sortOrder: filters.sortOrder === 'desc' ? 'asc' : 'desc',
                 })
               }
-              className="text-text-secondary hover:text-text-primary hover:bg-black/5"
+              className="text-text-secondary hover:text-text-primary hover:bg-overlay/5"
             >
               {filters.sortOrder === 'asc' ? (
                 <SortAsc className="w-4 h-4" />
@@ -173,7 +173,7 @@ export function UnmanagedToolbar({
           </div>
 
           {/* View toggle */}
-          <div className="flex items-center gap-0.5 border border-black/5 rounded-lg p-0.5">
+          <div className="flex items-center gap-0.5 border border-overlay/5 rounded-lg p-0.5">
             <button
               onClick={() => onViewModeChange('grid')}
               className={cn(
@@ -240,7 +240,7 @@ export function UnmanagedToolbar({
           Unmatched
         </FilterChip>
 
-        <div className="h-6 w-px bg-black/10 mx-1" />
+        <div className="h-6 w-px bg-overlay/10 mx-1" />
 
         <FilterChip
           active={!filters.showClaimed}

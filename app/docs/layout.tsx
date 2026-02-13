@@ -22,7 +22,7 @@ export default function DocsLayout({
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <div className="flex">
             {/* Desktop Sidebar */}
-            <aside className="hidden lg:block w-64 flex-shrink-0 border-r border-black/5">
+            <aside className="hidden lg:block w-64 flex-shrink-0 border-r border-overlay/5">
               <div className="sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto py-6 pr-4">
                 <DocsSidebar />
               </div>
@@ -37,7 +37,7 @@ export default function DocsLayout({
             {/* Main content */}
             <main className="flex-1 min-w-0">
               {/* Mobile docs navigation toggle */}
-              <div className="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-black/5">
+              <div className="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-overlay/5">
                 <button
                   onClick={() => setIsMobileMenuOpen(true)}
                   className="p-1.5 -ml-1.5 text-text-muted hover:text-text-primary transition-colors"

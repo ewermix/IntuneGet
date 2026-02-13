@@ -95,7 +95,7 @@ export function VoteButton({
         'flex flex-col items-center justify-center min-w-[48px] p-2 rounded-lg border transition-all duration-200',
         hasVoted
           ? 'bg-accent-cyan/10 border-accent-cyan/30 text-accent-cyan'
-          : 'bg-black/5 border-black/10 text-text-secondary hover:border-black/20 hover:bg-black/10',
+          : 'bg-overlay/5 border-overlay/10 text-text-secondary hover:border-black/20 hover:bg-overlay/10',
         (disabled || isLoading) && 'opacity-50 cursor-not-allowed'
       )}
       title={hasVoted ? 'Remove vote' : 'Vote for this suggestion'}

@@ -127,7 +127,7 @@ export function SlidePanel({
             animate="visible"
             exit="exit"
             className={cn(
-              'absolute top-0 h-full w-full bg-bg-surface border-black/10 shadow-2xl flex flex-col',
+              'absolute top-0 h-full w-full bg-bg-surface border-overlay/10 shadow-2xl flex flex-col',
               direction === 'right' ? 'right-0 border-l' : 'left-0 border-r',
               widthClasses[width],
               className
@@ -141,7 +141,7 @@ export function SlidePanel({
             {(title || description || header || showCloseButton) && (
               <div
                 className={cn(
-                  'flex items-start justify-between px-6 py-4 border-b border-black/10',
+                  'flex items-start justify-between px-6 py-4 border-b border-overlay/10',
                   headerClassName
                 )}
               >
@@ -169,7 +169,7 @@ export function SlidePanel({
                 {showCloseButton && (
                   <button
                     onClick={onClose}
-                    className="p-2 -m-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-black/5 transition-colors"
+                    className="p-2 -m-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-overlay/5 transition-colors"
                     aria-label="Close panel"
                   >
                     <X className="w-5 h-5" />
@@ -190,7 +190,7 @@ export function SlidePanel({
 
             {/* Footer */}
             {footer && (
-              <div className="px-6 py-4 border-t border-black/10 bg-bg-surface/50">
+              <div className="px-6 py-4 border-t border-overlay/10 bg-bg-surface/50">
                 {footer}
               </div>
             )}
@@ -300,7 +300,7 @@ export function BottomSheet({
             animate="visible"
             exit="exit"
             className={cn(
-              'absolute bottom-0 left-0 right-0 bg-bg-surface border-t border-black/10 rounded-t-2xl flex flex-col',
+              'absolute bottom-0 left-0 right-0 bg-bg-surface border-t border-overlay/10 rounded-t-2xl flex flex-col',
               heightClasses[height],
               className
             )}
@@ -314,7 +314,7 @@ export function BottomSheet({
 
             {/* Header */}
             {(title || description || header || showCloseButton) && (
-              <div className="flex items-start justify-between px-6 pb-4 border-b border-black/10">
+              <div className="flex items-start justify-between px-6 pb-4 border-b border-overlay/10">
                 {header ?? (
                   <div className="flex-1">
                     {title && (
@@ -330,7 +330,7 @@ export function BottomSheet({
                 {showCloseButton && (
                   <button
                     onClick={onClose}
-                    className="p-2 -m-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-black/5 transition-colors"
+                    className="p-2 -m-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-overlay/5 transition-colors"
                     aria-label="Close"
                   >
                     <X className="w-5 h-5" />
@@ -344,7 +344,7 @@ export function BottomSheet({
 
             {/* Footer */}
             {footer && (
-              <div className="px-6 py-4 border-t border-black/10">{footer}</div>
+              <div className="px-6 py-4 border-t border-overlay/10">{footer}</div>
             )}
           </motion.div>
         </div>

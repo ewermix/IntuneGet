@@ -45,11 +45,11 @@ export const InventoryListRow = memo(function InventoryListRow({
         'bg-bg-elevated rounded-lg border px-4 py-3 flex items-center gap-4 cursor-pointer transition-all group',
         isSelected
           ? 'border-accent-cyan/40 shadow-glow-cyan bg-accent-cyan/[0.02]'
-          : 'border-black/5 hover:bg-bg-surface/50 hover:border-black/10'
+          : 'border-overlay/5 hover:bg-bg-surface/50 hover:border-overlay/10'
       )}
     >
       {/* Icon */}
-      <div className="w-9 h-9 rounded-lg bg-bg-surface border border-black/5 flex items-center justify-center flex-shrink-0">
+      <div className="w-9 h-9 rounded-lg bg-bg-surface border border-overlay/5 flex items-center justify-center flex-shrink-0">
         {app.largeIcon?.value && !iconError ? (
           <img
             src={`data:${app.largeIcon.type || 'image/png'};base64,${app.largeIcon.value}`}
@@ -72,7 +72,7 @@ export const InventoryListRow = memo(function InventoryListRow({
 
       {/* Version */}
       {app.displayVersion && (
-        <span className="text-xs bg-black/5 text-text-muted px-1.5 py-0.5 rounded flex-shrink-0">
+        <span className="text-xs bg-overlay/5 text-text-muted px-1.5 py-0.5 rounded flex-shrink-0">
           v{app.displayVersion}
         </span>
       )}

@@ -153,9 +153,9 @@ export function UploadCart() {
       />
 
       {/* Sidebar with slide animation */}
-      <div className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-bg-surface border-l border-black/5 shadow-2xl flex flex-col animate-slide-in-right">
+      <div className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-bg-surface border-l border-overlay/5 shadow-2xl flex flex-col animate-slide-in-right">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-black/5">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-overlay/5">
           <div className="flex items-center gap-3">
             <ShoppingCart className="w-5 h-5 text-accent-cyan" />
             <h2 className="text-lg font-semibold text-text-primary">
@@ -229,16 +229,16 @@ export function UploadCart() {
                   </div>
 
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <span className="px-2 py-1 bg-bg-elevated rounded text-text-primary text-xs border border-black/5">
+                    <span className="px-2 py-1 bg-bg-elevated rounded text-text-primary text-xs border border-overlay/5">
                       v{item.version}
                     </span>
-                    <span className="px-2 py-1 bg-bg-elevated rounded text-text-primary text-xs border border-black/5">
+                    <span className="px-2 py-1 bg-bg-elevated rounded text-text-primary text-xs border border-overlay/5">
                       {item.architecture}
                     </span>
-                    <span className="px-2 py-1 bg-bg-elevated rounded text-text-primary text-xs border border-black/5">
+                    <span className="px-2 py-1 bg-bg-elevated rounded text-text-primary text-xs border border-overlay/5">
                       {item.installScope}
                     </span>
-                    <span className="px-2 py-1 bg-bg-elevated rounded text-text-primary text-xs uppercase border border-black/5">
+                    <span className="px-2 py-1 bg-bg-elevated rounded text-text-primary text-xs uppercase border border-overlay/5">
                       {item.installerType}
                     </span>
                   </div>
@@ -250,7 +250,7 @@ export function UploadCart() {
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="border-t border-black/5 p-4 space-y-4">
+          <div className="border-t border-overlay/5 p-4 space-y-4">
             {/* Permission status indicator */}
             {isAuthenticated && (
               <PermissionStatusIndicator
@@ -294,7 +294,7 @@ export function UploadCart() {
                 variant="outline"
                 onClick={clearCart}
                 disabled={isDeploying}
-                className="flex-1 border-black/10 text-text-secondary hover:bg-black/5 hover:border-black/20"
+                className="flex-1 border-overlay/10 text-text-secondary hover:bg-overlay/5 hover:border-black/20"
               >
                 Clear All
               </Button>

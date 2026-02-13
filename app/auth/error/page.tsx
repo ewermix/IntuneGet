@@ -56,7 +56,7 @@ function ErrorContent() {
   const { title, description } = errorMessages[error || ''] || errorMessages.default;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950">
+    <div className="min-h-screen flex items-center justify-center bg-bg-deepest">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-red-500/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
@@ -68,12 +68,12 @@ function ErrorContent() {
             <AlertTriangle className="w-8 h-8 text-red-500" />
           </div>
 
-          <h1 className="text-2xl font-bold text-white mb-2">{title}</h1>
-          <p className="text-slate-400 mb-8">{description}</p>
+          <h1 className="text-2xl font-bold text-text-primary mb-2">{title}</h1>
+          <p className="text-text-muted mb-8">{description}</p>
 
           {error && (
-            <div className="mb-6 p-3 bg-slate-800/50 rounded-lg">
-              <p className="text-slate-500 text-sm font-mono">
+            <div className="mb-6 p-3 bg-bg-elevated/50 rounded-lg">
+              <p className="text-text-muted text-sm font-mono">
                 Error code: {error}
               </p>
             </div>
@@ -87,7 +87,7 @@ function ErrorContent() {
             </Link>
 
             <Link href="/">
-              <Button variant="outline" className="w-full border-slate-700 text-slate-300 hover:bg-slate-800">
+              <Button variant="outline" className="w-full border-overlay/15 text-text-secondary hover:bg-overlay/10">
                 Back to Home
               </Button>
             </Link>
@@ -101,7 +101,7 @@ function ErrorContent() {
 export default function AuthErrorPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+      <div className="min-h-screen flex items-center justify-center bg-bg-deepest">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     }>

@@ -85,7 +85,7 @@ export function AppSearch({ value, onChange, isLoading = false }: AppSearchProps
         className={`relative rounded-xl border transition-all duration-200 ${
           isFocused
             ? 'border-accent-cyan/40 bg-bg-elevated shadow-soft-md'
-            : 'border-black/10 bg-bg-elevated/95 hover:border-black/20'
+            : 'border-overlay/10 bg-bg-elevated/95 hover:border-black/20'
         }`}
       >
         <Search
@@ -114,10 +114,10 @@ export function AppSearch({ value, onChange, isLoading = false }: AppSearchProps
 
         {!isFocused && !inputValue && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1 pointer-events-none">
-            <kbd className="px-1.5 py-0.5 text-[10px] text-text-secondary bg-bg-surface border border-black/10 rounded font-mono">
+            <kbd className="px-1.5 py-0.5 text-[10px] text-text-secondary bg-bg-surface border border-overlay/10 rounded font-mono">
               {typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform) ? 'Cmd' : 'Ctrl'}
             </kbd>
-            <kbd className="px-1.5 py-0.5 text-[10px] text-text-secondary bg-bg-surface border border-black/10 rounded font-mono">
+            <kbd className="px-1.5 py-0.5 text-[10px] text-text-secondary bg-bg-surface border border-overlay/10 rounded font-mono">
               K
             </kbd>
           </div>
@@ -134,7 +134,7 @@ export function AppSearch({ value, onChange, isLoading = false }: AppSearchProps
             variant="ghost"
             size="icon"
             onClick={clearSearch}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary hover:bg-black/5"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary hover:bg-overlay/5"
           >
             <X className="w-5 h-5" />
           </Button>
@@ -142,7 +142,7 @@ export function AppSearch({ value, onChange, isLoading = false }: AppSearchProps
       </div>
 
       {showSuggestions && !inputValue && (
-        <div className="absolute top-full left-0 right-0 mt-2 z-50 rounded-xl border border-black/10 bg-bg-elevated shadow-soft-lg p-4 animate-fade-in">
+        <div className="absolute top-full left-0 right-0 mt-2 z-50 rounded-xl border border-overlay/10 bg-bg-elevated shadow-soft-lg p-4 animate-fade-in">
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="w-4 h-4 text-accent-cyan" />
             <span className="text-xs font-semibold text-text-secondary uppercase tracking-[0.08em]">Popular searches</span>
@@ -153,7 +153,7 @@ export function AppSearch({ value, onChange, isLoading = false }: AppSearchProps
                 key={suggestion}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleSuggestionClick(suggestion)}
-                className="px-3 py-1.5 text-sm text-text-secondary bg-bg-surface hover:bg-black/5 hover:text-text-primary rounded-lg border border-black/10 transition-colors"
+                className="px-3 py-1.5 text-sm text-text-secondary bg-bg-surface hover:bg-overlay/5 hover:text-text-primary rounded-lg border border-overlay/10 transition-colors"
               >
                 {suggestion}
               </button>

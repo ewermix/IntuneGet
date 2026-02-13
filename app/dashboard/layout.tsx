@@ -139,7 +139,7 @@ export default function DashboardLayout({
               <Button
                 variant="ghost"
                 onClick={toggleCart}
-                className="relative text-text-secondary hover:text-text-primary hover:bg-black/5 transition-all"
+                className="relative text-text-secondary hover:text-text-primary hover:bg-overlay/5 transition-all"
               >
                 <ShoppingCart className="w-5 h-5" />
                 {cartItemCount > 0 && (

@@ -59,8 +59,8 @@ export function RoleSelector({
         className={cn(
           'flex items-center justify-between w-full px-3 py-2 text-sm border rounded-lg transition-colors',
           disabled
-            ? 'bg-black/5 text-text-muted cursor-not-allowed'
-            : 'bg-bg-elevated border-black/10 hover:border-black/20'
+            ? 'bg-overlay/5 text-text-muted cursor-not-allowed'
+            : 'bg-bg-elevated border-overlay/10 hover:border-black/20'
         )}
       >
         <span className={cn('font-medium', getRoleColor(value).split(' ')[0])}>
@@ -75,13 +75,13 @@ export function RoleSelector({
       </button>
 
       {isOpen && (
-        <div className="absolute z-20 w-full mt-1 bg-bg-elevated border border-black/10 rounded-lg shadow-xl overflow-hidden">
+        <div className="absolute z-20 w-full mt-1 bg-bg-elevated border border-overlay/10 rounded-lg shadow-xl overflow-hidden">
           {availableRoles.map((role) => (
             <button
               key={role}
               onClick={() => handleSelect(role)}
               className={cn(
-                'w-full flex items-start gap-3 px-3 py-2 text-left hover:bg-black/5 transition-colors',
+                'w-full flex items-start gap-3 px-3 py-2 text-left hover:bg-overlay/5 transition-colors',
                 role === value && 'bg-accent-cyan/5'
               )}
             >

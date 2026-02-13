@@ -139,7 +139,7 @@ function SignInContent() {
               <Loader2 className="h-7 w-7 animate-spin text-white" />
             </div>
           </div>
-          <p className="text-stone-500 text-sm font-medium">
+          <p className="text-text-muted text-sm font-medium">
             {isVerifyingConsent ? 'Verifying permissions...' : 'Redirecting to your dashboard...'}
           </p>
         </motion.div>
@@ -158,7 +158,7 @@ function SignInContent() {
       </div>
 
       {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden border-r border-stone-200/50">
+      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden border-r border-overlay/[0.05]">
         {/* Background layers */}
         <GridBackground variant="dots" opacity={0.3} className="absolute inset-0" />
 
@@ -202,8 +202,8 @@ function SignInContent() {
                 </div>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-stone-900">IntuneGet</h1>
-                <p className="text-stone-500 text-sm">Winget for Intune</p>
+                <h1 className="text-2xl font-bold text-text-primary">IntuneGet</h1>
+                <p className="text-text-muted text-sm">Winget for Intune</p>
               </div>
             </div>
           </FadeIn>
@@ -217,11 +217,11 @@ function SignInContent() {
           >
             <span className="gradient-text-cyan">10,000 Apps.</span>
             <br />
-            <span className="text-stone-800">One Click.</span>
+            <span className="text-text-primary">One Click.</span>
           </motion.h2>
 
           <FadeIn animateOnMount delay={0.1}>
-            <p className="text-lg text-stone-600 mb-6 max-w-md leading-relaxed">
+            <p className="text-lg text-text-secondary mb-6 max-w-md leading-relaxed">
               Deploy Win32 applications to Microsoft Intune with ease.
               Search Winget, configure, and upload in minutes.
             </p>
@@ -232,28 +232,28 @@ function SignInContent() {
 
           {/* Trust stats */}
           <FadeIn animateOnMount delay={0.15}>
-            <p className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-3">Trusted by IT admins</p>
+            <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-3">Trusted by IT admins</p>
             <div className="flex flex-wrap gap-4">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/60 border border-stone-200/40 shadow-soft">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-bg-elevated/60 border border-overlay/[0.04] shadow-soft">
                 <div className="w-10 h-10 rounded-lg bg-accent-cyan/10 flex items-center justify-center">
                   <Users className="w-5 h-5 text-accent-cyan" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-stone-900">
+                  <p className="text-2xl font-bold text-text-primary">
                     <CountUp end={signinClicks} suffix="+" duration={1.5} delay={0.3} />
                   </p>
-                  <p className="text-sm text-stone-500">Admins</p>
+                  <p className="text-sm text-text-muted">Admins</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/60 border border-stone-200/40 shadow-soft">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-bg-elevated/60 border border-overlay/[0.04] shadow-soft">
                 <div className="w-10 h-10 rounded-lg bg-accent-violet/10 flex items-center justify-center">
                   <Boxes className="w-5 h-5 text-accent-violet" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-stone-900">
+                  <p className="text-2xl font-bold text-text-primary">
                     <CountUp end={appsSupported} suffix="+" duration={1.5} delay={0.4} />
                   </p>
-                  <p className="text-sm text-stone-500">Apps available</p>
+                  <p className="text-sm text-text-muted">Apps available</p>
                 </div>
               </div>
             </div>
@@ -261,7 +261,7 @@ function SignInContent() {
 
           {/* Multi-tenant badge */}
           <FadeIn animateOnMount delay={0.2}>
-            <div className="mt-5 flex items-center gap-2 text-sm text-stone-500">
+            <div className="mt-5 flex items-center gap-2 text-sm text-text-muted">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               <span>Multi-tenant support - works with any Entra ID tenant</span>
             </div>
@@ -303,15 +303,15 @@ function SignInContent() {
                 <Package className="w-8 h-8 text-white" />
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-stone-900">IntuneGet</h1>
-            <p className="text-stone-500 text-sm">Winget for Intune</p>
+            <h1 className="text-2xl font-bold text-text-primary">IntuneGet</h1>
+            <p className="text-text-muted text-sm">Winget for Intune</p>
             {/* Mobile trust strip */}
-            <div className="flex items-center gap-4 text-xs text-stone-500 mt-2">
+            <div className="flex items-center gap-4 text-xs text-text-muted mt-2">
               <span className="flex items-center gap-1.5">
                 <Users className="w-3 h-3 text-accent-cyan" />
                 {signinClicks.toLocaleString()}+ admins
               </span>
-              <span className="w-px h-3 bg-stone-300" />
+              <span className="w-px h-3 bg-overlay/20" />
               <span className="flex items-center gap-1.5">
                 <Boxes className="w-3 h-3 text-accent-violet" />
                 {appsSupported.toLocaleString()}+ apps
@@ -321,7 +321,7 @@ function SignInContent() {
 
           {/* Sign in card */}
           <motion.div
-            className="relative bg-white/95 backdrop-blur-sm border border-stone-200/80 rounded-2xl shadow-soft-lg overflow-hidden"
+            className="relative bg-bg-elevated/95 backdrop-blur-sm border border-overlay/[0.08] rounded-2xl shadow-soft-lg overflow-hidden"
             initial={shouldReduceMotion ? {} : { opacity: 0, y: 16, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -332,8 +332,8 @@ function SignInContent() {
             {/* Card content with intentional spacing */}
             <div className="px-8 pt-10 pb-6 sm:px-10 sm:pt-12 sm:pb-8">
               <div className="text-center mb-10">
-                <h2 className="text-2xl font-bold tracking-tight text-stone-900">Start Deploying</h2>
-                <p className="text-stone-500 mt-2">
+                <h2 className="text-2xl font-bold tracking-tight text-text-primary">Start Deploying</h2>
+                <p className="text-text-muted mt-2">
                   Sign in with your work account to get started
                 </p>
               </div>
@@ -346,14 +346,14 @@ function SignInContent() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.3 }}
-                    className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl"
+                    className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl"
                   >
                     <p className="text-red-600 text-sm text-center">{error}</p>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              {/* Sign in button -- Microsoft brand spec (dark theme variant) */}
+              {/* Sign in button -- Microsoft brand spec (light theme variant) */}
               <motion.div
                 whileHover={shouldReduceMotion ? {} : { scale: 1.01 }}
                 whileTap={shouldReduceMotion ? {} : { scale: 0.98 }}
@@ -363,7 +363,7 @@ function SignInContent() {
                   onClick={handleSignIn}
                   disabled={isSigningIn}
                   size="lg"
-                  className="w-full h-[41px] text-sm font-semibold gap-3 rounded-[2px] bg-[#2f2f2f] hover:bg-[#1a1a1a] text-white border border-[#2f2f2f] hover:border-[#1a1a1a] transition-colors duration-150"
+                  className="w-full h-[41px] text-sm font-semibold gap-3 rounded-[2px] bg-white hover:bg-[#f5f5f5] text-[#5E5E5E] border border-[#8C8C8C] hover:border-[#5E5E5E] transition-colors duration-150"
                 >
                   {isSigningIn ? (
                     <>
@@ -380,17 +380,17 @@ function SignInContent() {
               </motion.div>
 
               {/* Trust badge */}
-              <div className="flex items-center justify-center gap-2 text-xs text-stone-400 mt-6">
+              <div className="flex items-center justify-center gap-2 text-xs text-text-muted mt-6">
                 <Shield className="h-3.5 w-3.5 text-accent-cyan/70" />
                 <span>Protected by Microsoft Entra ID</span>
               </div>
             </div>
 
             {/* Consent section -- visually separated as footer zone */}
-            <div className="border-t border-stone-100 bg-stone-50/50 px-8 py-5 sm:px-10">
+            <div className="border-t border-overlay/10 bg-bg-surface/50 px-8 py-5 sm:px-10">
               <button
                 onClick={() => setIsConsentSectionOpen(!isConsentSectionOpen)}
-                className="w-full flex items-center justify-center gap-2 text-sm text-stone-400 hover:text-stone-600 transition-colors"
+                className="w-full flex items-center justify-center gap-2 text-sm text-text-muted hover:text-text-secondary transition-colors"
               >
                 <span>Need admin consent?</span>
                 <motion.div animate={{ rotate: isConsentSectionOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
@@ -408,19 +408,19 @@ function SignInContent() {
                     transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
                     className="overflow-hidden"
                   >
-                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-4 mt-4">
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 space-y-4 mt-4">
                       <div className="flex items-start gap-3">
                         <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
                         <div className="text-sm">
-                          <p className="text-amber-800 font-medium">Global Admin Required</p>
-                          <p className="text-amber-700 mt-1">
+                          <p className="text-amber-600 font-medium">Global Admin Required</p>
+                          <p className="text-amber-600/80 mt-1">
                             Only Global Administrators can grant the permissions IntuneGet needs.
                           </p>
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-xs text-stone-500 font-medium">
+                        <label className="text-xs text-text-muted font-medium">
                           Share this link with your Global Administrator:
                         </label>
                         <div className="flex flex-col sm:flex-row gap-2">
@@ -428,13 +428,13 @@ function SignInContent() {
                             type="text"
                             readOnly
                             value={consentUrl}
-                            className="flex-1 px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm text-stone-700 truncate focus:outline-none focus:ring-2 focus:ring-accent-cyan/50"
+                            className="flex-1 px-3 py-2 bg-bg-elevated border border-overlay/10 rounded-lg text-sm text-text-secondary truncate focus:outline-none focus:ring-2 focus:ring-accent-cyan/50"
                           />
                           <Button
                             onClick={handleCopyConsentUrl}
                             size="sm"
                             variant="outline"
-                            className="flex-shrink-0 border-stone-200 hover:bg-stone-50 text-stone-600"
+                            className="flex-shrink-0 border-overlay/10 hover:bg-overlay/[0.04] text-text-secondary"
                           >
                             {copied ? (
                               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={springPresets.bouncy}>
@@ -447,7 +447,7 @@ function SignInContent() {
                         </div>
                       </div>
 
-                      <p className="text-xs text-stone-500">
+                      <p className="text-xs text-text-muted">
                         Once they grant consent, you can sign in normally.
                       </p>
                     </div>
@@ -459,15 +459,15 @@ function SignInContent() {
 
           {/* Footer links */}
           <FadeIn animateOnMount delay={0.15}>
-            <div className="mt-6 flex items-center justify-center gap-4 text-sm text-stone-400">
-              <Link href="/" className="inline-flex items-center gap-1.5 hover:text-stone-600 transition-colors">
+            <div className="mt-6 flex items-center justify-center gap-4 text-sm text-text-muted">
+              <Link href="/" className="inline-flex items-center gap-1.5 hover:text-text-secondary transition-colors">
                 <ArrowLeft className="w-3.5 h-3.5" />
                 Back to home
               </Link>
-              <span className="text-stone-300">|</span>
+              <span className="text-overlay/20">|</span>
               <Link
                 href="/docs/docker"
-                className="hover:text-stone-600 transition-colors"
+                className="hover:text-text-secondary transition-colors"
               >
                 Self-host guide
               </Link>

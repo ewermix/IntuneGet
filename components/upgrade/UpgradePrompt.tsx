@@ -40,7 +40,7 @@ export function UpgradePrompt({
       {onDismiss && (
         <button
           onClick={onDismiss}
-          className="absolute top-2 right-2 p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-black/10 transition-colors"
+          className="absolute top-2 right-2 p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-overlay/10 transition-colors"
         >
           <X className="w-4 h-4" />
         </button>

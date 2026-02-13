@@ -171,7 +171,7 @@ function AcceptInvitationContent() {
       </div>
 
       {/* Invitation details */}
-      <div className="bg-black/5 rounded-xl p-4 space-y-3">
+      <div className="bg-overlay/5 rounded-xl p-4 space-y-3">
         <div className="flex items-center gap-3">
           <Mail className="w-5 h-5 text-text-muted" />
           <div>
@@ -265,7 +265,7 @@ export default function AcceptInvitationPage() {
           <span className="text-2xl font-bold text-text-primary">IntuneGet</span>
         </Link>
 
-        <div className="bg-bg-elevated rounded-2xl border border-black/10 p-6 shadow-xl">
+        <div className="bg-bg-elevated rounded-2xl border border-overlay/10 p-6 shadow-xl">
           <Suspense
             fallback={
               <div className="flex items-center justify-center p-8">

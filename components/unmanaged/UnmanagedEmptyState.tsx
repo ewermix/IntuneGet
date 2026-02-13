@@ -71,23 +71,23 @@ export function UnmanagedEmptyState({
 
       <div className="flex items-center justify-center gap-3 mt-6">
         {variant === 'no-data' && onRefresh && (
-          <Button variant="outline" onClick={onRefresh} className="border-black/10">
+          <Button variant="outline" onClick={onRefresh} className="border-overlay/10">
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
         )}
         {variant === 'filtered' && onClearFilters && (
-          <Button variant="outline" onClick={onClearFilters} className="border-black/10">
+          <Button variant="outline" onClick={onClearFilters} className="border-overlay/10">
             Clear Filters
           </Button>
         )}
         {variant === 'search' && onClearSearch && (
-          <Button variant="outline" onClick={onClearSearch} className="border-black/10">
+          <Button variant="outline" onClick={onClearSearch} className="border-overlay/10">
             Clear Search
           </Button>
         )}
         {variant === 'all-claimed' && onViewAll && (
-          <Button variant="outline" onClick={onViewAll} className="border-black/10">
+          <Button variant="outline" onClick={onViewAll} className="border-overlay/10">
             View All Apps
           </Button>
         )}

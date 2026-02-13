@@ -61,7 +61,7 @@ export default function MspPage() {
         </p>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <Building2 className="h-6 w-6 text-accent-cyan mb-3" />
             <h3 className="font-semibold text-text-primary mb-1">Multi-Tenant</h3>
             <p className="text-sm text-text-secondary">
@@ -69,14 +69,14 @@ export default function MspPage() {
               dashboard
             </p>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <Users className="h-6 w-6 text-accent-cyan mb-3" />
             <h3 className="font-semibold text-text-primary mb-1">Team Management</h3>
             <p className="text-sm text-text-secondary">
               Role-based access control for your team members
             </p>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <BarChart3 className="h-6 w-6 text-accent-cyan mb-3" />
             <h3 className="font-semibold text-text-primary mb-1">Reports</h3>
             <p className="text-sm text-text-secondary">
@@ -118,7 +118,7 @@ export default function MspPage() {
           and upload completion. Failed deployments can be retried individually.
         </p>
 
-        <div className="rounded-lg border border-black/10 bg-white p-4">
+        <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
           <h4 className="font-medium text-text-primary mb-2">Cross-Tenant Jobs Table</h4>
           <p className="text-sm text-text-secondary">
             View all deployment jobs across tenants in a unified table. Filter by
@@ -285,7 +285,7 @@ export default function MspPage() {
         </p>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <BarChart3 className="h-5 w-5 text-accent-cyan mb-2" />
             <h4 className="font-medium text-text-primary mb-1">
               Cross-Tenant Trends
@@ -294,7 +294,7 @@ export default function MspPage() {
               Visualize deployment activity over time across all tenants
             </p>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <Building2 className="h-5 w-5 text-accent-cyan mb-2" />
             <h4 className="font-medium text-text-primary mb-1">
               Deployments by Tenant
@@ -303,7 +303,7 @@ export default function MspPage() {
               Compare deployment volume and frequency per tenant
             </p>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <Shield className="h-5 w-5 text-accent-cyan mb-2" />
             <h4 className="font-medium text-text-primary mb-1">
               Tenant Success Rate
@@ -312,7 +312,7 @@ export default function MspPage() {
               Track success/failure rates per tenant to identify issues
             </p>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <FileDown className="h-5 w-5 text-accent-cyan mb-2" />
             <h4 className="font-medium text-text-primary mb-1">Export Options</h4>
             <p className="text-sm text-text-secondary">

@@ -118,7 +118,7 @@ function AppCardComponent({ package: pkg, onSelect }: AppCardProps) {
   return (
     <div
       onClick={() => onSelect?.(pkg)}
-      className="group rounded-2xl border border-black/10 bg-bg-elevated p-5 cursor-pointer contain-layout transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover hover:border-accent-cyan/30"
+      className="group rounded-2xl border border-overlay/10 bg-bg-elevated p-5 cursor-pointer contain-layout transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover hover:border-accent-cyan/30"
     >
       <div className="flex items-start gap-4">
         <div className="relative flex-shrink-0">
@@ -145,7 +145,7 @@ function AppCardComponent({ package: pkg, onSelect }: AppCardProps) {
                 </p>
               )}
             </div>
-            <span className="text-xs text-text-secondary bg-bg-surface px-2.5 py-1 rounded-md flex-shrink-0 border border-black/10">
+            <span className="text-xs text-text-secondary bg-bg-surface px-2.5 py-1 rounded-md flex-shrink-0 border border-overlay/10">
               v{pkg.version}
             </span>
           </div>
@@ -161,7 +161,7 @@ function AppCardComponent({ package: pkg, onSelect }: AppCardProps) {
               <CategoryBadge category={pkg.category} />
             )}
             {pkg.installerType && (
-              <span className={`text-xs px-2 py-0.5 rounded-full border ${installerTypeStyles[pkg.installerType.toLowerCase()] || 'text-text-secondary bg-bg-surface border-black/10'}`}>
+              <span className={`text-xs px-2 py-0.5 rounded-full border ${installerTypeStyles[pkg.installerType.toLowerCase()] || 'text-text-secondary bg-bg-surface border-overlay/10'}`}>
                 {getInstallerLabel(pkg.installerType)}
               </span>
             )}
@@ -174,7 +174,7 @@ function AppCardComponent({ package: pkg, onSelect }: AppCardProps) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-black/10">
+      <div className="flex items-center justify-between mt-4 pt-4 border-t border-overlay/10">
         <div className="flex items-center gap-2">
           {pkg.homepage && (
             <a

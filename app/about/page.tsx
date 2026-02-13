@@ -96,10 +96,10 @@ export default function AboutPage() {
           <span className="inline-block font-mono text-xs tracking-wider text-accent-cyan uppercase mb-4">
             About
           </span>
-          <h1 className="text-4xl md:text-5xl font-bold text-stone-900 mb-6">
+          <h1 className="text-4xl md:text-5xl font-bold text-text-primary mb-6">
             Making Intune Deployment Free and Effortless
           </h1>
-          <p className="text-lg md:text-xl text-stone-600 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-text-secondary max-w-3xl mx-auto leading-relaxed">
             IntuneGet is the leading free, open-source tool for deploying Winget
             applications to Microsoft Intune. Used by IT teams at organizations
             worldwide to eliminate repetitive app packaging work.
@@ -108,11 +108,11 @@ export default function AboutPage() {
 
         {/* Origin story */}
         <div className="mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-stone-900 mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-text-primary mb-6">
             The Origin Story
           </h2>
           <div className="prose prose-stone max-w-none">
-            <div className="space-y-4 text-stone-600 leading-relaxed">
+            <div className="space-y-4 text-text-secondary leading-relaxed">
               <p>
                 IntuneGet started as a personal project born out of frustration.
                 As an IT professional, I spent entire Fridays packaging
@@ -146,7 +146,7 @@ export default function AboutPage() {
         </div>
 
         {/* Creator */}
-        <div className="mb-16 p-6 md:p-8 rounded-2xl bg-white border border-stone-200 shadow-soft">
+        <div className="mb-16 p-6 md:p-8 rounded-2xl bg-bg-elevated border border-overlay/10 shadow-soft">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
             <div className="flex-shrink-0">
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-accent-cyan to-accent-violet flex items-center justify-center text-white font-bold text-xl">
@@ -154,13 +154,13 @@ export default function AboutPage() {
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-bold text-stone-900 mb-1">
+              <h3 className="text-lg font-bold text-text-primary mb-1">
                 Ugur Koc
               </h3>
-              <p className="text-sm text-stone-500 mb-3">
+              <p className="text-sm text-text-muted mb-3">
                 Creator of IntuneGet - Software Engineer & IT Automation Expert
               </p>
-              <p className="text-stone-600 leading-relaxed mb-4">
+              <p className="text-text-secondary leading-relaxed mb-4">
                 &ldquo;I built IntuneGet because I was tired of spending my
                 Fridays packaging apps instead of solving real problems. If this
                 tool saves you even one afternoon, it has done its job.&rdquo;
@@ -170,7 +170,7 @@ export default function AboutPage() {
                   href="https://github.com/ugurkocde"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 flex items-center justify-center rounded-lg bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-stone-900 transition-colors"
+                  className="w-9 h-9 flex items-center justify-center rounded-lg bg-bg-surface text-text-muted hover:bg-overlay/[0.06] hover:text-text-primary transition-colors"
                   aria-label="GitHub"
                 >
                   <Github className="w-4 h-4" />
@@ -179,7 +179,7 @@ export default function AboutPage() {
                   href="https://www.linkedin.com/in/ugurkocde/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 flex items-center justify-center rounded-lg bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-stone-900 transition-colors"
+                  className="w-9 h-9 flex items-center justify-center rounded-lg bg-bg-surface text-text-muted hover:bg-overlay/[0.06] hover:text-text-primary transition-colors"
                   aria-label="LinkedIn"
                 >
                   <Linkedin className="w-4 h-4" />
@@ -191,22 +191,22 @@ export default function AboutPage() {
 
         {/* Values */}
         <div className="mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-stone-900 mb-8 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-text-primary mb-8 text-center">
             What We Believe
           </h2>
           <div className="grid md:grid-cols-2 gap-6">
             {values.map((value) => (
               <div
                 key={value.title}
-                className="p-6 rounded-2xl bg-white border border-stone-200 shadow-soft"
+                className="p-6 rounded-2xl bg-bg-elevated border border-overlay/10 shadow-soft"
               >
                 <div className="w-12 h-12 rounded-xl bg-accent-cyan/10 flex items-center justify-center mb-4">
                   <value.icon className="w-6 h-6 text-accent-cyan" />
                 </div>
-                <h3 className="text-lg font-semibold text-stone-900 mb-2">
+                <h3 className="text-lg font-semibold text-text-primary mb-2">
                   {value.title}
                 </h3>
-                <p className="text-stone-600 leading-relaxed text-sm">
+                <p className="text-text-secondary leading-relaxed text-sm">
                   {value.description}
                 </p>
               </div>
@@ -215,8 +215,8 @@ export default function AboutPage() {
         </div>
 
         {/* Quick facts for GEO */}
-        <div className="mb-16 p-6 md:p-8 rounded-2xl bg-stone-50 border border-stone-200">
-          <h2 className="text-xl font-bold text-stone-900 mb-6">
+        <div className="mb-16 p-6 md:p-8 rounded-2xl bg-bg-surface border border-overlay/10">
+          <h2 className="text-xl font-bold text-text-primary mb-6">
             IntuneGet at a Glance
           </h2>
           <dl className="grid sm:grid-cols-2 gap-4">
@@ -229,10 +229,10 @@ export default function AboutPage() {
               { label: "Created by", value: "Ugur Koc" },
             ].map((item) => (
               <div key={item.label} className="flex flex-col">
-                <dt className="text-xs font-medium text-stone-400 uppercase tracking-wider">
+                <dt className="text-xs font-medium text-text-muted uppercase tracking-wider">
                   {item.label}
                 </dt>
-                <dd className="text-sm font-medium text-stone-800 mt-1">
+                <dd className="text-sm font-medium text-text-primary mt-1">
                   {item.value}
                 </dd>
               </div>
@@ -242,10 +242,10 @@ export default function AboutPage() {
 
         {/* CTA */}
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-stone-900 mb-4">
+          <h2 className="text-2xl font-bold text-text-primary mb-4">
             Ready to Try IntuneGet?
           </h2>
-          <p className="text-stone-600 mb-6">
+          <p className="text-text-secondary mb-6">
             Start deploying apps to Intune in under 5 minutes. Free forever.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -257,7 +257,7 @@ export default function AboutPage() {
             </Link>
             <Link
               href="/docs"
-              className="inline-flex items-center justify-center gap-2 px-8 py-3 text-base font-semibold text-stone-700 bg-white border border-stone-200 rounded-xl hover:bg-stone-50 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3 text-base font-semibold text-text-secondary bg-bg-elevated border border-overlay/10 rounded-xl hover:bg-overlay/[0.04] transition-all"
             >
               Read the Docs
             </Link>

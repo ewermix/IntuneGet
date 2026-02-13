@@ -134,9 +134,9 @@ export function CrossTenantJobsTable({ jobs: initialJobs, isLoading: externalLoa
   const loading = isLoading || externalLoading;
 
   return (
-    <div className="rounded-xl bg-black/5 border border-black/10 overflow-hidden">
+    <div className="rounded-xl bg-overlay/5 border border-overlay/10 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-black/5">
+      <div className="flex items-center justify-between p-4 border-b border-overlay/5">
         <div className="flex items-center gap-2">
           <Package className="w-5 h-5 text-accent-cyan" />
           <h3 className="font-medium text-text-primary">Recent Jobs Across All Tenants</h3>
@@ -184,7 +184,7 @@ export function CrossTenantJobsTable({ jobs: initialJobs, isLoading: externalLoa
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] md:min-w-0">
             <thead>
-              <tr className="border-b border-black/5">
+              <tr className="border-b border-overlay/5">
                 <th className="text-left text-xs font-medium text-text-muted uppercase tracking-wider px-4 py-3">
                   Package
                 </th>
@@ -204,7 +204,7 @@ export function CrossTenantJobsTable({ jobs: initialJobs, isLoading: externalLoa
             </thead>
             <tbody className="divide-y divide-black/5">
               {jobs.map((job) => (
-                <tr key={job.id} className="hover:bg-black/5 transition-colors">
+                <tr key={job.id} className="hover:bg-overlay/5 transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-accent-cyan/20 flex items-center justify-center flex-shrink-0">
@@ -274,7 +274,7 @@ export function CrossTenantJobsTable({ jobs: initialJobs, isLoading: externalLoa
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between p-4 border-t border-black/5">
+        <div className="flex items-center justify-between p-4 border-t border-overlay/5">
           <Button
             variant="ghost"
             size="sm"

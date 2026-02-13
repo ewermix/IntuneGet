@@ -41,7 +41,7 @@ export function HowItWorksSection() {
   return (
     <section
       id="how-it-works"
-      className="relative w-full py-24 md:py-32 overflow-hidden bg-white"
+      className="relative w-full py-24 md:py-32 overflow-hidden bg-bg-elevated"
     >
       <div className="container relative px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section header */}
@@ -52,12 +52,12 @@ export function HowItWorksSection() {
             </span>
           </FadeIn>
           <FadeIn delay={0.1}>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-stone-900">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-text-primary">
               How It Works
             </h2>
           </FadeIn>
           <FadeIn delay={0.2}>
-            <p className="mx-auto max-w-2xl text-lg text-stone-600">
+            <p className="mx-auto max-w-2xl text-lg text-text-secondary">
               Three simple steps to deploy your first app in under 5 minutes
             </p>
           </FadeIn>
@@ -103,7 +103,7 @@ export function HowItWorksSection() {
                     }
                   >
                     <div className="relative">
-                      <div className="relative w-16 h-16 rounded-full bg-white border-2 border-accent-cyan/30 flex items-center justify-center shadow-soft-lg">
+                      <div className="relative w-16 h-16 rounded-full bg-bg-elevated border-2 border-accent-cyan/30 flex items-center justify-center shadow-soft-lg">
                         <span className="font-mono text-xl font-bold text-accent-cyan">
                           {step.number}
                         </span>
@@ -118,10 +118,10 @@ export function HowItWorksSection() {
                     }`}
                   >
                     <div
-                      className="p-6 md:p-8 rounded-2xl bg-white border border-stone-200/60 shadow-card hover:shadow-card-hover transition-all duration-300"
+                      className="p-6 md:p-8 rounded-2xl bg-bg-elevated border border-overlay/[0.06] shadow-card hover:shadow-card-hover transition-all duration-300"
                     >
                       <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-xl font-semibold text-stone-900">
+                        <h3 className="text-xl font-semibold text-text-primary">
                           {step.title}
                         </h3>
                         <span className="flex items-center gap-1.5 text-xs font-medium text-accent-cyan bg-accent-cyan/10 px-2.5 py-1 rounded-full">
@@ -129,7 +129,7 @@ export function HowItWorksSection() {
                           {step.timeEstimate}
                         </span>
                       </div>
-                      <p className="text-stone-600 leading-relaxed">
+                      <p className="text-text-secondary leading-relaxed">
                         {step.description}
                       </p>
                     </div>

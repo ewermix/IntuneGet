@@ -60,12 +60,12 @@ export function SidebarUserSection({
 
   if (isCollapsed) {
     return (
-      <div className="p-3 border-t border-black/5">
+      <div className="p-3 border-t border-overlay/5">
         <DropdownMenu>
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
-                <button className="group flex items-center justify-center w-full rounded-lg p-1.5 hover:bg-black/[0.04] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan/50 focus-visible:ring-offset-1">
+                <button className="group flex items-center justify-center w-full rounded-lg p-1.5 hover:bg-overlay/[0.04] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan/50 focus-visible:ring-offset-1">
                   {avatar}
                 </button>
               </DropdownMenuTrigger>
@@ -111,10 +111,10 @@ export function SidebarUserSection({
   }
 
   return (
-    <div className="p-3 border-t border-black/5">
+    <div className="p-3 border-t border-overlay/5">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="group flex items-center gap-3 w-full rounded-lg p-2 hover:bg-black/[0.04] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan/50 focus-visible:ring-offset-1">
+          <button className="group flex items-center gap-3 w-full rounded-lg p-2 hover:bg-overlay/[0.04] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan/50 focus-visible:ring-offset-1">
             {avatar}
             <AnimatePresence mode="wait">
               {!isCollapsed && (

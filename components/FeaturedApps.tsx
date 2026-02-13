@@ -20,11 +20,11 @@ export function FeaturedApps({ packages, onSelect, isLoading }: FeaturedAppsProp
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-[minmax(140px,auto)]">
-        <div className="md:col-span-2 md:row-span-2 rounded-2xl border border-black/10 bg-bg-elevated animate-shimmer" />
-        <div className="rounded-xl border border-black/10 bg-bg-elevated animate-shimmer" />
-        <div className="rounded-xl border border-black/10 bg-bg-elevated animate-shimmer" />
-        <div className="rounded-xl border border-black/10 bg-bg-elevated animate-shimmer hidden md:block" />
-        <div className="rounded-xl border border-black/10 bg-bg-elevated animate-shimmer hidden md:block" />
+        <div className="md:col-span-2 md:row-span-2 rounded-2xl border border-overlay/10 bg-bg-elevated animate-shimmer" />
+        <div className="rounded-xl border border-overlay/10 bg-bg-elevated animate-shimmer" />
+        <div className="rounded-xl border border-overlay/10 bg-bg-elevated animate-shimmer" />
+        <div className="rounded-xl border border-overlay/10 bg-bg-elevated animate-shimmer hidden md:block" />
+        <div className="rounded-xl border border-overlay/10 bg-bg-elevated animate-shimmer hidden md:block" />
       </div>
     );
   }
@@ -118,7 +118,7 @@ function FeaturedMainCardComponent({ package: pkg, onSelect }: FeaturedCardProps
   return (
     <div
       onClick={() => onSelect?.(pkg)}
-      className="group relative rounded-2xl border border-black/10 bg-bg-elevated overflow-hidden cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover hover:border-accent-cyan/25 h-full min-h-[280px]"
+      className="group relative rounded-2xl border border-overlay/10 bg-bg-elevated overflow-hidden cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover hover:border-accent-cyan/25 h-full min-h-[280px]"
     >
       <div className="absolute inset-0 bg-gradient-radial-cyan opacity-45" />
       <div className="absolute inset-0 bg-gradient-to-br from-accent-cyan/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -151,7 +151,7 @@ function FeaturedMainCardComponent({ package: pkg, onSelect }: FeaturedCardProps
                 </h2>
                 <p className="text-text-secondary mt-1">{pkg.publisher}</p>
               </div>
-              <span className="text-sm text-text-secondary bg-bg-surface px-3 py-1.5 rounded-lg border border-black/10 flex-shrink-0">
+              <span className="text-sm text-text-secondary bg-bg-surface px-3 py-1.5 rounded-lg border border-overlay/10 flex-shrink-0">
                 v{pkg.version}
               </span>
             </div>
@@ -169,7 +169,7 @@ function FeaturedMainCardComponent({ package: pkg, onSelect }: FeaturedCardProps
           </div>
         </div>
 
-        <div className="flex items-center gap-3 mt-6 pt-4 border-t border-black/10">
+        <div className="flex items-center gap-3 mt-6 pt-4 border-t border-overlay/10">
           <Button
             size="lg"
             onClick={handleQuickAdd}
@@ -277,7 +277,7 @@ function FeaturedSecondaryCardComponent({ package: pkg, onSelect }: FeaturedCard
   return (
     <div
       onClick={() => onSelect?.(pkg)}
-      className="group rounded-xl border border-black/10 bg-bg-elevated p-4 cursor-pointer transition-all duration-200 hover:shadow-card hover:border-accent-cyan/25 hover:-translate-y-0.5 h-full flex flex-col"
+      className="group rounded-xl border border-overlay/10 bg-bg-elevated p-4 cursor-pointer transition-all duration-200 hover:shadow-card hover:border-accent-cyan/25 hover:-translate-y-0.5 h-full flex flex-col"
     >
       <div className="flex items-start gap-3 flex-1">
         <AppIcon
@@ -301,7 +301,7 @@ function FeaturedSecondaryCardComponent({ package: pkg, onSelect }: FeaturedCard
         </div>
       </div>
 
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-black/10">
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-overlay/10">
         <span className="text-xs text-text-muted">v{pkg.version}</span>
         <Button
           size="sm"

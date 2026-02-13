@@ -132,21 +132,21 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="absolute right-0 top-0 bottom-0 w-full max-w-xl bg-slate-900 border-l border-slate-800 shadow-2xl overflow-hidden flex flex-col">
+      <div className="absolute right-0 top-0 bottom-0 w-full max-w-xl bg-bg-surface border-l border-overlay/10 shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex-shrink-0 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800 px-6 py-4">
+        <div className="flex-shrink-0 bg-bg-surface/95 backdrop-blur-sm border-b border-overlay/10 px-6 py-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-bg-elevated to-bg-surface flex items-center justify-center flex-shrink-0 border border-white/5">
                 <Settings className="w-5 h-5 text-blue-400" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">Edit Configuration</h2>
-                <p className="text-slate-400 text-sm">{item.displayName}</p>
-                <p className="text-slate-600 text-xs font-mono mt-1">{item.wingetId}</p>
+                <h2 className="text-xl font-bold text-text-primary">Edit Configuration</h2>
+                <p className="text-text-muted text-sm">{item.displayName}</p>
+                <p className="text-text-muted text-xs font-mono mt-1">{item.wingetId}</p>
               </div>
             </div>
-            <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+            <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -156,33 +156,33 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
         <div className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-6">
             {/* Read-only info */}
-            <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+            <div className="bg-bg-elevated/50 rounded-lg p-4 border border-overlay/15">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-slate-500">Version</span>
-                  <p className="text-white font-medium">v{item.version}</p>
+                  <span className="text-text-muted">Version</span>
+                  <p className="text-text-primary font-medium">v{item.version}</p>
                 </div>
                 <div>
-                  <span className="text-slate-500">Architecture</span>
-                  <p className="text-white font-medium">{item.architecture}</p>
+                  <span className="text-text-muted">Architecture</span>
+                  <p className="text-text-primary font-medium">{item.architecture}</p>
                 </div>
                 <div>
-                  <span className="text-slate-500">Installer Type</span>
-                  <p className="text-white font-medium uppercase">{item.installerType}</p>
+                  <span className="text-text-muted">Installer Type</span>
+                  <p className="text-text-primary font-medium uppercase">{item.installerType}</p>
                 </div>
                 <div>
-                  <span className="text-slate-500">Publisher</span>
-                  <p className="text-white font-medium">{item.publisher}</p>
+                  <span className="text-text-muted">Publisher</span>
+                  <p className="text-text-primary font-medium">{item.publisher}</p>
                 </div>
               </div>
-              <p className="text-slate-500 text-xs mt-3">
+              <p className="text-text-muted text-xs mt-3">
                 Version and architecture cannot be changed. Remove and re-add the app to select different options.
               </p>
             </div>
 
             {/* Install Scope */}
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2">Install Scope</label>
+              <label className="block text-sm font-medium text-text-muted mb-2">Install Scope</label>
               <div className="flex gap-2">
                 {(['machine', 'user'] as WingetScope[]).map((scope) => {
                   const label = scope === 'machine' ? 'Per-Machine' : 'Per-User';
@@ -194,7 +194,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                         'flex-1 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors',
                         selectedScope === scope
                           ? 'bg-blue-600 border-blue-500 text-white'
-                          : 'bg-slate-800 border-slate-700 text-white hover:border-slate-600'
+                          : 'bg-bg-elevated border-overlay/15 text-text-primary hover:border-overlay/20'
                       )}
                     >
                       {label}
@@ -204,8 +204,8 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
               </div>
             </div>
 
-            <div className="border-t border-slate-800 pt-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <div className="border-t border-overlay/10 pt-6">
+              <h3 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
                 <Settings className="w-5 h-5 text-blue-400" />
                 Deployment Configuration
               </h3>
@@ -221,7 +221,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                   {/* Processes to Close */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-medium text-slate-300">
+                      <label className="block text-sm font-medium text-text-secondary">
                         Processes to close before install
                       </label>
                       <button
@@ -234,7 +234,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                     </div>
                     <div className="space-y-2">
                       {config.processesToClose.length === 0 ? (
-                        <p className="text-slate-500 text-sm italic">No processes configured</p>
+                        <p className="text-text-muted text-sm italic">No processes configured</p>
                       ) : (
                         config.processesToClose.map((process, index) => (
                           <div key={index} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -243,18 +243,18 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                               value={process.name}
                               onChange={(e) => updateProcess(index, { name: e.target.value })}
                               placeholder="Process name (e.g., chrome)"
-                              className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                              className="flex-1 px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                             />
                             <input
                               type="text"
                               value={process.description}
                               onChange={(e) => updateProcess(index, { description: e.target.value })}
                               placeholder="Display name"
-                              className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                              className="flex-1 px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                             />
                             <button
                               onClick={() => removeProcess(index)}
-                              className="text-slate-500 hover:text-red-400 transition-colors"
+                              className="text-text-muted hover:text-red-400 transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -275,8 +275,8 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
 
                     {/* Countdown Duration - only show when close prompt is enabled */}
                     {config.showClosePrompt && (
-                      <div className="ml-6 border-l-2 border-slate-700 pl-4">
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <div className="ml-6 border-l-2 border-overlay/15 pl-4">
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
                           Countdown duration (seconds)
                         </label>
                         <div className="flex items-center gap-3">
@@ -289,7 +289,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                             onChange={(e) => updateConfig({ closeCountdown: parseInt(e.target.value) })}
                             className="flex-1"
                           />
-                          <span className="text-white text-sm font-mono w-12 text-right">
+                          <span className="text-text-primary text-sm font-mono w-12 text-right">
                             {config.closeCountdown || 60}s
                           </span>
                         </div>
@@ -331,13 +331,13 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
 
                   {/* Window Location */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Dialog position
                     </label>
                     <select
                       value={config.windowLocation || 'Default'}
                       onChange={(e) => updateConfig({ windowLocation: e.target.value as DialogPosition })}
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                     >
                       <option value="Default">Default</option>
                       <option value="Center">Center</option>
@@ -352,13 +352,13 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
 
                   {/* Restart Behavior */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Restart behavior
                     </label>
                     <select
                       value={config.restartBehavior}
                       onChange={(e) => updateConfig({ restartBehavior: e.target.value as RestartBehavior })}
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                     >
                       <option value="Suppress">Suppress restart (recommended)</option>
                       <option value="Prompt">Prompt user to restart</option>
@@ -384,9 +384,9 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                   />
 
                   {config.allowDefer && (
-                    <div className="ml-6 border-l-2 border-slate-700 pl-4 space-y-4">
+                    <div className="ml-6 border-l-2 border-overlay/15 pl-4 space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
                           Maximum deferrals allowed
                         </label>
                         <input
@@ -395,11 +395,11 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                           max="99"
                           value={config.deferTimes || 3}
                           onChange={(e) => updateConfig({ deferTimes: parseInt(e.target.value) || 3 })}
-                          className="w-24 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                          className="w-24 px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
                           Deferral days limit (optional)
                         </label>
                         <input
@@ -409,22 +409,22 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                           value={config.deferDays || ''}
                           onChange={(e) => updateConfig({ deferDays: e.target.value ? parseInt(e.target.value) : undefined })}
                           placeholder="No limit"
-                          className="w-24 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                          className="w-24 px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
                           Deferral deadline (optional)
                         </label>
                         <input
                           type="date"
                           value={config.deferDeadline || ''}
                           onChange={(e) => updateConfig({ deferDeadline: e.target.value || undefined })}
-                          className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                          className="px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
                           Force close countdown (optional)
                         </label>
                         <div className="flex items-center gap-3">
@@ -435,9 +435,9 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                             value={config.forceCloseProcessesCountdown || ''}
                             onChange={(e) => updateConfig({ forceCloseProcessesCountdown: e.target.value ? parseInt(e.target.value) : undefined })}
                             placeholder="Not set"
-                            className="w-24 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                            className="w-24 px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                           />
-                          <span className="text-slate-400 text-sm">seconds</span>
+                          <span className="text-text-muted text-sm">seconds</span>
                         </div>
                       </div>
                     </div>
@@ -463,9 +463,9 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                   />
 
                   {config.progressDialog?.enabled && (
-                    <div className="ml-6 border-l-2 border-slate-700 pl-4 space-y-4">
+                    <div className="ml-6 border-l-2 border-overlay/15 pl-4 space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
                           Status message (optional)
                         </label>
                         <input
@@ -475,11 +475,11 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                             progressDialog: { ...config.progressDialog, enabled: true, statusMessage: e.target.value || undefined }
                           })}
                           placeholder="Installing application..."
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                          className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
                           Window position
                         </label>
                         <select
@@ -487,7 +487,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                           onChange={(e) => updateConfig({
                             progressDialog: { ...config.progressDialog, enabled: true, windowLocation: e.target.value as DialogPosition }
                           })}
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                          className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                         >
                           <option value="Default">Default</option>
                           <option value="Center">Center</option>
@@ -498,9 +498,9 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                   )}
 
                   {/* Balloon Tips */}
-                  <div className="border-t border-slate-700 pt-4 mt-4">
+                  <div className="border-t border-overlay/15 pt-4 mt-4">
                     <div className="flex items-center justify-between mb-3">
-                      <label className="block text-sm font-medium text-slate-300">
+                      <label className="block text-sm font-medium text-text-secondary">
                         Balloon notifications
                       </label>
                       <button
@@ -524,19 +524,19 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                       </button>
                     </div>
                     {(!config.balloonTips || config.balloonTips.length === 0) ? (
-                      <p className="text-slate-500 text-sm italic">No balloon notifications configured</p>
+                      <p className="text-text-muted text-sm italic">No balloon notifications configured</p>
                     ) : (
                       <div className="space-y-3">
                         {config.balloonTips.map((tip, index) => (
-                          <div key={index} className="bg-slate-800/50 rounded-lg p-3 space-y-2">
+                          <div key={index} className="bg-bg-elevated/50 rounded-lg p-3 space-y-2">
                             <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-white">Notification {index + 1}</span>
+                              <span className="text-sm font-medium text-text-primary">Notification {index + 1}</span>
                               <button
                                 onClick={() => {
                                   const newTips = config.balloonTips.filter((_, i) => i !== index);
                                   updateConfig({ balloonTips: newTips });
                                 }}
-                                className="text-slate-500 hover:text-red-400 transition-colors"
+                                className="text-text-muted hover:text-red-400 transition-colors"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -549,7 +549,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                                   newTips[index] = { ...tip, timing: e.target.value as 'start' | 'end' };
                                   updateConfig({ balloonTips: newTips });
                                 }}
-                                className="px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                className="px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                               >
                                 <option value="start">At start</option>
                                 <option value="end">At end</option>
@@ -561,7 +561,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                                   newTips[index] = { ...tip, icon: e.target.value as BalloonIcon };
                                   updateConfig({ balloonTips: newTips });
                                 }}
-                                className="px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                className="px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                               >
                                 <option value="Info">Info</option>
                                 <option value="Warning">Warning</option>
@@ -578,7 +578,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                                 updateConfig({ balloonTips: newTips });
                               }}
                               placeholder="Title"
-                              className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                              className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                             />
                             <input
                               type="text"
@@ -589,7 +589,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                                 updateConfig({ balloonTips: newTips });
                               }}
                               placeholder="Message text"
-                              className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                              className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                             />
                           </div>
                         ))}
@@ -608,7 +608,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-slate-400 text-sm">Add custom dialog prompts at specific points during installation.</p>
+                    <p className="text-text-muted text-sm">Add custom dialog prompts at specific points during installation.</p>
                     <button
                       onClick={() => {
                         const newPrompt: CustomPrompt = {
@@ -633,13 +633,13 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                   </div>
 
                   {(!config.customPrompts || config.customPrompts.length === 0) ? (
-                    <p className="text-slate-500 text-sm italic">No custom prompts configured</p>
+                    <p className="text-text-muted text-sm italic">No custom prompts configured</p>
                   ) : (
                     <div className="space-y-4">
                       {config.customPrompts.map((prompt, index) => (
-                        <div key={index} className="bg-slate-800/50 rounded-lg p-4 space-y-3">
+                        <div key={index} className="bg-bg-elevated/50 rounded-lg p-4 space-y-3">
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-white">Prompt {index + 1}</span>
+                            <span className="text-sm font-medium text-text-primary">Prompt {index + 1}</span>
                             <div className="flex items-center gap-2">
                               <ToggleOption
                                 label=""
@@ -656,7 +656,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                                   const newPrompts = config.customPrompts.filter((_, i) => i !== index);
                                   updateConfig({ customPrompts: newPrompts });
                                 }}
-                                className="text-slate-500 hover:text-red-400 transition-colors"
+                                className="text-text-muted hover:text-red-400 transition-colors"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -664,7 +664,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                           </div>
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Timing</label>
+                              <label className="block text-xs text-text-muted mb-1">Timing</label>
                               <select
                                 value={prompt.timing}
                                 onChange={(e) => {
@@ -672,7 +672,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                                   newPrompts[index] = { ...prompt, timing: e.target.value as CustomPrompt['timing'] };
                                   updateConfig({ customPrompts: newPrompts });
                                 }}
-                                className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                               >
                                 <option value="pre-install">Before Install</option>
                                 <option value="post-install">After Install</option>
@@ -681,7 +681,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Icon</label>
+                              <label className="block text-xs text-text-muted mb-1">Icon</label>
                               <select
                                 value={prompt.icon}
                                 onChange={(e) => {
@@ -689,7 +689,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                                   newPrompts[index] = { ...prompt, icon: e.target.value as DialogIcon };
                                   updateConfig({ customPrompts: newPrompts });
                                 }}
-                                className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                               >
                                 <option value="None">None</option>
                                 <option value="Information">Information</option>
@@ -700,7 +700,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                             </div>
                           </div>
                           <div>
-                            <label className="block text-xs text-slate-400 mb-1">Title</label>
+                            <label className="block text-xs text-text-muted mb-1">Title</label>
                             <input
                               type="text"
                               value={prompt.title}
@@ -710,11 +710,11 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                                 updateConfig({ customPrompts: newPrompts });
                               }}
                               placeholder="Dialog title"
-                              className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                              className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs text-slate-400 mb-1">Message</label>
+                            <label className="block text-xs text-text-muted mb-1">Message</label>
                             <textarea
                               value={prompt.message}
                               onChange={(e) => {
@@ -724,12 +724,12 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                               }}
                               placeholder="Dialog message"
                               rows={2}
-                              className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm resize-none"
+                              className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm resize-none"
                             />
                           </div>
                           <div className="grid grid-cols-3 gap-2">
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Left Button</label>
+                              <label className="block text-xs text-text-muted mb-1">Left Button</label>
                               <input
                                 type="text"
                                 value={prompt.buttonLeftText || ''}
@@ -739,11 +739,11 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                                   updateConfig({ customPrompts: newPrompts });
                                 }}
                                 placeholder="Optional"
-                                className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Middle Button</label>
+                              <label className="block text-xs text-text-muted mb-1">Middle Button</label>
                               <input
                                 type="text"
                                 value={prompt.buttonMiddleText || ''}
@@ -753,11 +753,11 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                                   updateConfig({ customPrompts: newPrompts });
                                 }}
                                 placeholder="Optional"
-                                className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Right Button</label>
+                              <label className="block text-xs text-text-muted mb-1">Right Button</label>
                               <input
                                 type="text"
                                 value={prompt.buttonRightText || ''}
@@ -767,13 +767,13 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                                   updateConfig({ customPrompts: newPrompts });
                                 }}
                                 placeholder="Continue"
-                                className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                               />
                             </div>
                           </div>
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Timeout (seconds)</label>
+                              <label className="block text-xs text-text-muted mb-1">Timeout (seconds)</label>
                               <input
                                 type="number"
                                 min="0"
@@ -783,7 +783,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                                   newPrompts[index] = { ...prompt, timeout: parseInt(e.target.value) || 0 };
                                   updateConfig({ customPrompts: newPrompts });
                                 }}
-                                className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                               />
                             </div>
                             <div className="flex items-end pb-1">
@@ -824,9 +824,9 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                   />
 
                   {config.restartPrompt?.enabled && (
-                    <div className="ml-6 border-l-2 border-slate-700 pl-4 space-y-4">
+                    <div className="ml-6 border-l-2 border-overlay/15 pl-4 space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
                           Countdown duration (seconds)
                         </label>
                         <div className="flex items-center gap-3">
@@ -841,13 +841,13 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                             })}
                             className="flex-1"
                           />
-                          <span className="text-white text-sm font-mono w-16 text-right">
+                          <span className="text-text-primary text-sm font-mono w-16 text-right">
                             {config.restartPrompt?.countdownSeconds || 600}s
                           </span>
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
                           No-hide countdown (seconds)
                         </label>
                         <div className="flex items-center gap-3">
@@ -862,7 +862,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                             })}
                             className="flex-1"
                           />
-                          <span className="text-white text-sm font-mono w-16 text-right">
+                          <span className="text-text-primary text-sm font-mono w-16 text-right">
                             {config.restartPrompt?.countdownNoHideSeconds || 60}s
                           </span>
                         </div>
@@ -888,8 +888,8 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                   />
 
                   {config.checkDiskSpace && (
-                    <div className="ml-6 border-l-2 border-slate-700 pl-4">
-                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <div className="ml-6 border-l-2 border-overlay/15 pl-4">
+                      <label className="block text-sm font-medium text-text-secondary mb-2">
                         Required disk space (MB)
                       </label>
                       <div className="flex items-center gap-3">
@@ -900,9 +900,9 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                           value={config.requiredDiskSpace || ''}
                           onChange={(e) => updateConfig({ requiredDiskSpace: e.target.value ? parseInt(e.target.value) : undefined })}
                           placeholder="Auto-detect"
-                          className="w-32 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                          className="w-32 px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                         />
-                        <span className="text-slate-400 text-sm">MB</span>
+                        <span className="text-text-muted text-sm">MB</span>
                       </div>
                     </div>
                   )}
@@ -944,7 +944,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
               >
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Company name
                     </label>
                     <input
@@ -952,12 +952,12 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                       value={config.brandingCompanyName || ''}
                       onChange={(e) => updateConfig({ brandingCompanyName: e.target.value || undefined })}
                       placeholder="PSAppDeployToolkit (default)"
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Welcome dialog title (optional)
                     </label>
                     <input
@@ -965,12 +965,12 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                       value={config.brandingWelcomeTitle || ''}
                       onChange={(e) => updateConfig({ brandingWelcomeTitle: e.target.value || undefined })}
                       placeholder={`${item.displayName} Installation`}
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Welcome dialog custom message
                     </label>
                     <textarea
@@ -978,12 +978,12 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                       onChange={(e) => updateConfig({ brandingWelcomeMessage: e.target.value || undefined })}
                       rows={3}
                       placeholder="Optional message for the installation welcome prompt"
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Fluent accent color
                     </label>
                     <input
@@ -991,15 +991,15 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                       value={config.brandingAccentColor || ''}
                       onChange={(e) => updateConfig({ brandingAccentColor: e.target.value || undefined })}
                       placeholder="0xFF0078D7 or #0078D7"
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm font-mono"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm font-mono"
                     />
-                    <p className="text-slate-500 text-xs mt-1">
+                    <p className="text-text-muted text-xs mt-1">
                       Supports hex values like 0xFF0078D7 or standard color names.
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Logo path / URL
                     </label>
                     <input
@@ -1007,12 +1007,12 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                       value={config.brandingLogoPath || ''}
                       onChange={(e) => updateConfig({ brandingLogoPath: e.target.value || undefined })}
                       placeholder="Leave empty to keep default logo"
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Dark mode logo path / URL
                     </label>
                     <input
@@ -1020,12 +1020,12 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                       value={config.brandingLogoDarkPath || ''}
                       onChange={(e) => updateConfig({ brandingLogoDarkPath: e.target.value || undefined })}
                       placeholder="Optional dark mode logo"
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Banner path / URL
                     </label>
                     <input
@@ -1033,7 +1033,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                       value={config.brandingBannerPath || ''}
                       onChange={(e) => updateConfig({ brandingBannerPath: e.target.value || undefined })}
                       placeholder="Optional classic UI banner"
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                     />
                   </div>
                 </div>
@@ -1049,7 +1049,7 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                 <div className="space-y-4">
                   {/* Custom Install Command */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Install command override
                     </label>
                     <input
@@ -1057,14 +1057,14 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                       value={installCommand}
                       onChange={(e) => setInstallCommand(e.target.value)}
                       placeholder="Leave empty to use default"
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm font-mono"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm font-mono"
                     />
-                    <p className="text-slate-500 text-xs mt-1">Override the auto-generated install command</p>
+                    <p className="text-text-muted text-xs mt-1">Override the auto-generated install command</p>
                   </div>
 
                   {/* Custom Uninstall Command */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Uninstall command override
                     </label>
                     <input
@@ -1072,9 +1072,9 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
                       value={uninstallCommand}
                       onChange={(e) => setUninstallCommand(e.target.value)}
                       placeholder="Leave empty to use default"
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm font-mono"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm font-mono"
                     />
-                    <p className="text-slate-500 text-xs mt-1">Override the auto-generated uninstall command</p>
+                    <p className="text-text-muted text-xs mt-1">Override the auto-generated uninstall command</p>
                   </div>
                 </div>
               </ConfigSection>
@@ -1083,12 +1083,12 @@ export function CartItemConfig({ item, onClose }: CartItemConfigProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex-shrink-0 border-t border-slate-800 p-4 bg-slate-900/95">
+        <div className="flex-shrink-0 border-t border-overlay/10 p-4 bg-bg-surface/95">
           <div className="flex gap-3">
             <Button
               variant="outline"
               onClick={onClose}
-              className="flex-1 border-slate-700 text-slate-300 hover:bg-white/5 hover:border-slate-600"
+              className="flex-1 border-overlay/15 text-text-secondary hover:bg-white/5 hover:border-overlay/20"
             >
               Cancel
             </Button>
@@ -1128,18 +1128,18 @@ interface ConfigSectionProps {
 
 function ConfigSection({ title, icon, expanded, onToggle, children }: ConfigSectionProps) {
   return (
-    <div className="border border-slate-800 rounded-lg overflow-hidden mb-3">
+    <div className="border border-overlay/10 rounded-lg overflow-hidden mb-3">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-4 py-3 bg-slate-800/50 hover:bg-slate-800 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 bg-bg-elevated/50 hover:bg-overlay/10 transition-colors"
       >
-        <div className="flex items-center gap-2 text-white">
+        <div className="flex items-center gap-2 text-text-primary">
           {icon}
           <span className="font-medium">{title}</span>
         </div>
-        <ChevronRight className={cn('w-4 h-4 text-slate-400 transition-transform', expanded && 'rotate-90')} />
+        <ChevronRight className={cn('w-4 h-4 text-text-muted transition-transform', expanded && 'rotate-90')} />
       </button>
-      {expanded && <div className="p-4 bg-slate-900/50">{children}</div>}
+      {expanded && <div className="p-4 bg-bg-surface/50">{children}</div>}
     </div>
   );
 }
@@ -1158,7 +1158,7 @@ function ToggleOption({ label, description, checked, onChange }: ToggleOptionPro
         <div
           className={cn(
             'w-10 h-6 rounded-full transition-colors relative',
-            checked ? 'bg-blue-600' : 'bg-slate-700'
+            checked ? 'bg-blue-600' : 'bg-overlay/15'
           )}
           onClick={() => onChange(!checked)}
         >
@@ -1171,8 +1171,8 @@ function ToggleOption({ label, description, checked, onChange }: ToggleOptionPro
         </div>
       </div>
       <div>
-        <span className="text-white text-sm font-medium">{label}</span>
-        <p className="text-slate-500 text-xs">{description}</p>
+        <span className="text-text-primary text-sm font-medium">{label}</span>
+        <p className="text-text-muted text-xs">{description}</p>
       </div>
     </label>
   );

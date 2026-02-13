@@ -64,8 +64,8 @@ export default function ReportsPage() {
         />
         <SkeletonGrid count={4} columns={4} variant="stat" />
         <div className="grid gap-6 lg:grid-cols-2">
-          <div className="glass-light rounded-xl p-6 border border-black/5 h-64 animate-pulse" />
-          <div className="glass-light rounded-xl p-6 border border-black/5 h-64 animate-pulse" />
+          <div className="glass-light rounded-xl p-6 border border-overlay/5 h-64 animate-pulse" />
+          <div className="glass-light rounded-xl p-6 border border-overlay/5 h-64 animate-pulse" />
         </div>
       </div>
     );
@@ -191,7 +191,7 @@ export default function ReportsPage() {
         {/* Success Rate */}
         <motion.div
           variants={itemVariants}
-          className="glass-light border border-black/5 rounded-xl p-6 hover:border-accent-cyan/20 transition-colors"
+          className="glass-light border border-overlay/5 rounded-xl p-6 hover:border-accent-cyan/20 transition-colors"
         >
           <h2 className="text-lg font-semibold text-text-primary mb-4">Success Rate</h2>
           <SuccessRateChart
@@ -204,7 +204,7 @@ export default function ReportsPage() {
         {/* Deployments Over Time */}
         <motion.div
           variants={itemVariants}
-          className="glass-light border border-black/5 rounded-xl p-6 hover:border-accent-cyan/20 transition-colors"
+          className="glass-light border border-overlay/5 rounded-xl p-6 hover:border-accent-cyan/20 transition-colors"
         >
           <h2 className="text-lg font-semibold text-text-primary mb-4">
             Deployments Over Time
@@ -218,7 +218,7 @@ export default function ReportsPage() {
         variants={itemVariants}
         initial="hidden"
         animate="visible"
-        className="glass-light border border-black/5 rounded-xl p-6 hover:border-accent-cyan/20 transition-colors"
+        className="glass-light border border-overlay/5 rounded-xl p-6 hover:border-accent-cyan/20 transition-colors"
       >
         <h2 className="text-lg font-semibold text-text-primary mb-4">
           Most Deployed Applications
@@ -231,7 +231,7 @@ export default function ReportsPage() {
         variants={itemVariants}
         initial="hidden"
         animate="visible"
-        className="glass-light border border-black/5 rounded-xl p-6 hover:border-accent-cyan/20 transition-colors"
+        className="glass-light border border-overlay/5 rounded-xl p-6 hover:border-accent-cyan/20 transition-colors"
       >
         <h2 className="text-lg font-semibold text-text-primary mb-4">Recent Failures</h2>
         <RecentFailuresTable data={data?.recentFailures || []} />

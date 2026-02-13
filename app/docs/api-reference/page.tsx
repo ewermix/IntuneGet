@@ -45,7 +45,7 @@ export default function ApiReferencePage() {
         <p className="text-text-secondary mb-4">
           Most routes require a Microsoft access token:
         </p>
-        <pre className="rounded-lg border border-black/10 bg-white p-4 text-sm text-text-secondary overflow-x-auto">
+        <pre className="rounded-lg border border-overlay/10 bg-bg-elevated p-4 text-sm text-text-secondary overflow-x-auto">
 {`Authorization: Bearer <microsoft-access-token>`}
         </pre>
         <Callout type="info" title="Callback Security">

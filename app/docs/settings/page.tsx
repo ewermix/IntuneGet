@@ -59,35 +59,35 @@ export default function SettingsPage() {
         </p>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <User className="h-5 w-5 text-accent-cyan mb-2" />
             <h3 className="font-semibold text-text-primary mb-1">General</h3>
             <p className="text-sm text-text-secondary">
               Account information and Intune connection status
             </p>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <Shield className="h-5 w-5 text-accent-cyan mb-2" />
             <h3 className="font-semibold text-text-primary mb-1">Permissions</h3>
             <p className="text-sm text-text-secondary">
               Verify and manage Microsoft Graph API permissions
             </p>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <Bell className="h-5 w-5 text-accent-cyan mb-2" />
             <h3 className="font-semibold text-text-primary mb-1">Notifications</h3>
             <p className="text-sm text-text-secondary">
               Email notifications and webhook configuration
             </p>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <FileDown className="h-5 w-5 text-accent-cyan mb-2" />
             <h3 className="font-semibold text-text-primary mb-1">Export</h3>
             <p className="text-sm text-text-secondary">
               Default format, icons, and metadata preferences
             </p>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <Database className="h-5 w-5 text-accent-cyan mb-2" />
             <h3 className="font-semibold text-text-primary mb-1">Data</h3>
             <p className="text-sm text-text-secondary">
@@ -347,21 +347,21 @@ export default function SettingsPage() {
         </p>
 
         <div className="space-y-4">
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h4 className="font-medium text-text-primary mb-1">Application Cache</h4>
             <p className="text-sm text-text-secondary">
               Cached application data speeds up loading times. Click
               &quot;Clear Cache&quot; to force fresh data on next load.
             </p>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h4 className="font-medium text-text-primary mb-1">Force Sync</h4>
             <p className="text-sm text-text-secondary">
               Re-fetch all application data from Intune immediately. Useful
               after making changes directly in the Intune portal.
             </p>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h4 className="font-medium text-text-primary mb-1">
               Auto-Refresh Interval
             </h4>

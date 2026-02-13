@@ -68,7 +68,7 @@ export function TenantCard({ tenant, onSelect, onRemove, onGetConsentUrl, isSele
         'relative group p-4 rounded-xl border transition-all duration-200',
         isSelected
           ? 'bg-accent-cyan/10 border-accent-cyan/30'
-          : 'bg-black/5 border-black/10 hover:border-black/20',
+          : 'bg-overlay/5 border-overlay/10 hover:border-black/20',
         isActive && 'cursor-pointer'
       )}
       onClick={handleSelect}
@@ -85,17 +85,17 @@ export function TenantCard({ tenant, onSelect, onRemove, onGetConsentUrl, isSele
             e.stopPropagation();
             setShowMenu(!showMenu);
           }}
-          className="p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-black/10 transition-colors opacity-0 group-hover:opacity-100"
+          className="p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-overlay/10 transition-colors opacity-0 group-hover:opacity-100"
         >
           <MoreVertical className="w-4 h-4" />
         </button>
 
         {showMenu && (
-          <div className="absolute top-full right-0 mt-1 w-48 bg-bg-elevated border border-black/10 rounded-lg shadow-xl z-10 overflow-hidden">
+          <div className="absolute top-full right-0 mt-1 w-48 bg-bg-elevated border border-overlay/10 rounded-lg shadow-xl z-10 overflow-hidden">
             {canGetConsentUrl && onGetConsentUrl && (
               <button
                 onClick={handleGetConsentUrl}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:bg-black/5 transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:bg-overlay/5 transition-colors"
               >
                 <Link2 className="w-4 h-4" />
                 Get Consent URL
@@ -118,7 +118,7 @@ export function TenantCard({ tenant, onSelect, onRemove, onGetConsentUrl, isSele
         {/* Icon */}
         <div className={cn(
           'flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center',
-          isActive ? 'bg-accent-cyan/20' : 'bg-black/10'
+          isActive ? 'bg-accent-cyan/20' : 'bg-overlay/10'
         )}>
           <Building2 className={cn(
             'w-5 h-5',

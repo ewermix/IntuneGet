@@ -144,7 +144,7 @@ function VersionBadge({ type }: { type: Release["type"] }) {
   const styles = {
     major: "bg-accent-cyan/10 text-accent-cyan",
     minor: "bg-emerald-500/10 text-emerald-600",
-    patch: "bg-stone-100 text-stone-600",
+    patch: "bg-overlay/[0.06] text-text-secondary",
   };
 
   return (
@@ -209,10 +209,10 @@ export default function ChangelogPage() {
           <span className="inline-block font-mono text-xs tracking-wider text-accent-cyan uppercase mb-4">
             Changelog
           </span>
-          <h1 className="text-3xl md:text-4xl font-bold text-stone-900 mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
             What&apos;s New in IntuneGet
           </h1>
-          <p className="text-lg text-stone-600">
+          <p className="text-lg text-text-secondary">
             Track the latest updates, features, and improvements. IntuneGet is
             actively maintained and regularly updated with new capabilities.
           </p>
@@ -230,27 +230,27 @@ export default function ChangelogPage() {
                 <div className="absolute left-[11px] top-6 bottom-0 w-px bg-stone-200" />
               )}
               {/* Timeline dot */}
-              <div className="absolute left-0 top-1.5 w-[23px] h-[23px] rounded-full border-2 border-accent-cyan/40 bg-white flex items-center justify-center">
+              <div className="absolute left-0 top-1.5 w-[23px] h-[23px] rounded-full border-2 border-accent-cyan/40 bg-bg-elevated flex items-center justify-center">
                 <div className="w-2.5 h-2.5 rounded-full bg-accent-cyan" />
               </div>
 
               {/* Content */}
-              <div className="bg-white rounded-xl border border-stone-200 p-6 shadow-soft">
+              <div className="bg-bg-elevated rounded-xl border border-overlay/10 p-6 shadow-soft">
                 <div className="flex flex-wrap items-center gap-3 mb-3">
-                  <span className="font-mono text-lg font-bold text-stone-900">
+                  <span className="font-mono text-lg font-bold text-text-primary">
                     v{release.version}
                   </span>
                   <VersionBadge type={release.type} />
-                  <span className="text-sm text-stone-400">{release.date}</span>
+                  <span className="text-sm text-text-muted">{release.date}</span>
                 </div>
-                <h2 className="text-lg font-semibold text-stone-800 mb-3">
+                <h2 className="text-lg font-semibold text-text-primary mb-3">
                   {release.title}
                 </h2>
                 <ul className="space-y-2">
                   {release.highlights.map((highlight) => (
                     <li
                       key={highlight}
-                      className="flex items-start gap-2 text-sm text-stone-600"
+                      className="flex items-start gap-2 text-sm text-text-secondary"
                     >
                       <span className="w-1.5 h-1.5 rounded-full bg-accent-cyan mt-1.5 flex-shrink-0" />
                       {highlight}
@@ -264,7 +264,7 @@ export default function ChangelogPage() {
 
         {/* Footer CTA */}
         <div className="mt-12 text-center">
-          <p className="text-stone-500 text-sm">
+          <p className="text-text-muted text-sm">
             View the full commit history on{" "}
             <a
               href="https://github.com/ugurkocde/IntuneGet/commits"

@@ -70,7 +70,7 @@ export function MspWebhookManager() {
   // Show delivery log view
   if (viewingDeliveries) {
     return (
-      <div className="p-6 rounded-xl glass-light border border-black/5">
+      <div className="p-6 rounded-xl glass-light border border-overlay/5">
         <WebhookDeliveryLog
           webhookId={viewingDeliveries.id}
           webhookName={viewingDeliveries.name}
@@ -119,7 +119,7 @@ export function MspWebhookManager() {
 
       {/* Webhook list */}
       {webhooks.length === 0 ? (
-        <div className="p-8 rounded-xl glass-light border border-black/5 text-center">
+        <div className="p-8 rounded-xl glass-light border border-overlay/5 text-center">
           <Webhook className="w-10 h-10 text-text-muted mx-auto mb-3" />
           <p className="text-sm text-text-secondary mb-4">No webhooks configured</p>
           <p className="text-xs text-text-muted mb-4">

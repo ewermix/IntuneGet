@@ -164,7 +164,7 @@ export default function DashboardPage() {
             </p>
           </div>
           <Link href="/dashboard/settings">
-            <Button variant="outline" size="sm" className="border-black/10 text-text-secondary hover:bg-black/5 hover:border-accent-cyan/50">
+            <Button variant="outline" size="sm" className="border-overlay/10 text-text-secondary hover:bg-overlay/5 hover:border-accent-cyan/50">
               Settings
             </Button>
           </Link>
@@ -253,7 +253,7 @@ function QuickStartStep({
   href?: string;
 }) {
   const content = (
-    <div className="group relative flex items-start gap-4 p-3 rounded-lg hover:bg-black/5 transition-all cursor-pointer">
+    <div className="group relative flex items-start gap-4 p-3 rounded-lg hover:bg-overlay/5 transition-all cursor-pointer">
       {/* Step number with gradient */}
       <div className="relative z-10 w-8 h-8 rounded-full bg-gradient-to-br from-accent-cyan to-accent-violet text-bg-elevated flex items-center justify-center font-medium text-sm flex-shrink-0 shadow-glow-cyan">
         {number}

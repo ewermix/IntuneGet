@@ -176,7 +176,7 @@ export function DeploymentFeedback({
   }
 
   return (
-    <div className="p-4 bg-black/5 rounded-xl space-y-4">
+    <div className="p-4 bg-overlay/5 rounded-xl space-y-4">
       <div className="flex items-center justify-between">
         <h4 className="font-medium text-text-primary">Detection Rule Feedback</h4>
         <button
@@ -208,7 +208,7 @@ export function DeploymentFeedback({
                 'flex flex-col items-center p-3 rounded-lg border transition-all duration-200',
                 isSelected
                   ? option.bgColor
-                  : 'border-black/10 hover:border-black/20 hover:bg-black/5'
+                  : 'border-overlay/10 hover:border-black/20 hover:bg-overlay/5'
               )}
             >
               <Icon
@@ -251,7 +251,7 @@ export function DeploymentFeedback({
               }
               rows={3}
               maxLength={1000}
-              className="w-full px-3 py-2 bg-bg-elevated border border-black/10 rounded-lg text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan/50 resize-none"
+              className="w-full px-3 py-2 bg-bg-elevated border border-overlay/10 rounded-lg text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan/50 resize-none"
             />
             <p className="text-xs text-text-muted text-right mt-1">
               {description.length}/1000

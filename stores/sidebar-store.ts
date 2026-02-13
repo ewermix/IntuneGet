@@ -8,6 +8,7 @@ interface SidebarState {
 interface SidebarActions {
   toggleCollapse: () => void;
   setCollapsed: (collapsed: boolean) => void;
+  setCollapsedFromServer: (collapsed: boolean) => void;
 }
 
 type SidebarStore = SidebarState & SidebarActions;
@@ -22,6 +23,9 @@ export const useSidebarStore = create<SidebarStore>()(
       },
 
       setCollapsed: (collapsed) => {
+        set({ isCollapsed: collapsed });
+      },
+      setCollapsedFromServer: (collapsed) => {
         set({ isCollapsed: collapsed });
       },
     }),

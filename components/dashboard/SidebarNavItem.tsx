@@ -52,7 +52,7 @@ export function SidebarNavItem({
           isCollapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5',
           isActive
             ? 'bg-accent-cyan/8 text-text-primary'
-            : 'text-text-secondary hover:text-text-primary hover:bg-black/[0.04]'
+            : 'text-text-secondary hover:text-text-primary hover:bg-overlay/[0.04]'
         )}
       >
         {isActive && (

@@ -69,7 +69,7 @@ export function HeroSection() {
             <TextReveal
               as="h1"
               text={"From Winget to\nIntune\u00A0in\u00A0Minutes"}
-              className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-stone-900 tracking-tight"
+              className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-text-primary tracking-tight"
               animateOnMount
               delay={0.05}
               staggerDelay={0.04}
@@ -77,7 +77,7 @@ export function HeroSection() {
 
             {/* Subheadline with authoritative statement */}
             <FadeIn delay={0.1} animateOnMount duration={0.4} direction="up">
-              <p className="max-w-lg text-lg md:text-xl text-stone-600 leading-relaxed">
+              <p className="max-w-lg text-lg md:text-xl text-text-secondary leading-relaxed">
                 Search {supportedAppsDisplay}+ packages, package automatically, and
                 deploy without scripting. Built for IT teams that want speed
                 without hidden costs.
@@ -100,7 +100,7 @@ export function HeroSection() {
                   </MotionLink>
                   <MotionLink
                     href="/#how-it-works"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-4 text-base font-semibold text-stone-700 bg-white border border-stone-200 rounded-xl hover:border-stone-300 hover:bg-stone-50 transition-all duration-300"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-4 text-base font-semibold text-text-secondary bg-bg-elevated border border-overlay/10 rounded-xl hover:border-overlay/15 hover:bg-overlay/[0.04] transition-all duration-300"
                     whileHover={shouldReduceMotion ? {} : { scale: 1.02 }}
                     whileTap={shouldReduceMotion ? {} : { scale: 0.97 }}
                     transition={springPresets.snappy}
@@ -113,7 +113,7 @@ export function HeroSection() {
                     href="https://github.com/ugurkocde/IntuneGet"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-stone-500 hover:text-stone-700 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-text-muted hover:text-text-secondary transition-colors"
                     whileHover={shouldReduceMotion ? {} : { x: 2 }}
                     transition={springPresets.snappy}
                   >
@@ -122,7 +122,7 @@ export function HeroSection() {
                   </motion.a>
                   <Link
                     href="/docs/docker"
-                    className="text-stone-500 hover:text-stone-700 transition-colors"
+                    className="text-text-muted hover:text-text-secondary transition-colors"
                   >
                     Self-host with Docker
                   </Link>
@@ -132,7 +132,7 @@ export function HeroSection() {
 
             {/* Trust strip */}
             <FadeIn delay={0.2} animateOnMount duration={0.4} direction="up">
-              <div className="flex items-center gap-4 text-sm text-stone-500">
+              <div className="flex items-center gap-4 text-sm text-text-muted">
                 <span className="flex items-center gap-1.5">
                   <Star className="w-3.5 h-3.5 text-amber-500" />
                   {starsDisplay} stars
@@ -152,7 +152,7 @@ export function HeroSection() {
           {/* Right column: ProductShowcase */}
           <FadeIn delay={0.2} animateOnMount duration={0.5} direction="right">
             <div className="space-y-3">
-              <div className="inline-flex items-center rounded-full border border-stone-200 bg-white/85 px-3 py-1 text-xs font-medium text-stone-600">
+              <div className="inline-flex items-center rounded-full border border-overlay/10 bg-bg-elevated/85 px-3 py-1 text-xs font-medium text-text-secondary">
                 Live packaging simulation
               </div>
               <DeploymentFeed mode="heroCalm" />

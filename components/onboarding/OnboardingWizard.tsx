@@ -138,7 +138,7 @@ export function OnboardingWizard({
                     ? 'bg-accent-cyan text-white'
                     : step < currentStep
                       ? 'bg-emerald-500 text-white'
-                      : 'bg-stone-200 text-stone-500'
+                      : 'bg-overlay/10 text-text-muted'
                 }`}
               >
                 {step < currentStep ? (
@@ -162,7 +162,7 @@ export function OnboardingWizard({
               {step < 3 && (
                 <div
                   className={`w-8 sm:w-12 h-0.5 ${
-                    step < currentStep ? 'bg-emerald-500' : 'bg-stone-200'
+                    step < currentStep ? 'bg-emerald-500' : 'bg-overlay/10'
                   }`}
                 />
               )}
@@ -173,7 +173,7 @@ export function OnboardingWizard({
 
       {/* Step labels */}
       <div className="relative flex justify-center mb-6 sm:mb-8">
-        <div className="flex items-center gap-4 sm:gap-8 md:gap-12 text-xs text-stone-500">
+        <div className="flex items-center gap-4 sm:gap-8 md:gap-12 text-xs text-text-muted">
           <span className={currentStep === 1 ? 'text-accent-cyan font-medium' : ''}>
             Welcome
           </span>

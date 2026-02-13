@@ -94,10 +94,10 @@ export function WebhookDeliveryLog({ webhookId, webhookName, onBack }: WebhookDe
           </p>
         </div>
       ) : (
-        <div className="border border-black/10 rounded-lg overflow-hidden">
+        <div className="border border-overlay/10 rounded-lg overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-black/5 text-text-muted text-xs uppercase">
+              <tr className="bg-overlay/5 text-text-muted text-xs uppercase">
                 <th className="px-4 py-3 text-left">Status</th>
                 <th className="px-4 py-3 text-left">Event</th>
                 <th className="px-4 py-3 text-left">Attempts</th>
@@ -106,7 +106,7 @@ export function WebhookDeliveryLog({ webhookId, webhookName, onBack }: WebhookDe
             </thead>
             <tbody className="divide-y divide-black/5">
               {deliveries.map((delivery) => (
-                <tr key={delivery.id} className="hover:bg-black/5 transition-colors">
+                <tr key={delivery.id} className="hover:bg-overlay/5 transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       {delivery.status === 'success' ? (

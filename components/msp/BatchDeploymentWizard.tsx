@@ -188,7 +188,7 @@ export function BatchDeploymentWizard({ initialApp, onComplete }: BatchDeploymen
             <h3 className="text-lg font-medium text-text-primary">Select Application</h3>
 
             {/* Manual entry form */}
-            <div className="space-y-4 p-6 rounded-xl glass-light border border-black/5">
+            <div className="space-y-4 p-6 rounded-xl glass-light border border-overlay/5">
               <div>
                 <label className="block text-sm font-medium text-text-secondary mb-1">
                   WinGet Package ID *
@@ -201,7 +201,7 @@ export function BatchDeploymentWizard({ initialApp, onComplete }: BatchDeploymen
                     setManualApp({ ...manualApp, winget_id: e.target.value });
                   }}
                   placeholder="e.g., Microsoft.VisualStudioCode"
-                  className="w-full px-4 py-2 rounded-lg border border-black/10 bg-transparent text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan"
+                  className="w-full px-4 py-2 rounded-lg border border-overlay/10 bg-transparent text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan"
                 />
               </div>
               <div>
@@ -216,7 +216,7 @@ export function BatchDeploymentWizard({ initialApp, onComplete }: BatchDeploymen
                     setManualApp({ ...manualApp, display_name: e.target.value });
                   }}
                   placeholder="e.g., Visual Studio Code"
-                  className="w-full px-4 py-2 rounded-lg border border-black/10 bg-transparent text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan"
+                  className="w-full px-4 py-2 rounded-lg border border-overlay/10 bg-transparent text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -232,7 +232,7 @@ export function BatchDeploymentWizard({ initialApp, onComplete }: BatchDeploymen
                       setManualApp({ ...manualApp, version: e.target.value });
                     }}
                     placeholder="e.g., 1.85.0"
-                    className="w-full px-4 py-2 rounded-lg border border-black/10 bg-transparent text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan"
+                    className="w-full px-4 py-2 rounded-lg border border-overlay/10 bg-transparent text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan"
                   />
                 </div>
                 <div>
@@ -247,7 +247,7 @@ export function BatchDeploymentWizard({ initialApp, onComplete }: BatchDeploymen
                       setManualApp({ ...manualApp, publisher: e.target.value });
                     }}
                     placeholder="e.g., Microsoft"
-                    className="w-full px-4 py-2 rounded-lg border border-black/10 bg-transparent text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan"
+                    className="w-full px-4 py-2 rounded-lg border border-overlay/10 bg-transparent text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan"
                   />
                 </div>
               </div>
@@ -273,7 +273,7 @@ export function BatchDeploymentWizard({ initialApp, onComplete }: BatchDeploymen
 
             <div className="grid md:grid-cols-2 gap-6">
               {/* App Summary */}
-              <div className="p-6 rounded-xl glass-light border border-black/5">
+              <div className="p-6 rounded-xl glass-light border border-overlay/5">
                 <div className="flex items-center gap-2 mb-4">
                   <Package className="w-5 h-5 text-accent-cyan" />
                   <h4 className="font-medium text-text-primary">Application</h4>
@@ -295,7 +295,7 @@ export function BatchDeploymentWizard({ initialApp, onComplete }: BatchDeploymen
               </div>
 
               {/* Tenants Summary */}
-              <div className="p-6 rounded-xl glass-light border border-black/5">
+              <div className="p-6 rounded-xl glass-light border border-overlay/5">
                 <div className="flex items-center gap-2 mb-4">
                   <Building2 className="w-5 h-5 text-accent-violet" />
                   <h4 className="font-medium text-text-primary">Target Tenants</h4>
@@ -312,7 +312,7 @@ export function BatchDeploymentWizard({ initialApp, onComplete }: BatchDeploymen
             </div>
 
             {/* Concurrency Settings */}
-            <div className="p-6 rounded-xl glass-light border border-black/5">
+            <div className="p-6 rounded-xl glass-light border border-overlay/5">
               <div className="flex items-center gap-2 mb-4">
                 <Settings2 className="w-5 h-5 text-blue-400" />
                 <h4 className="font-medium text-text-primary">Deployment Settings</h4>
@@ -341,7 +341,7 @@ export function BatchDeploymentWizard({ initialApp, onComplete }: BatchDeploymen
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between pt-6 border-t border-black/10">
+      <div className="flex items-center justify-between pt-6 border-t border-overlay/10">
         <Button
           variant="ghost"
           onClick={handleBack}

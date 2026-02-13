@@ -115,14 +115,14 @@ export function InviteTeamMember({
   // Show success state
   if (emailSent || acceptUrl) {
     return (
-      <div className="p-4 bg-bg-elevated rounded-xl border border-black/10">
+      <div className="p-4 bg-bg-elevated rounded-xl border border-overlay/10">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-medium text-text-primary">
             {emailSent ? 'Invitation Sent' : 'Invitation Created'}
           </h3>
           <button
             onClick={handleClose}
-            className="p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-black/10 transition-colors"
+            className="p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-overlay/10 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -154,7 +154,7 @@ export function InviteTeamMember({
                 type="text"
                 value={acceptUrl}
                 readOnly
-                className="flex-1 px-3 py-2 bg-black/5 border border-black/10 rounded-lg text-sm text-text-primary font-mono"
+                className="flex-1 px-3 py-2 bg-overlay/5 border border-overlay/10 rounded-lg text-sm text-text-primary font-mono"
               />
               <Button
                 variant="outline"
@@ -184,13 +184,13 @@ export function InviteTeamMember({
   }
 
   return (
-    <div className="p-4 bg-bg-elevated rounded-xl border border-black/10">
+    <div className="p-4 bg-bg-elevated rounded-xl border border-overlay/10">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-medium text-text-primary">Invite Team Member</h3>
         {onCancel && (
           <button
             onClick={onCancel}
-            className="p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-black/10 transition-colors"
+            className="p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-overlay/10 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -211,7 +211,7 @@ export function InviteTeamMember({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="colleague@yourcompany.com"
-            className="w-full px-3 py-2 bg-black/5 border border-black/10 rounded-lg text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan/50 focus:ring-1 focus:ring-accent-cyan/30"
+            className="w-full px-3 py-2 bg-overlay/5 border border-overlay/10 rounded-lg text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan/50 focus:ring-1 focus:ring-accent-cyan/30"
             disabled={isSubmitting}
           />
           <p className="mt-1 text-xs text-text-muted">
@@ -253,14 +253,14 @@ export function InviteTeamMember({
           </button>
 
           {showPreview && (
-            <div className="mt-3 p-4 bg-white rounded-lg border border-black/10 text-sm">
-              <div className="border-b border-gray-200 pb-3 mb-3">
-                <p className="text-gray-500 text-xs mb-1">Subject:</p>
-                <p className="font-medium text-gray-900">
+            <div className="mt-3 p-4 bg-bg-elevated rounded-lg border border-overlay/10 text-sm">
+              <div className="border-b border-overlay/10 pb-3 mb-3">
+                <p className="text-text-muted text-xs mb-1">Subject:</p>
+                <p className="font-medium text-text-primary">
                   You&apos;ve been invited to join your organization on IntuneGet
                 </p>
               </div>
-              <div className="space-y-3 text-gray-700">
+              <div className="space-y-3 text-text-secondary">
                 <p>Hi there,</p>
                 <p>
                   You&apos;ve been invited to join <strong>your organization</strong> on IntuneGet as a{' '}
@@ -271,11 +271,11 @@ export function InviteTeamMember({
                     Accept Invitation
                   </span>
                 </div>
-                <p className="text-gray-500 text-xs">
+                <p className="text-text-muted text-xs">
                   This invitation expires in 7 days. If you didn&apos;t expect this invitation, you can ignore this email.
                 </p>
               </div>
-              <div className="mt-4 pt-3 border-t border-gray-200 text-xs text-gray-400">
+              <div className="mt-4 pt-3 border-t border-overlay/10 text-xs text-text-muted">
                 Sent via IntuneGet
               </div>
             </div>

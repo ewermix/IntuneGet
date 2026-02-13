@@ -30,7 +30,7 @@ export function FilterChip({
       className={cn(
         'relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
         active
-          ? 'bg-black/10 text-text-primary shadow-lg'
+          ? 'bg-overlay/10 text-text-primary shadow-lg'
           : 'bg-black/[0.03] text-text-secondary hover:bg-black/[0.06] hover:text-text-primary'
       )}
       style={active && color ? {
@@ -50,7 +50,7 @@ export function FilterChip({
         <span
           className={cn(
             'relative px-2 py-0.5 rounded-full text-xs tabular-nums',
-            active ? 'bg-black/20' : 'bg-black/5'
+            active ? 'bg-overlay/20' : 'bg-overlay/5'
           )}
         >
           {count}

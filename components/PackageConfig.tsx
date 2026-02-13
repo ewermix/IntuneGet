@@ -182,9 +182,9 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="absolute right-0 top-0 bottom-0 w-full max-w-2xl bg-slate-900 border-l border-slate-800 shadow-2xl overflow-hidden flex flex-col">
+      <div className="absolute right-0 top-0 bottom-0 w-full max-w-2xl bg-bg-surface border-l border-overlay/10 shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex-shrink-0 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800 px-6 py-4">
+        <div className="flex-shrink-0 bg-bg-surface/95 backdrop-blur-sm border-b border-overlay/10 px-6 py-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-4">
               <AppIcon
@@ -195,12 +195,12 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                 className="border-blue-500/30"
               />
               <div>
-                <h2 className="text-xl font-bold text-white">{pkg.name}</h2>
-                <p className="text-slate-400 text-sm">{pkg.publisher}</p>
-                <p className="text-slate-600 text-xs font-mono mt-1">{pkg.id}</p>
+                <h2 className="text-xl font-bold text-text-primary">{pkg.name}</h2>
+                <p className="text-text-muted text-sm">{pkg.publisher}</p>
+                <p className="text-text-muted text-xs font-mono mt-1">{pkg.id}</p>
               </div>
             </div>
-            <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+            <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -213,17 +213,17 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Version */}
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-2">Version</label>
+                <label className="block text-sm font-medium text-text-muted mb-2">Version</label>
                 <div className="relative">
                   <button
                     onClick={() => setShowVersions(!showVersions)}
-                    className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white hover:border-slate-600 transition-colors text-sm"
+                    className="w-full flex items-center justify-between px-4 py-2.5 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary hover:border-overlay/20 transition-colors text-sm"
                   >
                     <span>v{selectedVersion}</span>
                     <ChevronDown className={cn('w-4 h-4 transition-transform', showVersions && 'rotate-180')} />
                   </button>
                   {showVersions && pkg.versions && (
-                    <div className="absolute z-10 w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-bg-elevated border border-overlay/15 rounded-lg shadow-xl max-h-48 overflow-y-auto">
                       {pkg.versions.slice(0, 10).map((version) => (
                         <button
                           key={version}
@@ -232,8 +232,8 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                             setShowVersions(false);
                           }}
                           className={cn(
-                            'w-full px-4 py-2 text-left text-sm hover:bg-slate-700 transition-colors',
-                            version === selectedVersion ? 'text-blue-400 bg-blue-500/10' : 'text-white'
+                            'w-full px-4 py-2 text-left text-sm hover:bg-overlay/15 transition-colors',
+                            version === selectedVersion ? 'text-blue-400 bg-blue-500/10' : 'text-text-primary'
                           )}
                         >
                           v{version}
@@ -246,7 +246,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
 
               {/* Architecture */}
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-2">Architecture</label>
+                <label className="block text-sm font-medium text-text-muted mb-2">Architecture</label>
                 <div className="flex flex-wrap gap-2">
                   {(['x64', 'x86', 'arm64'] as WingetArchitecture[]).map((arch) => {
                     const available = availableArchitectures.includes(arch);
@@ -260,8 +260,8 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                           selectedArch === arch
                             ? 'bg-blue-600 border-blue-500 text-white'
                             : available
-                            ? 'bg-slate-800 border-slate-700 text-white hover:border-slate-600'
-                            : 'bg-slate-800/50 border-slate-700/50 text-slate-600 cursor-not-allowed'
+                            ? 'bg-bg-elevated border-overlay/15 text-text-primary hover:border-overlay/20'
+                            : 'bg-bg-elevated/50 border-overlay/[0.07] text-text-muted cursor-not-allowed'
                         )}
                       >
                         {arch}
@@ -274,7 +274,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
 
             {/* Install Scope */}
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2">Install Scope</label>
+              <label className="block text-sm font-medium text-text-muted mb-2">Install Scope</label>
               <div className="flex gap-2">
                 {(['machine', 'user'] as WingetScope[]).map((scope) => {
                   // Show "(Recommended)" based on manifest scope, or default to machine if not specified
@@ -290,7 +290,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                         'flex-1 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors',
                         selectedScope === scope
                           ? 'bg-blue-600 border-blue-500 text-white'
-                          : 'bg-slate-800 border-slate-700 text-white hover:border-slate-600'
+                          : 'bg-bg-elevated border-overlay/15 text-text-primary hover:border-overlay/20'
                       )}
                     >
                       {isRecommended ? `${label} (Recommended)` : label}
@@ -300,8 +300,8 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
               </div>
             </div>
 
-            <div className="border-t border-slate-800 pt-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <div className="border-t border-overlay/10 pt-6">
+              <h3 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
                 <Settings className="w-5 h-5 text-blue-400" />
                 Deployment Configuration
               </h3>
@@ -317,7 +317,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                   {/* Processes to Close */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-medium text-slate-300">
+                      <label className="block text-sm font-medium text-text-secondary">
                         Processes to close before install
                       </label>
                       <button
@@ -330,7 +330,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                     </div>
                     <div className="space-y-2">
                       {config.processesToClose.length === 0 ? (
-                        <p className="text-slate-500 text-sm italic">No processes configured</p>
+                        <p className="text-text-muted text-sm italic">No processes configured</p>
                       ) : (
                         config.processesToClose.map((process, index) => (
                           <div key={index} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -339,18 +339,18 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                               value={process.name}
                               onChange={(e) => updateProcess(index, { name: e.target.value })}
                               placeholder="Process name (e.g., chrome)"
-                              className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                              className="flex-1 px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                             />
                             <input
                               type="text"
                               value={process.description}
                               onChange={(e) => updateProcess(index, { description: e.target.value })}
                               placeholder="Display name"
-                              className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                              className="flex-1 px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                             />
                             <button
                               onClick={() => removeProcess(index)}
-                              className="text-slate-500 hover:text-red-400 transition-colors"
+                              className="text-text-muted hover:text-red-400 transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -371,8 +371,8 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
 
                     {/* Countdown Duration - only show when close prompt is enabled */}
                     {config.showClosePrompt && (
-                      <div className="ml-6 border-l-2 border-slate-700 pl-4">
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <div className="ml-6 border-l-2 border-overlay/15 pl-4">
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
                           Countdown duration (seconds)
                         </label>
                         <div className="flex items-center gap-3">
@@ -385,7 +385,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                             onChange={(e) => updateConfig({ closeCountdown: parseInt(e.target.value) })}
                             className="flex-1"
                           />
-                          <span className="text-white text-sm font-mono w-12 text-right">
+                          <span className="text-text-primary text-sm font-mono w-12 text-right">
                             {config.closeCountdown || 60}s
                           </span>
                         </div>
@@ -427,13 +427,13 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
 
                   {/* Window Location */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Dialog position
                     </label>
                     <select
                       value={config.windowLocation || 'Default'}
                       onChange={(e) => updateConfig({ windowLocation: e.target.value as DialogPosition })}
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                     >
                       <option value="Default">Default</option>
                       <option value="Center">Center</option>
@@ -448,13 +448,13 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
 
                   {/* Restart Behavior */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Restart behavior
                     </label>
                     <select
                       value={config.restartBehavior}
                       onChange={(e) => updateConfig({ restartBehavior: e.target.value as RestartBehavior })}
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                     >
                       <option value="Suppress">Suppress restart (recommended)</option>
                       <option value="Prompt">Prompt user to restart</option>
@@ -481,10 +481,10 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                   />
 
                   {config.allowDefer && (
-                    <div className="ml-6 border-l-2 border-slate-700 pl-4 space-y-4">
+                    <div className="ml-6 border-l-2 border-overlay/15 pl-4 space-y-4">
                       {/* Maximum Deferrals */}
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
                           Maximum deferrals allowed
                         </label>
                         <input
@@ -493,13 +493,13 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                           max="99"
                           value={config.deferTimes || 3}
                           onChange={(e) => updateConfig({ deferTimes: parseInt(e.target.value) || 3 })}
-                          className="w-24 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                          className="w-24 px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                         />
                       </div>
 
                       {/* Deferral Days */}
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
                           Deferral days limit (optional)
                         </label>
                         <input
@@ -509,28 +509,28 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                           value={config.deferDays || ''}
                           onChange={(e) => updateConfig({ deferDays: e.target.value ? parseInt(e.target.value) : undefined })}
                           placeholder="No limit"
-                          className="w-24 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                          className="w-24 px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                         />
-                        <p className="text-slate-500 text-xs mt-1">Number of days user can defer from first prompt</p>
+                        <p className="text-text-muted text-xs mt-1">Number of days user can defer from first prompt</p>
                       </div>
 
                       {/* Deferral Deadline */}
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
                           Deferral deadline (optional)
                         </label>
                         <input
                           type="date"
                           value={config.deferDeadline || ''}
                           onChange={(e) => updateConfig({ deferDeadline: e.target.value || undefined })}
-                          className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                          className="px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                         />
-                        <p className="text-slate-500 text-xs mt-1">After this date, users cannot defer</p>
+                        <p className="text-text-muted text-xs mt-1">After this date, users cannot defer</p>
                       </div>
 
                       {/* Force Close Countdown */}
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
                           Force close countdown (optional)
                         </label>
                         <div className="flex items-center gap-3">
@@ -541,11 +541,11 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                             value={config.forceCloseProcessesCountdown || ''}
                             onChange={(e) => updateConfig({ forceCloseProcessesCountdown: e.target.value ? parseInt(e.target.value) : undefined })}
                             placeholder="Not set"
-                            className="w-24 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                            className="w-24 px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                           />
-                          <span className="text-slate-400 text-sm">seconds</span>
+                          <span className="text-text-muted text-sm">seconds</span>
                         </div>
-                        <p className="text-slate-500 text-xs mt-1">Forces countdown regardless of deferral settings</p>
+                        <p className="text-text-muted text-xs mt-1">Forces countdown regardless of deferral settings</p>
                       </div>
                     </div>
                   )}
@@ -571,9 +571,9 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                   />
 
                   {config.progressDialog?.enabled && (
-                    <div className="ml-6 border-l-2 border-slate-700 pl-4 space-y-4">
+                    <div className="ml-6 border-l-2 border-overlay/15 pl-4 space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
                           Status message (optional)
                         </label>
                         <input
@@ -583,11 +583,11 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                             progressDialog: { ...config.progressDialog, enabled: true, statusMessage: e.target.value || undefined }
                           })}
                           placeholder="Installing application..."
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                          className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
                           Window position
                         </label>
                         <select
@@ -595,7 +595,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                           onChange={(e) => updateConfig({
                             progressDialog: { ...config.progressDialog, enabled: true, windowLocation: e.target.value as DialogPosition }
                           })}
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                          className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                         >
                           <option value="Default">Default</option>
                           <option value="Center">Center</option>
@@ -606,9 +606,9 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                   )}
 
                   {/* Balloon Tips Section */}
-                  <div className="border-t border-slate-700 pt-4 mt-4">
+                  <div className="border-t border-overlay/15 pt-4 mt-4">
                     <div className="flex items-center justify-between mb-3">
-                      <label className="block text-sm font-medium text-slate-300">
+                      <label className="block text-sm font-medium text-text-secondary">
                         Balloon notifications
                       </label>
                       <button
@@ -632,19 +632,19 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                       </button>
                     </div>
                     {(!config.balloonTips || config.balloonTips.length === 0) ? (
-                      <p className="text-slate-500 text-sm italic">No balloon notifications configured</p>
+                      <p className="text-text-muted text-sm italic">No balloon notifications configured</p>
                     ) : (
                       <div className="space-y-3">
                         {config.balloonTips.map((tip, index) => (
-                          <div key={index} className="bg-slate-800/50 rounded-lg p-3 space-y-2">
+                          <div key={index} className="bg-bg-elevated/50 rounded-lg p-3 space-y-2">
                             <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-white">Notification {index + 1}</span>
+                              <span className="text-sm font-medium text-text-primary">Notification {index + 1}</span>
                               <button
                                 onClick={() => {
                                   const newTips = config.balloonTips.filter((_, i) => i !== index);
                                   updateConfig({ balloonTips: newTips });
                                 }}
-                                className="text-slate-500 hover:text-red-400 transition-colors"
+                                className="text-text-muted hover:text-red-400 transition-colors"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -657,7 +657,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                                   newTips[index] = { ...tip, timing: e.target.value as 'start' | 'end' };
                                   updateConfig({ balloonTips: newTips });
                                 }}
-                                className="px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                className="px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                               >
                                 <option value="start">At start</option>
                                 <option value="end">At end</option>
@@ -669,7 +669,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                                   newTips[index] = { ...tip, icon: e.target.value as BalloonIcon };
                                   updateConfig({ balloonTips: newTips });
                                 }}
-                                className="px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                className="px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                               >
                                 <option value="Info">Info</option>
                                 <option value="Warning">Warning</option>
@@ -686,7 +686,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                                 updateConfig({ balloonTips: newTips });
                               }}
                               placeholder="Title"
-                              className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                              className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                             />
                             <input
                               type="text"
@@ -697,7 +697,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                                 updateConfig({ balloonTips: newTips });
                               }}
                               placeholder="Message text"
-                              className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                              className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                             />
                           </div>
                         ))}
@@ -716,7 +716,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-slate-400 text-sm">Add custom dialog prompts at specific points during installation.</p>
+                    <p className="text-text-muted text-sm">Add custom dialog prompts at specific points during installation.</p>
                     <button
                       onClick={() => {
                         const newPrompt: CustomPrompt = {
@@ -741,13 +741,13 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                   </div>
 
                   {(!config.customPrompts || config.customPrompts.length === 0) ? (
-                    <p className="text-slate-500 text-sm italic">No custom prompts configured</p>
+                    <p className="text-text-muted text-sm italic">No custom prompts configured</p>
                   ) : (
                     <div className="space-y-4">
                       {config.customPrompts.map((prompt, index) => (
-                        <div key={index} className="bg-slate-800/50 rounded-lg p-4 space-y-3">
+                        <div key={index} className="bg-bg-elevated/50 rounded-lg p-4 space-y-3">
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-white">Prompt {index + 1}</span>
+                            <span className="text-sm font-medium text-text-primary">Prompt {index + 1}</span>
                             <div className="flex items-center gap-2">
                               <ToggleOption
                                 label=""
@@ -764,7 +764,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                                   const newPrompts = config.customPrompts.filter((_, i) => i !== index);
                                   updateConfig({ customPrompts: newPrompts });
                                 }}
-                                className="text-slate-500 hover:text-red-400 transition-colors"
+                                className="text-text-muted hover:text-red-400 transition-colors"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -772,7 +772,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                           </div>
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Timing</label>
+                              <label className="block text-xs text-text-muted mb-1">Timing</label>
                               <select
                                 value={prompt.timing}
                                 onChange={(e) => {
@@ -780,7 +780,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                                   newPrompts[index] = { ...prompt, timing: e.target.value as CustomPrompt['timing'] };
                                   updateConfig({ customPrompts: newPrompts });
                                 }}
-                                className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                               >
                                 <option value="pre-install">Before Install</option>
                                 <option value="post-install">After Install</option>
@@ -789,7 +789,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                               </select>
                             </div>
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Icon</label>
+                              <label className="block text-xs text-text-muted mb-1">Icon</label>
                               <select
                                 value={prompt.icon}
                                 onChange={(e) => {
@@ -797,7 +797,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                                   newPrompts[index] = { ...prompt, icon: e.target.value as DialogIcon };
                                   updateConfig({ customPrompts: newPrompts });
                                 }}
-                                className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                               >
                                 <option value="None">None</option>
                                 <option value="Information">Information</option>
@@ -808,7 +808,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                             </div>
                           </div>
                           <div>
-                            <label className="block text-xs text-slate-400 mb-1">Title</label>
+                            <label className="block text-xs text-text-muted mb-1">Title</label>
                             <input
                               type="text"
                               value={prompt.title}
@@ -818,11 +818,11 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                                 updateConfig({ customPrompts: newPrompts });
                               }}
                               placeholder="Dialog title"
-                              className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                              className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs text-slate-400 mb-1">Message</label>
+                            <label className="block text-xs text-text-muted mb-1">Message</label>
                             <textarea
                               value={prompt.message}
                               onChange={(e) => {
@@ -832,12 +832,12 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                               }}
                               placeholder="Dialog message"
                               rows={2}
-                              className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm resize-none"
+                              className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm resize-none"
                             />
                           </div>
                           <div className="grid grid-cols-3 gap-2">
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Left Button</label>
+                              <label className="block text-xs text-text-muted mb-1">Left Button</label>
                               <input
                                 type="text"
                                 value={prompt.buttonLeftText || ''}
@@ -847,11 +847,11 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                                   updateConfig({ customPrompts: newPrompts });
                                 }}
                                 placeholder="Optional"
-                                className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Middle Button</label>
+                              <label className="block text-xs text-text-muted mb-1">Middle Button</label>
                               <input
                                 type="text"
                                 value={prompt.buttonMiddleText || ''}
@@ -861,11 +861,11 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                                   updateConfig({ customPrompts: newPrompts });
                                 }}
                                 placeholder="Optional"
-                                className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Right Button</label>
+                              <label className="block text-xs text-text-muted mb-1">Right Button</label>
                               <input
                                 type="text"
                                 value={prompt.buttonRightText || ''}
@@ -875,13 +875,13 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                                   updateConfig({ customPrompts: newPrompts });
                                 }}
                                 placeholder="Continue"
-                                className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                               />
                             </div>
                           </div>
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Timeout (seconds)</label>
+                              <label className="block text-xs text-text-muted mb-1">Timeout (seconds)</label>
                               <input
                                 type="number"
                                 min="0"
@@ -891,7 +891,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                                   newPrompts[index] = { ...prompt, timeout: parseInt(e.target.value) || 0 };
                                   updateConfig({ customPrompts: newPrompts });
                                 }}
-                                className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                className="w-full px-2 py-1.5 bg-bg-elevated border border-overlay/15 rounded text-text-primary text-sm"
                               />
                             </div>
                             <div className="flex items-end pb-1">
@@ -932,9 +932,9 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                   />
 
                   {config.restartPrompt?.enabled && (
-                    <div className="ml-6 border-l-2 border-slate-700 pl-4 space-y-4">
+                    <div className="ml-6 border-l-2 border-overlay/15 pl-4 space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
                           Countdown duration (seconds)
                         </label>
                         <div className="flex items-center gap-3">
@@ -949,14 +949,14 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                             })}
                             className="flex-1"
                           />
-                          <span className="text-white text-sm font-mono w-16 text-right">
+                          <span className="text-text-primary text-sm font-mono w-16 text-right">
                             {config.restartPrompt?.countdownSeconds || 600}s
                           </span>
                         </div>
-                        <p className="text-slate-500 text-xs mt-1">Total time before automatic restart</p>
+                        <p className="text-text-muted text-xs mt-1">Total time before automatic restart</p>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
                           No-hide countdown (seconds)
                         </label>
                         <div className="flex items-center gap-3">
@@ -971,11 +971,11 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                             })}
                             className="flex-1"
                           />
-                          <span className="text-white text-sm font-mono w-16 text-right">
+                          <span className="text-text-primary text-sm font-mono w-16 text-right">
                             {config.restartPrompt?.countdownNoHideSeconds || 60}s
                           </span>
                         </div>
-                        <p className="text-slate-500 text-xs mt-1">Time before restart when user cannot dismiss the dialog</p>
+                        <p className="text-text-muted text-xs mt-1">Time before restart when user cannot dismiss the dialog</p>
                       </div>
                     </div>
                   )}
@@ -998,8 +998,8 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                   />
 
                   {config.checkDiskSpace && (
-                    <div className="ml-6 border-l-2 border-slate-700 pl-4">
-                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <div className="ml-6 border-l-2 border-overlay/15 pl-4">
+                      <label className="block text-sm font-medium text-text-secondary mb-2">
                         Required disk space (MB)
                       </label>
                       <div className="flex items-center gap-3">
@@ -1010,11 +1010,11 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                           value={config.requiredDiskSpace || ''}
                           onChange={(e) => updateConfig({ requiredDiskSpace: e.target.value ? parseInt(e.target.value) : undefined })}
                           placeholder="Auto-detect"
-                          className="w-32 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                          className="w-32 px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                         />
-                        <span className="text-slate-400 text-sm">MB</span>
+                        <span className="text-text-muted text-sm">MB</span>
                       </div>
-                      <p className="text-slate-500 text-xs mt-1">Leave empty to auto-detect from installer size</p>
+                      <p className="text-text-muted text-xs mt-1">Leave empty to auto-detect from installer size</p>
                     </div>
                   )}
                 </div>
@@ -1029,22 +1029,22 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
               >
                 <div className="space-y-3">
                   {config.detectionRules.length === 0 ? (
-                    <p className="text-slate-500 text-sm italic">No detection rules configured</p>
+                    <p className="text-text-muted text-sm italic">No detection rules configured</p>
                   ) : (
                     config.detectionRules.map((rule, index) => (
-                      <div key={index} className="bg-slate-800/50 rounded-lg p-3">
+                      <div key={index} className="bg-bg-elevated/50 rounded-lg p-3">
                         <div className="flex items-center gap-2 mb-2">
                           <span className="px-2 py-0.5 bg-blue-500/10 text-blue-400 text-xs font-medium rounded uppercase">
                             {rule.type}
                           </span>
                         </div>
-                        <pre className="text-slate-400 text-xs font-mono whitespace-pre-wrap break-all">
+                        <pre className="text-text-muted text-xs font-mono whitespace-pre-wrap break-all">
                           {JSON.stringify(rule, null, 2)}
                         </pre>
                       </div>
                     ))
                   )}
-                  <p className="text-slate-500 text-xs">
+                  <p className="text-text-muted text-xs">
                     Detection rules are auto-generated based on installer type. They determine how Intune verifies the app is installed.
                   </p>
                 </div>
@@ -1085,7 +1085,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
               >
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Company name
                     </label>
                     <input
@@ -1093,12 +1093,12 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                       value={config.brandingCompanyName || ''}
                       onChange={(e) => updateConfig({ brandingCompanyName: e.target.value || undefined })}
                       placeholder="PSAppDeployToolkit (default)"
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Welcome dialog title (optional)
                     </label>
                     <input
@@ -1106,12 +1106,12 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                       value={config.brandingWelcomeTitle || ''}
                       onChange={(e) => updateConfig({ brandingWelcomeTitle: e.target.value || undefined })}
                       placeholder={`${pkg.name} Installation`}
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Welcome dialog custom message
                     </label>
                     <textarea
@@ -1119,12 +1119,12 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                       onChange={(e) => updateConfig({ brandingWelcomeMessage: e.target.value || undefined })}
                       rows={3}
                       placeholder="Optional message for the installation welcome prompt"
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Fluent accent color
                     </label>
                     <input
@@ -1132,15 +1132,15 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                       value={config.brandingAccentColor || ''}
                       onChange={(e) => updateConfig({ brandingAccentColor: e.target.value || undefined })}
                       placeholder="0xFF0078D7 or #0078D7"
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm font-mono"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm font-mono"
                     />
-                    <p className="text-slate-500 text-xs mt-1">
+                    <p className="text-text-muted text-xs mt-1">
                       Supports hex values like 0xFF0078D7 or standard color names.
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Logo path / URL
                     </label>
                     <input
@@ -1148,12 +1148,12 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                       value={config.brandingLogoPath || ''}
                       onChange={(e) => updateConfig({ brandingLogoPath: e.target.value || undefined })}
                       placeholder="Leave empty to keep default logo"
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Dark mode logo path / URL
                     </label>
                     <input
@@ -1161,12 +1161,12 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                       value={config.brandingLogoDarkPath || ''}
                       onChange={(e) => updateConfig({ brandingLogoDarkPath: e.target.value || undefined })}
                       placeholder="Optional dark mode logo"
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Banner path / URL
                     </label>
                     <input
@@ -1174,7 +1174,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                       value={config.brandingBannerPath || ''}
                       onChange={(e) => updateConfig({ brandingBannerPath: e.target.value || undefined })}
                       placeholder="Optional classic UI banner"
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm"
                     />
                   </div>
                 </div>
@@ -1190,7 +1190,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                 <div className="space-y-4">
                   {/* Custom Install Command */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Install command override
                     </label>
                     <input
@@ -1198,14 +1198,14 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                       value={config.installCommand || ''}
                       onChange={(e) => updateConfig({ installCommand: e.target.value || undefined })}
                       placeholder={selectedInstaller ? generateInstallCommand(selectedInstaller, selectedScope) : ''}
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm font-mono"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm font-mono"
                     />
-                    <p className="text-slate-500 text-xs mt-1">Leave empty to use auto-generated command</p>
+                    <p className="text-text-muted text-xs mt-1">Leave empty to use auto-generated command</p>
                   </div>
 
                   {/* Custom Uninstall Command */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Uninstall command override
                     </label>
                     <input
@@ -1213,7 +1213,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
                       value={config.uninstallCommand || ''}
                       onChange={(e) => updateConfig({ uninstallCommand: e.target.value || undefined })}
                       placeholder={selectedInstaller ? generateUninstallCommand(selectedInstaller, pkg.name) : ''}
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm font-mono"
+                      className="w-full px-3 py-2 bg-bg-elevated border border-overlay/15 rounded-lg text-text-primary text-sm font-mono"
                     />
                   </div>
                 </div>
@@ -1224,7 +1224,7 @@ export function PackageConfig({ package: pkg, installers, onClose }: PackageConf
         </div>
 
         {/* Footer */}
-        <div className="flex-shrink-0 border-t border-slate-800 p-4 bg-slate-900/95">
+        <div className="flex-shrink-0 border-t border-overlay/10 p-4 bg-bg-surface/95">
           <Button
             onClick={handleAddToCart}
             disabled={!selectedInstaller || inCart || isAddingToCart}
@@ -1270,18 +1270,18 @@ interface ConfigSectionProps {
 
 function ConfigSection({ title, icon, expanded, onToggle, children }: ConfigSectionProps) {
   return (
-    <div className="border border-slate-800 rounded-lg overflow-hidden mb-3">
+    <div className="border border-overlay/10 rounded-lg overflow-hidden mb-3">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-4 py-3 bg-slate-800/50 hover:bg-slate-800 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 bg-bg-elevated/50 hover:bg-overlay/10 transition-colors"
       >
-        <div className="flex items-center gap-2 text-white">
+        <div className="flex items-center gap-2 text-text-primary">
           {icon}
           <span className="font-medium">{title}</span>
         </div>
-        <ChevronRight className={cn('w-4 h-4 text-slate-400 transition-transform', expanded && 'rotate-90')} />
+        <ChevronRight className={cn('w-4 h-4 text-text-muted transition-transform', expanded && 'rotate-90')} />
       </button>
-      {expanded && <div className="p-4 bg-slate-900/50">{children}</div>}
+      {expanded && <div className="p-4 bg-bg-surface/50">{children}</div>}
     </div>
   );
 }
@@ -1300,7 +1300,7 @@ function ToggleOption({ label, description, checked, onChange }: ToggleOptionPro
         <div
           className={cn(
             'w-10 h-6 rounded-full transition-colors relative',
-            checked ? 'bg-blue-600' : 'bg-slate-700'
+            checked ? 'bg-blue-600' : 'bg-overlay/15'
           )}
           onClick={() => onChange(!checked)}
         >
@@ -1313,8 +1313,8 @@ function ToggleOption({ label, description, checked, onChange }: ToggleOptionPro
         </div>
       </div>
       <div>
-        <span className="text-white text-sm font-medium">{label}</span>
-        <p className="text-slate-500 text-xs">{description}</p>
+        <span className="text-text-primary text-sm font-medium">{label}</span>
+        <p className="text-text-muted text-xs">{description}</p>
       </div>
     </label>
   );

@@ -92,10 +92,10 @@ export function LinkPackageModal({ app, isOpen, onClose, onLink }: LinkPackageMo
         role="dialog"
         aria-modal="true"
         aria-labelledby="link-modal-title"
-        className="relative w-full max-w-2xl mx-4 bg-bg-surface rounded-2xl border border-black/10 shadow-2xl overflow-hidden"
+        className="relative w-full max-w-2xl mx-4 bg-bg-surface rounded-2xl border border-overlay/10 shadow-2xl overflow-hidden"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-black/5">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-overlay/5">
           <div>
             <h2 id="link-modal-title" className="text-lg font-semibold text-text-primary">Link WinGet Package</h2>
             <p className="text-sm text-text-secondary mt-1">
@@ -118,7 +118,7 @@ export function LinkPackageModal({ app, isOpen, onClose, onLink }: LinkPackageMo
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search WinGet packages..."
-              className="pl-10 bg-bg-elevated border-black/10 focus:border-accent-cyan/50"
+              className="pl-10 bg-bg-elevated border-overlay/10 focus:border-accent-cyan/50"
               autoFocus
             />
             {isSearching && (
@@ -148,7 +148,7 @@ export function LinkPackageModal({ app, isOpen, onClose, onLink }: LinkPackageMo
                     "text-xs px-3 py-1.5 rounded-lg transition-colors",
                     selectedPackage?.id === match.wingetId
                       ? "bg-accent-cyan/20 text-accent-cyan border border-accent-cyan/30"
-                      : "bg-bg-elevated text-text-secondary hover:bg-black/10"
+                      : "bg-bg-elevated text-text-secondary hover:bg-overlay/10"
                   )}
                 >
                   {match.name}
@@ -178,7 +178,7 @@ export function LinkPackageModal({ app, isOpen, onClose, onLink }: LinkPackageMo
                 className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all ${
                   selectedPackage?.id === pkg.id
                     ? 'bg-accent-cyan/10 border-accent-cyan/30 border'
-                    : 'bg-bg-elevated hover:bg-black/5 border border-transparent'
+                    : 'bg-bg-elevated hover:bg-overlay/5 border border-transparent'
                 }`}
               >
                 <AppIcon
@@ -206,8 +206,8 @@ export function LinkPackageModal({ app, isOpen, onClose, onLink }: LinkPackageMo
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-black/5 bg-bg-elevated/50">
-          <Button variant="outline" onClick={onClose} className="border-black/10">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-overlay/5 bg-bg-elevated/50">
+          <Button variant="outline" onClick={onClose} className="border-overlay/10">
             Cancel
           </Button>
           <Button

@@ -52,9 +52,9 @@ export function ConsentUrlDialog({
       />
 
       {/* Dialog */}
-      <div className="relative w-full max-w-lg mx-4 bg-bg-elevated border border-black/10 rounded-xl shadow-2xl">
+      <div className="relative w-full max-w-lg mx-4 bg-bg-elevated border border-overlay/10 rounded-xl shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-black/10">
+        <div className="flex items-center justify-between p-4 border-b border-overlay/10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-accent-cyan/20 flex items-center justify-center">
               <Link2 className="w-5 h-5 text-accent-cyan" />
@@ -66,7 +66,7 @@ export function ConsentUrlDialog({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-black/10 transition-colors"
+            className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-overlay/10 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -79,7 +79,7 @@ export function ConsentUrlDialog({
             They need to grant consent for IntuneGet to manage applications in their tenant.
           </p>
 
-          <div className="p-3 bg-black/5 rounded-lg border border-black/10">
+          <div className="p-3 bg-overlay/5 rounded-lg border border-overlay/10">
             <div className="flex items-center gap-2">
               <input
                 type="text"
@@ -119,12 +119,12 @@ export function ConsentUrlDialog({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-3 justify-end p-4 border-t border-black/10">
+        <div className="flex items-center gap-3 justify-end p-4 border-t border-overlay/10">
           <Button
             type="button"
             variant="outline"
             onClick={handleOpenConsent}
-            className="border-black/20 text-text-primary hover:bg-black/5"
+            className="border-black/20 text-text-primary hover:bg-overlay/5"
           >
             <ExternalLink className="w-4 h-4 mr-2" />
             Open consent page

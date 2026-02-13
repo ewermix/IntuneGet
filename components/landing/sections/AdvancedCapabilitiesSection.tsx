@@ -89,12 +89,12 @@ export function AdvancedCapabilitiesSection() {
             </span>
           </motion.div>
           <SlideIn direction="up" distance={30} duration={0.5} delay={0.1}>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-stone-900">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-text-primary">
               Enterprise-Grade Automation
             </h2>
           </SlideIn>
           <FadeIn delay={0.2}>
-            <p className="mx-auto max-w-2xl text-lg text-stone-600">
+            <p className="mx-auto max-w-2xl text-lg text-text-secondary">
               Powerful features built for IT teams managing deployments at scale
             </p>
           </FadeIn>

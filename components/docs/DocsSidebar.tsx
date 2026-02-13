@@ -143,7 +143,7 @@ export function DocsSidebar({ className }: DocsSidebarProps) {
               "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
               isActive
                 ? "bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/20"
-                : "text-text-secondary hover:text-text-primary hover:bg-black/5 border border-transparent"
+                : "text-text-secondary hover:text-text-primary hover:bg-overlay/5 border border-transparent"
             )}
           >
             <Icon
@@ -183,7 +183,7 @@ export function MobileDocsSidebar({
       />
 
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 w-72 bg-bg-deepest border-r border-black/10 p-4 overflow-y-auto">
+      <div className="fixed inset-y-0 left-0 w-72 bg-bg-deepest border-r border-overlay/10 p-4 overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <span className="text-lg font-semibold text-text-primary">Documentation</span>
           <button
@@ -220,7 +220,7 @@ export function MobileDocsSidebar({
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
                   isActive
                     ? "bg-accent-cyan/10 text-accent-cyan"
-                    : "text-text-secondary hover:text-text-primary hover:bg-black/5"
+                    : "text-text-secondary hover:text-text-primary hover:bg-overlay/5"
                 )}
               >
                 <Icon

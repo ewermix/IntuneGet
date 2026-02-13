@@ -35,7 +35,7 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative w-full bg-white border-t border-stone-200/60">
+    <footer className="relative w-full bg-bg-elevated border-t border-overlay/[0.06]">
       {/* Main footer content */}
       <div className="container relative px-4 md:px-6 mx-auto max-w-7xl py-12 md:py-16">
         <FadeIn>
@@ -52,9 +52,9 @@ export function Footer() {
                     className="h-7 w-7"
                   />
                 </div>
-                <span className="text-xl font-semibold text-stone-900">IntuneGet</span>
+                <span className="text-xl font-semibold text-text-primary">IntuneGet</span>
               </Link>
-              <p className="text-sm text-stone-500 mb-6 max-w-xs">
+              <p className="text-sm text-text-muted mb-6 max-w-xs">
                 Deploy any app from Winget to Intune in minutes. Free, open source, and trusted by IT teams worldwide.
               </p>
 
@@ -66,7 +66,7 @@ export function Footer() {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-9 h-9 flex items-center justify-center rounded-lg bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-stone-900 transition-colors"
+                    className="w-9 h-9 flex items-center justify-center rounded-lg bg-bg-surface text-text-muted hover:bg-overlay/[0.06] hover:text-text-primary transition-colors"
                     aria-label={social.label}
                   >
                     <social.icon className="w-4 h-4" />
@@ -77,13 +77,13 @@ export function Footer() {
 
             {/* Product links */}
             <div>
-              <h4 className="text-sm font-semibold text-stone-900 mb-4">Product</h4>
+              <h4 className="text-sm font-semibold text-text-primary mb-4">Product</h4>
               <ul className="space-y-3">
                 {footerLinks.product.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-stone-500 hover:text-stone-900 transition-colors"
+                      className="text-sm text-text-muted hover:text-text-primary transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -94,21 +94,21 @@ export function Footer() {
 
             {/* Company links */}
             <div>
-              <h4 className="text-sm font-semibold text-stone-900 mb-4">Company</h4>
+              <h4 className="text-sm font-semibold text-text-primary mb-4">Company</h4>
               <ul className="space-y-3">
                 {footerLinks.company.map((link) => (
                   <li key={link.label}>
                     {link.href.startsWith("mailto:") ? (
                       <a
                         href={link.href}
-                        className="text-sm text-stone-500 hover:text-stone-900 transition-colors inline-flex items-center gap-1"
+                        className="text-sm text-text-muted hover:text-text-primary transition-colors inline-flex items-center gap-1"
                       >
                         {link.label}
                       </a>
                     ) : (
                       <Link
                         href={link.href}
-                        className="text-sm text-stone-500 hover:text-stone-900 transition-colors inline-flex items-center gap-1"
+                        className="text-sm text-text-muted hover:text-text-primary transition-colors inline-flex items-center gap-1"
                       >
                         {link.label}
                       </Link>
@@ -120,13 +120,13 @@ export function Footer() {
 
             {/* Legal links */}
             <div>
-              <h4 className="text-sm font-semibold text-stone-900 mb-4">Legal</h4>
+              <h4 className="text-sm font-semibold text-text-primary mb-4">Legal</h4>
               <ul className="space-y-3">
                 {footerLinks.legal.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-stone-500 hover:text-stone-900 transition-colors"
+                      className="text-sm text-text-muted hover:text-text-primary transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -137,7 +137,7 @@ export function Footer() {
 
             {/* Ecosystem links */}
             <div>
-              <h4 className="text-sm font-semibold text-stone-900 mb-4">Ecosystem</h4>
+              <h4 className="text-sm font-semibold text-text-primary mb-4">Ecosystem</h4>
               <ul className="space-y-3">
                 {footerLinks.ecosystem.map((link) => (
                   <li key={link.label}>
@@ -147,12 +147,12 @@ export function Footer() {
                       rel={link.external ? "noopener noreferrer" : undefined}
                       className="group"
                     >
-                      <span className="text-sm text-stone-500 hover:text-accent-cyan transition-colors inline-flex items-center gap-1.5">
+                      <span className="text-sm text-text-muted hover:text-accent-cyan transition-colors inline-flex items-center gap-1.5">
                         <Apple className="w-4 h-4" />
                         {link.label}
                         {link.external && <ExternalLink className="w-3 h-3" />}
                       </span>
-                      <span className="block text-xs text-stone-400 mt-0.5 ml-5.5">
+                      <span className="block text-xs text-text-muted mt-0.5 ml-5.5">
                         {link.description}
                       </span>
                     </a>
@@ -165,10 +165,10 @@ export function Footer() {
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-stone-200/60">
+      <div className="border-t border-overlay/[0.06]">
         <div className="container relative px-4 md:px-6 mx-auto max-w-7xl py-6">
           <FadeIn delay={0.1}>
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-stone-500">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-text-muted">
               <p>
                 {currentYear}{" "}
                 <a

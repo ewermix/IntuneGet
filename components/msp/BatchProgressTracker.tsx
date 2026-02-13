@@ -120,7 +120,7 @@ export function BatchProgressTracker({ batchId }: BatchProgressTrackerProps) {
           <span className="text-text-secondary">Progress</span>
           <span className="text-text-primary font-medium">{progressPercent}%</span>
         </div>
-        <div className="h-2 bg-black/10 rounded-full overflow-hidden">
+        <div className="h-2 bg-overlay/10 rounded-full overflow-hidden">
           <div
             className={cn(
               'h-full transition-all duration-500',
@@ -139,15 +139,15 @@ export function BatchProgressTracker({ batchId }: BatchProgressTrackerProps) {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="p-4 rounded-lg bg-black/5 text-center">
+        <div className="p-4 rounded-lg bg-overlay/5 text-center">
           <p className="text-2xl font-bold text-emerald-400">{batch.completed_tenants}</p>
           <p className="text-xs text-text-muted">Completed</p>
         </div>
-        <div className="p-4 rounded-lg bg-black/5 text-center">
+        <div className="p-4 rounded-lg bg-overlay/5 text-center">
           <p className="text-2xl font-bold text-red-400">{batch.failed_tenants}</p>
           <p className="text-xs text-text-muted">Failed</p>
         </div>
-        <div className="p-4 rounded-lg bg-black/5 text-center">
+        <div className="p-4 rounded-lg bg-overlay/5 text-center">
           <p className="text-2xl font-bold text-amber-400">
             {batch.total_tenants - batch.completed_tenants - batch.failed_tenants}
           </p>
@@ -161,11 +161,11 @@ export function BatchProgressTracker({ batchId }: BatchProgressTrackerProps) {
           <Building2 className="w-4 h-4" />
           Tenant Status
         </h4>
-        <div className="max-h-64 overflow-y-auto rounded-lg border border-black/10 divide-y divide-black/5">
+        <div className="max-h-64 overflow-y-auto rounded-lg border border-overlay/10 divide-y divide-black/5">
           {batch.items.map((item) => (
             <div
               key={item.id}
-              className="flex items-center justify-between p-3 hover:bg-black/5 transition-colors"
+              className="flex items-center justify-between p-3 hover:bg-overlay/5 transition-colors"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <ItemStatusIcon status={item.status} />
@@ -198,7 +198,7 @@ function StatusBadge({ status }: { status: BatchDeployment['status'] }) {
     pending: { label: 'Pending', className: 'bg-amber-500/20 text-amber-400' },
     in_progress: { label: 'In Progress', className: 'bg-blue-500/20 text-blue-400' },
     completed: { label: 'Completed', className: 'bg-emerald-500/20 text-emerald-400' },
-    cancelled: { label: 'Cancelled', className: 'bg-gray-500/20 text-gray-400' },
+    cancelled: { label: 'Cancelled', className: 'bg-overlay/20 text-text-muted' },
     failed: { label: 'Failed', className: 'bg-red-500/20 text-red-400' },
   };
 
@@ -220,7 +220,7 @@ function ItemStatusIcon({ status }: { status: BatchDeploymentItem['status'] }) {
     case 'in_progress':
       return <Loader2 className="w-5 h-5 text-blue-400 animate-spin flex-shrink-0" />;
     case 'skipped':
-      return <Clock className="w-5 h-5 text-gray-400 flex-shrink-0" />;
+      return <Clock className="w-5 h-5 text-text-muted flex-shrink-0" />;
     default:
       return <Clock className="w-5 h-5 text-amber-400 flex-shrink-0" />;
   }

@@ -353,7 +353,7 @@ export default function AzureSetupPage() {
           from their tenant must grant consent for the application permissions.
         </p>
 
-        <div className="rounded-lg border border-black/10 bg-white p-6 mb-6">
+        <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-6 mb-6">
           <h3 className="font-semibold text-text-primary mb-4 flex items-center gap-2">
             <Shield className="h-5 w-5 text-accent-cyan" />
             How Admin Consent Works
@@ -409,7 +409,7 @@ export default function AzureSetupPage() {
           ].map((item) => (
             <div
               key={item.title}
-              className="rounded-lg border border-black/10 bg-white p-4"
+              className="rounded-lg border border-overlay/10 bg-bg-elevated p-4"
             >
               <h3 className="font-medium text-text-primary mb-2">{item.title}</h3>
               <p className="text-sm text-text-secondary">{item.description}</p>
@@ -425,7 +425,7 @@ export default function AzureSetupPage() {
         </h2>
 
         <div className="space-y-4">
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h3 className="font-medium text-text-primary mb-2 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-status-error" />
               AADSTS50011: Reply URL does not match
@@ -441,7 +441,7 @@ export default function AzureSetupPage() {
             </ul>
           </div>
 
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h3 className="font-medium text-text-primary mb-2 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-status-error" />
               AADSTS65001: User or admin has not consented
@@ -456,7 +456,7 @@ export default function AzureSetupPage() {
             </ul>
           </div>
 
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h3 className="font-medium text-text-primary mb-2 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-status-error" />
               Invalid client secret

@@ -233,7 +233,7 @@ export function AppRating({ appId, compact = false, onRatingSubmit }: AppRatingP
         </div>
 
         {stats && stats.success_rate !== null && (
-          <div className="flex flex-col items-center px-4 border-l border-black/10">
+          <div className="flex flex-col items-center px-4 border-l border-overlay/10">
             <span className="text-2xl font-bold text-green-500">
               {stats.success_rate}%
             </span>
@@ -255,7 +255,7 @@ export function AppRating({ appId, compact = false, onRatingSubmit }: AppRatingP
               {userRating ? 'Update your rating' : 'Rate this app'}
             </Button>
           ) : (
-            <div className="p-4 bg-black/5 rounded-xl space-y-4">
+            <div className="p-4 bg-overlay/5 rounded-xl space-y-4">
               <div>
                 <label className="block text-sm font-medium text-text-secondary mb-2">
                   Your rating
@@ -275,7 +275,7 @@ export function AppRating({ appId, compact = false, onRatingSubmit }: AppRatingP
                       'flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors',
                       deploymentSuccess === true
                         ? 'border-green-500 bg-green-500/10 text-green-500'
-                        : 'border-black/10 text-text-muted hover:border-black/20'
+                        : 'border-overlay/10 text-text-muted hover:border-black/20'
                     )}
                   >
                     <CheckCircle className="w-4 h-4" />
@@ -288,7 +288,7 @@ export function AppRating({ appId, compact = false, onRatingSubmit }: AppRatingP
                       'flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors',
                       deploymentSuccess === false
                         ? 'border-red-500 bg-red-500/10 text-red-500'
-                        : 'border-black/10 text-text-muted hover:border-black/20'
+                        : 'border-overlay/10 text-text-muted hover:border-black/20'
                     )}
                   >
                     <XCircle className="w-4 h-4" />
@@ -307,7 +307,7 @@ export function AppRating({ appId, compact = false, onRatingSubmit }: AppRatingP
                   placeholder="Share your experience..."
                   rows={3}
                   maxLength={1000}
-                  className="w-full px-3 py-2 bg-bg-elevated border border-black/10 rounded-lg text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan/50 resize-none"
+                  className="w-full px-3 py-2 bg-bg-elevated border border-overlay/10 rounded-lg text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan/50 resize-none"
                 />
               </div>
 

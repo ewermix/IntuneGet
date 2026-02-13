@@ -40,7 +40,7 @@ export const UnmanagedListRow = memo(function UnmanagedListRow({
       className="group relative"
     >
       <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-black/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      <div className="relative flex items-center gap-4 p-4 rounded-xl bg-black/[0.02] border border-black/[0.03] group-hover:border-black/10 transition-all duration-200">
+      <div className="relative flex items-center gap-4 p-4 rounded-xl bg-overlay/[0.02] border border-black/[0.03] group-hover:border-overlay/10 transition-all duration-200">
         {/* App icon */}
         <div className="relative flex-shrink-0">
           <AppIcon
@@ -81,7 +81,7 @@ export const UnmanagedListRow = memo(function UnmanagedListRow({
                 size="sm"
                 variant="ghost"
                 onClick={onLink}
-                className="h-8 px-3 text-text-secondary hover:text-text-primary hover:bg-black/10"
+                className="h-8 px-3 text-text-secondary hover:text-text-primary hover:bg-overlay/10"
               >
                 <LinkIcon className="w-4 h-4" />
               </Button>

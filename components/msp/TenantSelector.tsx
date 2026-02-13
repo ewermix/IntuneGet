@@ -111,12 +111,12 @@ export function TenantSelector({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           disabled={disabled}
-          className="w-full pl-10 pr-4 py-2 rounded-lg border border-black/10 bg-transparent text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan disabled:opacity-50"
+          className="w-full pl-10 pr-4 py-2 rounded-lg border border-overlay/10 bg-transparent text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan disabled:opacity-50"
         />
       </div>
 
       {/* Tenant list */}
-      <div className="max-h-72 overflow-y-auto rounded-lg border border-black/10">
+      <div className="max-h-72 overflow-y-auto rounded-lg border border-overlay/10">
         {filteredTenants.length === 0 ? (
           <div className="p-6 text-center">
             <Building2 className="w-8 h-8 text-text-muted mx-auto mb-2" />
@@ -142,7 +142,7 @@ export function TenantSelector({
                   disabled={isDisabled}
                   className={cn(
                     'w-full flex items-center gap-3 p-3 text-left transition-colors',
-                    'hover:bg-black/5',
+                    'hover:bg-overlay/5',
                     isSelected && 'bg-accent-cyan/5',
                     isDisabled && 'opacity-50 cursor-not-allowed'
                   )}

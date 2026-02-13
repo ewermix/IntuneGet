@@ -87,7 +87,7 @@ export default function BatchDeploymentsPage() {
   if (isLoadingOrganization) {
     return (
       <div className="space-y-6">
-        <div className="h-8 w-48 bg-black/10 rounded animate-pulse" />
+        <div className="h-8 w-48 bg-overlay/10 rounded animate-pulse" />
         <SkeletonGrid count={4} columns={2} variant="content" />
       </div>
     );
@@ -129,7 +129,7 @@ export default function BatchDeploymentsPage() {
           {isLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-24 glass-light rounded-xl border border-black/5 animate-pulse" />
+                <div key={i} className="h-24 glass-light rounded-xl border border-overlay/5 animate-pulse" />
               ))}
             </div>
           ) : error ? (
@@ -138,7 +138,7 @@ export default function BatchDeploymentsPage() {
               <p className="text-sm text-red-400">Failed to load batch deployments</p>
             </div>
           ) : batches.length === 0 ? (
-            <div className="p-8 rounded-xl glass-light border border-black/5 text-center">
+            <div className="p-8 rounded-xl glass-light border border-overlay/5 text-center">
               <Layers className="w-10 h-10 text-text-muted mx-auto mb-3" />
               <p className="text-sm text-text-secondary mb-4">No batch deployments yet</p>
               <Link href="/dashboard/msp/batch/new">
@@ -158,7 +158,7 @@ export default function BatchDeploymentsPage() {
                     'w-full p-4 rounded-xl glass-light border transition-all text-left',
                     selectedBatchId === batch.id
                       ? 'border-accent-cyan/50 shadow-glow-cyan'
-                      : 'border-black/5 hover:border-black/10'
+                      : 'border-overlay/5 hover:border-overlay/10'
                   )}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -203,7 +203,7 @@ export default function BatchDeploymentsPage() {
         </div>
 
         {/* Detail panel */}
-        <div className="p-6 rounded-xl glass-light border border-black/5">
+        <div className="p-6 rounded-xl glass-light border border-overlay/5">
           {selectedBatchId ? (
             <BatchProgressTracker batchId={selectedBatchId} />
           ) : (
@@ -226,7 +226,7 @@ function BatchStatusBadge({ status }: { status: BatchDeployment['status'] }) {
     pending: { label: 'Pending', className: 'bg-amber-500/20 text-amber-400', icon: Clock },
     in_progress: { label: 'Running', className: 'bg-blue-500/20 text-blue-400', icon: Loader2 },
     completed: { label: 'Done', className: 'bg-emerald-500/20 text-emerald-400', icon: CheckCircle2 },
-    cancelled: { label: 'Cancelled', className: 'bg-gray-500/20 text-gray-400', icon: XCircle },
+    cancelled: { label: 'Cancelled', className: 'bg-overlay/20 text-text-muted', icon: XCircle },
     failed: { label: 'Failed', className: 'bg-red-500/20 text-red-400', icon: XCircle },
   };
 

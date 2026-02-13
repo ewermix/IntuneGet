@@ -39,14 +39,14 @@ export function ConsentUrlGenerator({ tenantRecordId, consentUrl, onClose }: Con
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg bg-bg-surface border border-black/10 rounded-xl shadow-2xl animate-scale-in">
+      <div className="relative w-full max-w-lg bg-bg-surface border border-overlay/10 rounded-xl shadow-2xl animate-scale-in">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-black/5">
+        <div className="flex items-center justify-between p-4 border-b border-overlay/5">
           <h3 className="text-lg font-medium text-text-primary">Consent URL</h3>
           {onClose && (
             <button
               onClick={onClose}
-              className="p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-black/10 transition-colors"
+              className="p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-overlay/10 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -59,7 +59,7 @@ export function ConsentUrlGenerator({ tenantRecordId, consentUrl, onClose }: Con
             Share this URL with your customer's Microsoft 365 administrator to grant consent for IntuneGet.
           </p>
 
-          <div className="p-3 bg-black/5 rounded-lg border border-black/10">
+          <div className="p-3 bg-overlay/5 rounded-lg border border-overlay/10">
             <div className="flex items-center gap-2">
               <input
                 type="text"
@@ -91,12 +91,12 @@ export function ConsentUrlGenerator({ tenantRecordId, consentUrl, onClose }: Con
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-4 border-t border-black/5">
+        <div className="flex items-center justify-end gap-3 p-4 border-t border-overlay/5">
           <Button
             type="button"
             variant="outline"
             onClick={handleOpenConsent}
-            className="border-black/20 text-text-primary hover:bg-black/5"
+            className="border-black/20 text-text-primary hover:bg-overlay/5"
           >
             <ExternalLink className="w-4 h-4 mr-2" />
             Open consent page
@@ -105,7 +105,7 @@ export function ConsentUrlGenerator({ tenantRecordId, consentUrl, onClose }: Con
             <Button
               type="button"
               onClick={onClose}
-              className="bg-black/10 text-text-primary hover:bg-black/20"
+              className="bg-overlay/10 text-text-primary hover:bg-overlay/20"
             >
               Close
             </Button>

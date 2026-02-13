@@ -149,7 +149,7 @@ export function MemberCard({
         'relative flex items-center gap-4 p-4 bg-bg-elevated rounded-xl border transition-all duration-200',
         member.is_current_user
           ? 'border-accent-cyan/30 bg-accent-cyan/5'
-          : 'border-black/10'
+          : 'border-overlay/10'
       )}
     >
       {/* Avatar */}
@@ -205,13 +205,13 @@ export function MemberCard({
         <div className="relative flex-shrink-0">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-black/10 transition-colors"
+            className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-overlay/10 transition-colors"
           >
             <MoreVertical className="w-4 h-4" />
           </button>
 
           {showMenu && (
-            <div className="absolute top-full right-0 mt-1 w-40 bg-bg-elevated border border-black/10 rounded-lg shadow-xl z-10 overflow-hidden">
+            <div className="absolute top-full right-0 mt-1 w-40 bg-bg-elevated border border-overlay/10 rounded-lg shadow-xl z-10 overflow-hidden">
               <button
                 onClick={() => {
                   setShowMenu(false);
@@ -230,7 +230,7 @@ export function MemberCard({
       {/* Confirm Remove Dialog */}
       {showConfirmRemove && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-bg-elevated rounded-xl border border-black/10 p-6 max-w-sm w-full shadow-2xl">
+          <div className="bg-bg-elevated rounded-xl border border-overlay/10 p-6 max-w-sm w-full shadow-2xl">
             <h3 className="text-lg font-semibold text-text-primary mb-2">Remove Team Member?</h3>
             <p className="text-sm text-text-secondary mb-4">
               Are you sure you want to remove <strong>{member.user_name || member.user_email}</strong> from the organization? They will lose access to all MSP features.
@@ -239,7 +239,7 @@ export function MemberCard({
               <button
                 onClick={() => setShowConfirmRemove(false)}
                 disabled={isRemoving}
-                className="flex-1 px-4 py-2 text-sm font-medium text-text-primary bg-black/5 hover:bg-black/10 rounded-lg transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2 text-sm font-medium text-text-primary bg-overlay/5 hover:bg-overlay/10 rounded-lg transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>

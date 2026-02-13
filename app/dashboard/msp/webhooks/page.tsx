@@ -23,7 +23,7 @@ export default function MspWebhooksPage() {
   if (isLoadingOrganization) {
     return (
       <div className="space-y-6">
-        <div className="h-8 w-48 bg-black/10 rounded animate-pulse" />
+        <div className="h-8 w-48 bg-overlay/10 rounded animate-pulse" />
         <SkeletonGrid count={2} columns={2} variant="content" />
       </div>
     );
@@ -44,7 +44,7 @@ export default function MspWebhooksPage() {
           title="Webhooks"
           icon={Webhook}
         />
-        <div className="p-8 rounded-xl glass-light border border-black/5 text-center">
+        <div className="p-8 rounded-xl glass-light border border-overlay/5 text-center">
           <p className="text-text-secondary">
             You do not have permission to manage webhooks.
           </p>

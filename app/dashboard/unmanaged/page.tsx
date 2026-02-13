@@ -113,7 +113,7 @@ export default function UnmanagedAppsPage() {
               permission.
             </p>
 
-            <div className="w-full bg-bg-elevated/50 rounded-xl p-6 text-left mb-8 border border-black/5">
+            <div className="w-full bg-bg-elevated/50 rounded-xl p-6 text-left mb-8 border border-overlay/5">
               <h3 className="text-sm font-semibold text-text-primary mb-4 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-accent-cyan" />
                 Quick Setup Guide
@@ -152,7 +152,7 @@ export default function UnmanagedAppsPage() {
                   setPermissionError(null);
                   handleRefresh();
                 }}
-                className="border-black/10 hover:bg-black/5"
+                className="border-overlay/10 hover:bg-overlay/5"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Retry
@@ -186,7 +186,7 @@ export default function UnmanagedAppsPage() {
               variant="outline"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="border-black/10 hover:bg-black/5 hover:border-accent-cyan/30"
+              className="border-overlay/10 hover:bg-overlay/5 hover:border-accent-cyan/30"
             >
               <RefreshCw className={cn('w-4 h-4 mr-2', isRefreshing && 'animate-spin')} />
               Refresh

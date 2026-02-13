@@ -317,7 +317,7 @@ export default function DocsPage() {
         <h2 className="text-2xl font-semibold text-text-primary mb-4">Requirements</h2>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <div className="flex items-center gap-3 mb-3">
               <div className="rounded-lg bg-accent-cyan/10 p-2">
                 <Clock className="h-5 w-5 text-accent-cyan" />
@@ -330,7 +330,7 @@ export default function DocsPage() {
             </p>
           </div>
 
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <div className="flex items-center gap-3 mb-3">
               <div className="rounded-lg bg-accent-cyan/10 p-2">
                 <DollarSign className="h-5 w-5 text-accent-cyan" />
@@ -343,7 +343,7 @@ export default function DocsPage() {
             </p>
           </div>
 
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <div className="flex items-center gap-3 mb-3">
               <div className="rounded-lg bg-accent-cyan/10 p-2">
                 <Shield className="h-5 w-5 text-accent-cyan" />
@@ -386,7 +386,7 @@ export default function DocsPage() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="group rounded-lg border border-black/10 bg-white p-5 transition-all duration-200 hover:border-accent-cyan/30 hover:bg-stone-50"
+                className="group rounded-lg border border-overlay/10 bg-bg-elevated p-5 transition-all duration-200 hover:border-accent-cyan/30 hover:bg-overlay/[0.04]"
               >
                 <div className="flex items-start gap-4">
                   <div className="rounded-lg bg-accent-cyan/10 p-2.5 transition-colors group-hover:bg-accent-cyan/20">
@@ -416,7 +416,7 @@ export default function DocsPage() {
           Self-hosted IntuneGet runs entirely on your infrastructure with zero external dependencies:
         </p>
 
-        <div className="rounded-lg border border-black/10 bg-white p-4 sm:p-6 font-mono">
+        <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4 sm:p-6 font-mono">
           <pre className="text-text-secondary overflow-x-auto text-[10px] sm:text-xs md:text-sm">
 {`+----------------------------------+       +--------------------------------+
 |         DOCKER CONTAINER         |       |      WINDOWS MACHINE           |

@@ -105,15 +105,15 @@ function ConsentCallbackContent() {
   }, [searchParams, signIn, isAuthenticated, router, verifyConsentAfterSignIn]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950">
+    <div className="flex min-h-screen items-center justify-center bg-bg-deepest">
       <div className="text-center max-w-md px-4">
         {(status === 'processing' || status === 'verifying') && (
           <>
             <Loader2 className="h-12 w-12 animate-spin text-blue-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-white mb-2">
+            <h2 className="text-xl font-semibold text-text-primary mb-2">
               {status === 'verifying' ? 'Verifying Access' : 'Completing Setup'}
             </h2>
-            <p className="text-slate-400">
+            <p className="text-text-muted">
               {statusMessage}
             </p>
           </>
@@ -122,10 +122,10 @@ function ConsentCallbackContent() {
         {status === 'success' && (
           <>
             <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-white mb-2">
+            <h2 className="text-xl font-semibold text-text-primary mb-2">
               Setup Complete
             </h2>
-            <p className="text-slate-400">
+            <p className="text-text-muted">
               {statusMessage}
             </p>
           </>
@@ -134,29 +134,29 @@ function ConsentCallbackContent() {
         {status === 'error' && (
           <>
             <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-white mb-2">
+            <h2 className="text-xl font-semibold text-text-primary mb-2">
               Admin Consent Not Granted
             </h2>
-            <p className="text-slate-400 mb-4">
+            <p className="text-text-muted mb-4">
               {errorMessage || 'Something went wrong during setup.'}
             </p>
 
             {/* Detailed explanation */}
-            <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 mb-4 text-left">
+            <div className="bg-bg-surface/50 border border-overlay/10 rounded-xl p-4 mb-4 text-left">
               <p className="text-sm text-amber-400 font-medium mb-2">
                 Why did this happen?
               </p>
-              <ul className="text-xs text-slate-400 space-y-2">
+              <ul className="text-xs text-text-muted space-y-2">
                 <li className="flex items-start gap-2">
-                  <span className="text-slate-600 mt-0.5">1.</span>
-                  <span>You may not have the required role. Only <strong className="text-white">Global Administrators</strong> or <strong className="text-white">Privileged Role Administrators</strong> can grant admin consent.</span>
+                  <span className="text-text-muted mt-0.5">1.</span>
+                  <span>You may not have the required role. Only <strong className="text-text-primary">Global Administrators</strong> or <strong className="text-text-primary">Privileged Role Administrators</strong> can grant admin consent.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-slate-600 mt-0.5">2.</span>
+                  <span className="text-text-muted mt-0.5">2.</span>
                   <span>Intune Administrators, Application Administrators, and other roles <strong className="text-red-400">cannot</strong> grant organization-wide consent.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-slate-600 mt-0.5">3.</span>
+                  <span className="text-text-muted mt-0.5">3.</span>
                   <span>If you&apos;re not sure of your role, ask your IT department who the Global Admin is.</span>
                 </li>
               </ul>
@@ -172,7 +172,7 @@ function ConsentCallbackContent() {
               <Button
                 onClick={() => router.push('/auth/signin')}
                 variant="outline"
-                className="w-full border-slate-700 text-slate-300 hover:bg-slate-800"
+                className="w-full border-overlay/15 text-text-secondary hover:bg-overlay/10"
               >
                 Start Over
               </Button>
@@ -188,7 +188,7 @@ export default function ConsentCallbackPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="min-h-screen flex items-center justify-center bg-bg-deepest">
           <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
         </div>
       }

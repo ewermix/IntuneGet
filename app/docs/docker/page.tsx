@@ -324,7 +324,7 @@ services:
         </Callout>
 
         <div className="grid gap-4 sm:grid-cols-3 mt-6">
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h3 className="font-semibold text-text-primary mb-2 flex items-center gap-2">
               <Shield className="h-4 w-4 text-accent-cyan" />
               Caddy
@@ -334,7 +334,7 @@ services:
             </p>
           </div>
 
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h3 className="font-semibold text-text-primary mb-2 flex items-center gap-2">
               <Shield className="h-4 w-4 text-accent-cyan" />
               Nginx + Certbot
@@ -344,7 +344,7 @@ services:
             </p>
           </div>
 
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h3 className="font-semibold text-text-primary mb-2 flex items-center gap-2">
               <Shield className="h-4 w-4 text-accent-cyan" />
               Cloud Load Balancer
@@ -404,9 +404,9 @@ docker-compose up -d`}
           ].map((item, index) => (
             <div
               key={index}
-              className="flex items-center gap-3 p-3 rounded-lg border border-black/10 bg-white"
+              className="flex items-center gap-3 p-3 rounded-lg border border-overlay/10 bg-bg-elevated"
             >
-              <div className="h-5 w-5 rounded-full border-2 border-stone-300 flex items-center justify-center flex-shrink-0">
+              <div className="h-5 w-5 rounded-full border-2 border-overlay/15 flex items-center justify-center flex-shrink-0">
                 <div className="h-2 w-2 rounded-full bg-stone-300" />
               </div>
               <span className="text-text-secondary">{item}</span>
@@ -422,7 +422,7 @@ docker-compose up -d`}
         </h2>
 
         <div className="space-y-4">
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h3 className="font-medium text-text-primary mb-2 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-status-error" />
               Container fails to start
@@ -436,7 +436,7 @@ docker-compose up -d`}
             </ul>
           </div>
 
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h3 className="font-medium text-text-primary mb-2 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-status-error" />
               Database errors
@@ -451,7 +451,7 @@ docker-compose up -d`}
             </ul>
           </div>
 
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h3 className="font-medium text-text-primary mb-2 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-status-error" />
               Build fails
@@ -466,7 +466,7 @@ docker-compose up -d`}
             </ul>
           </div>
 
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h3 className="font-medium text-text-primary mb-2 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-status-error" />
               AADSTS900144: Missing client_id in authentication URLs

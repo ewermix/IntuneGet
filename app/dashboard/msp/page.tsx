@@ -63,7 +63,7 @@ export default function MspDashboardPage() {
   if (isLoadingOrganization) {
     return (
       <div className="space-y-6">
-        <div className="h-8 w-48 bg-black/10 rounded animate-pulse" />
+        <div className="h-8 w-48 bg-overlay/10 rounded animate-pulse" />
         <SkeletonGrid count={4} columns={4} variant="stat" />
       </div>
     );
@@ -129,17 +129,17 @@ export default function MspDashboardPage() {
             {isLoadingTenants && activeTenants.length === 0 && (
               <div className="space-y-3">
                 {[1, 2].map((i) => (
-                  <div key={i} className="h-24 glass-light rounded-xl border border-black/5 animate-pulse" />
+                  <div key={i} className="h-24 glass-light rounded-xl border border-overlay/5 animate-pulse" />
                 ))}
               </div>
             )}
 
             {!isLoadingTenants && activeTenants.length === 0 && pendingTenants.length === 0 && (
-              <div className="p-6 rounded-xl glass-light border border-black/5 text-center">
+              <div className="p-6 rounded-xl glass-light border border-overlay/5 text-center">
                 <Building2 className="w-8 h-8 text-text-muted mx-auto mb-3" />
                 <p className="text-sm text-text-secondary mb-3">No customer tenants yet</p>
                 <Link href="/dashboard/msp/tenants/add">
-                  <Button size="sm" variant="outline" className="border-black/20 text-text-primary hover:bg-black/5">
+                  <Button size="sm" variant="outline" className="border-black/20 text-text-primary hover:bg-overlay/5">
                     <Plus className="w-4 h-4 mr-2" />
                     Add first customer
                   </Button>
@@ -184,7 +184,7 @@ export default function MspDashboardPage() {
             {(activeTenants.length > 3 || pendingTenants.length > 2) && (
               <Link
                 href="/dashboard/msp/tenants"
-                className="block p-3 text-center text-sm text-text-secondary hover:text-text-primary rounded-lg bg-black/5 hover:bg-black/10 transition-colors border border-black/5"
+                className="block p-3 text-center text-sm text-text-secondary hover:text-text-primary rounded-lg bg-overlay/5 hover:bg-overlay/10 transition-colors border border-overlay/5"
               >
                 View all {managedTenants.length} tenants
               </Link>

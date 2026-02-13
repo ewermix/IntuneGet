@@ -25,7 +25,7 @@ const installerTypeStyles: Record<string, string> = {
 };
 
 function getInstallerTypeStyle(type: string): string {
-  return installerTypeStyles[type.toLowerCase()] || 'text-text-secondary bg-bg-elevated border-black/10';
+  return installerTypeStyles[type.toLowerCase()] || 'text-text-secondary bg-bg-elevated border-overlay/10';
 }
 
 function getInstallerLabel(type: string): string {
@@ -114,7 +114,7 @@ function AppListItemComponent({ package: pkg, onSelect }: AppListItemProps) {
   return (
     <div
       onClick={() => onSelect?.(pkg)}
-      className="group rounded-xl border border-black/10 bg-bg-elevated px-4 py-3 cursor-pointer contain-layout transition-all duration-200 hover:shadow-card hover:border-accent-cyan/25"
+      className="group rounded-xl border border-overlay/10 bg-bg-elevated px-4 py-3 cursor-pointer contain-layout transition-all duration-200 hover:shadow-card hover:border-accent-cyan/25"
     >
       <div className="flex items-center gap-4">
         <AppIcon
@@ -138,7 +138,7 @@ function AppListItemComponent({ package: pkg, onSelect }: AppListItemProps) {
             </div>
           </div>
 
-          <span className="text-xs text-text-secondary bg-bg-surface px-2 py-0.5 rounded border border-black/10 flex-shrink-0 hidden sm:inline">
+          <span className="text-xs text-text-secondary bg-bg-surface px-2 py-0.5 rounded border border-overlay/10 flex-shrink-0 hidden sm:inline">
             v{pkg.version}
           </span>
 

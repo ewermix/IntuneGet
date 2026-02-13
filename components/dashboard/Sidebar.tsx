@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
@@ -27,6 +27,7 @@ import {
 import { cn } from '@/lib/utils';
 import { springPresets, staggerContainerFast } from '@/lib/animations/variants';
 import { useSidebarStore } from '@/stores/sidebar-store';
+import { useUserSettings } from '@/components/providers/UserSettingsProvider';
 import { useMspOptional } from '@/hooks/useMspOptional';
 import { UpdateBadge } from '@/components/inventory';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -85,10 +86,16 @@ interface SidebarProps {
 
 export function Sidebar({ user, onSignOut }: SidebarProps) {
   const { isCollapsed, toggleCollapse } = useSidebarStore();
+  const { setSidebarCollapsed } = useUserSettings();
   const { isMspUser } = useMspOptional();
   const prefersReducedMotion = useReducedMotion();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const handleToggleCollapse = useCallback(() => {
+    const next = !isCollapsed;
+    setSidebarCollapsed(next);
+    toggleCollapse();
+  }, [isCollapsed, setSidebarCollapsed, toggleCollapse]);
 
   useEffect(() => {
     setMounted(true);
@@ -107,7 +114,7 @@ export function Sidebar({ user, onSignOut }: SidebarProps) {
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className={cn(
-        'flex items-center h-16 border-b border-black/5',
+        'flex items-center h-16 border-b border-overlay/5',
         isCollapsed ? 'justify-center px-3' : 'justify-between px-4'
       )}>
         <Link href="/dashboard" className="group flex items-center gap-3">
@@ -161,7 +168,7 @@ export function Sidebar({ user, onSignOut }: SidebarProps) {
                 <div className={cn('pt-4 pb-2', isCollapsed ? 'px-0' : 'px-3')}>
                   <AnimatePresence mode="wait">
                     {isCollapsed ? (
-                      <div className="border-t border-black/5 mx-2" />
+                      <div className="border-t border-overlay/5 mx-2" />
                     ) : (
                       <motion.span
                         key={`label-${group.label}`}
@@ -197,10 +204,10 @@ export function Sidebar({ user, onSignOut }: SidebarProps) {
       {/* Collapse toggle - desktop only */}
       <div className="hidden lg:flex px-3 pb-2">
         <button
-          onClick={toggleCollapse}
+          onClick={handleToggleCollapse}
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           className={cn(
-            'flex items-center gap-2 w-full rounded-lg px-3 py-2 text-text-muted hover:text-text-primary hover:bg-black/[0.04] transition-colors',
+            'flex items-center gap-2 w-full rounded-lg px-3 py-2 text-text-muted hover:text-text-primary hover:bg-overlay/[0.04] transition-colors',
             isCollapsed && 'justify-center px-2'
           )}
         >

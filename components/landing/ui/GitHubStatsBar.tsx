@@ -41,7 +41,7 @@ export function GitHubStatsBar({ className = "", showTitle = true }: GitHubStats
     <FadeIn className={className}>
       <div className="flex flex-col items-center">
         {showTitle && (
-          <p className="text-sm text-stone-500 mb-4">
+          <p className="text-sm text-text-muted mb-4">
             Join our growing open source community
           </p>
         )}
@@ -53,20 +53,20 @@ export function GitHubStatsBar({ className = "", showTitle = true }: GitHubStats
               href="https://github.com/ugurkocde/IntuneGet"
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-stone-200 hover:border-stone-300 hover:shadow-card transition-all duration-300"
+              className="group flex items-center gap-2 px-4 py-2.5 rounded-xl bg-bg-elevated border border-overlay/10 hover:border-overlay/15 hover:shadow-card transition-all duration-300"
             >
               <div className={`w-8 h-8 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
                 <stat.icon className={`w-4 h-4 ${stat.color}`} />
               </div>
               <div className="text-left">
-                <div className="text-lg font-bold text-stone-900">
+                <div className="text-lg font-bold text-text-primary">
                   {isLoading ? (
-                    <span className="inline-block w-8 h-5 bg-stone-100 rounded animate-pulse" />
+                    <span className="inline-block w-8 h-5 bg-overlay/[0.06] rounded animate-pulse" />
                   ) : (
                     <CountUp end={stat.value} delay={0.1 * index} />
                   )}
                 </div>
-                <div className="text-xs text-stone-500">{stat.label}</div>
+                <div className="text-xs text-text-muted">{stat.label}</div>
               </div>
             </a>
           ))}

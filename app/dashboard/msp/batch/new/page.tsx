@@ -25,7 +25,7 @@ export default function NewBatchDeploymentPage() {
   if (isLoadingOrganization) {
     return (
       <div className="space-y-6">
-        <div className="h-8 w-48 bg-black/10 rounded animate-pulse" />
+        <div className="h-8 w-48 bg-overlay/10 rounded animate-pulse" />
         <SkeletonGrid count={1} columns={2} variant="content" />
       </div>
     );
@@ -46,7 +46,7 @@ export default function NewBatchDeploymentPage() {
           title="New Batch Deployment"
           icon={Layers}
         />
-        <div className="p-8 rounded-xl glass-light border border-black/5 text-center">
+        <div className="p-8 rounded-xl glass-light border border-overlay/5 text-center">
           <p className="text-text-secondary">
             You do not have permission to create batch deployments.
           </p>
@@ -81,7 +81,7 @@ export default function NewBatchDeploymentPage() {
       />
 
       <div className="max-w-4xl mx-auto">
-        <div className="p-8 rounded-xl glass-light border border-black/5">
+        <div className="p-8 rounded-xl glass-light border border-overlay/5">
           <BatchDeploymentWizard />
         </div>
       </div>

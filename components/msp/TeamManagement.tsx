@@ -262,7 +262,7 @@ export function TeamManagement() {
       {showInviteForm && (
         <div className="space-y-3">
           {/* Toggle between single and bulk invite */}
-          <div className="flex gap-1 p-1 bg-black/5 rounded-lg w-fit">
+          <div className="flex gap-1 p-1 bg-overlay/5 rounded-lg w-fit">
             <button
               onClick={() => setInviteMode('single')}
               className={cn(
@@ -319,12 +319,12 @@ export function TeamManagement() {
             placeholder="Search members by name or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-black/5 border border-black/10 rounded-lg text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan/50 focus:ring-1 focus:ring-accent-cyan/30"
+            className="w-full pl-10 pr-4 py-2 bg-overlay/5 border border-overlay/10 rounded-lg text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan/50 focus:ring-1 focus:ring-accent-cyan/30"
           />
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 p-1 bg-black/5 rounded-lg">
+        <div className="flex gap-1 p-1 bg-overlay/5 rounded-lg">
           <button
             onClick={() => setActiveTab('members')}
             className={cn(
@@ -403,7 +403,7 @@ export function TeamManagement() {
             pendingInvitations.map((invitation) => (
               <div
                 key={invitation.id}
-                className="flex items-center gap-4 p-4 bg-bg-elevated rounded-xl border border-black/10"
+                className="flex items-center gap-4 p-4 bg-bg-elevated rounded-xl border border-overlay/10"
               >
                 <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center">
                   <Clock className="w-5 h-5 text-yellow-500" />

@@ -81,7 +81,7 @@ export function AppCollection({ category, onSelect, onSeeAll }: AppCollectionPro
         </div>
         <div className="flex gap-4 overflow-hidden">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex-shrink-0 w-60 h-28 rounded-xl border border-black/10 bg-bg-elevated animate-shimmer" />
+            <div key={i} className="flex-shrink-0 w-60 h-28 rounded-xl border border-overlay/10 bg-bg-elevated animate-shimmer" />
           ))}
         </div>
       </div>
@@ -115,7 +115,7 @@ export function AppCollection({ category, onSelect, onSeeAll }: AppCollectionPro
         {canScrollLeft && (
           <button
             onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-bg-elevated border border-black/10 rounded-full shadow-soft hover:bg-bg-surface transition-all opacity-0 group-hover/collection:opacity-100 -translate-x-1/2"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-bg-elevated border border-overlay/10 rounded-full shadow-soft hover:bg-bg-surface transition-all opacity-0 group-hover/collection:opacity-100 -translate-x-1/2"
           >
             <ChevronLeft className="w-5 h-5 text-text-secondary" />
           </button>
@@ -142,7 +142,7 @@ export function AppCollection({ category, onSelect, onSeeAll }: AppCollectionPro
               onClick={() => onSeeAll(category)}
               className="flex-shrink-0 w-60 snap-start rounded-xl border border-dashed border-black/15 bg-bg-elevated p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-bg-surface transition-colors"
             >
-              <div className="w-12 h-12 rounded-xl border border-black/10 bg-bg-surface flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl border border-overlay/10 bg-bg-surface flex items-center justify-center">
                 <ArrowRight className="w-6 h-6 text-text-secondary" />
               </div>
               <span className="text-sm text-text-secondary">See all {displayName}</span>
@@ -154,7 +154,7 @@ export function AppCollection({ category, onSelect, onSeeAll }: AppCollectionPro
         {canScrollRight && (
           <button
             onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-bg-elevated border border-black/10 rounded-full shadow-soft hover:bg-bg-surface transition-all opacity-0 group-hover/collection:opacity-100 translate-x-1/2"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-bg-elevated border border-overlay/10 rounded-full shadow-soft hover:bg-bg-surface transition-all opacity-0 group-hover/collection:opacity-100 translate-x-1/2"
           >
             <ChevronRight className="w-5 h-5 text-text-secondary" />
           </button>
@@ -235,7 +235,7 @@ function CollectionCardComponent({ package: pkg, onSelect }: CollectionCardProps
   return (
     <div
       onClick={() => onSelect?.(pkg)}
-      className="flex-shrink-0 w-60 snap-start group rounded-xl border border-black/10 bg-bg-elevated p-4 cursor-pointer transition-all duration-200 hover:shadow-card hover:border-accent-cyan/25 hover:-translate-y-0.5"
+      className="flex-shrink-0 w-60 snap-start group rounded-xl border border-overlay/10 bg-bg-elevated p-4 cursor-pointer transition-all duration-200 hover:shadow-card hover:border-accent-cyan/25 hover:-translate-y-0.5"
     >
       <div className="flex items-start gap-3">
         <AppIcon
@@ -254,7 +254,7 @@ function CollectionCardComponent({ package: pkg, onSelect }: CollectionCardProps
         </div>
       </div>
 
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-black/10">
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-overlay/10">
         <span className="text-xs text-text-muted">v{pkg.version}</span>
         <Button
           size="sm"

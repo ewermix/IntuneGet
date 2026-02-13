@@ -147,12 +147,12 @@ export function BulkInviteMembers({
     const failedResults = results.filter((r) => !r.success);
 
     return (
-      <div className="p-4 bg-bg-elevated rounded-xl border border-black/10">
+      <div className="p-4 bg-bg-elevated rounded-xl border border-overlay/10">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-medium text-text-primary">Bulk Invite Results</h3>
           <button
             onClick={handleClose}
-            className="p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-black/10 transition-colors"
+            className="p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-overlay/10 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -216,7 +216,7 @@ export function BulkInviteMembers({
   }
 
   return (
-    <div className="p-4 bg-bg-elevated rounded-xl border border-black/10">
+    <div className="p-4 bg-bg-elevated rounded-xl border border-overlay/10">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Users className="w-5 h-5 text-accent-cyan" />
@@ -225,7 +225,7 @@ export function BulkInviteMembers({
         {onCancel && (
           <button
             onClick={onCancel}
-            className="p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-black/10 transition-colors"
+            className="p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-overlay/10 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -246,7 +246,7 @@ export function BulkInviteMembers({
             onChange={(e) => setEmailsText(e.target.value)}
             placeholder="Enter email addresses (one per line, or separated by commas)"
             rows={5}
-            className="w-full px-3 py-2 bg-black/5 border border-black/10 rounded-lg text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan/50 focus:ring-1 focus:ring-accent-cyan/30 resize-none font-mono text-sm"
+            className="w-full px-3 py-2 bg-overlay/5 border border-overlay/10 rounded-lg text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan/50 focus:ring-1 focus:ring-accent-cyan/30 resize-none font-mono text-sm"
             disabled={isSubmitting}
           />
           <p className="mt-1 text-xs text-text-muted">

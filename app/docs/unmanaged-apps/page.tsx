@@ -64,7 +64,7 @@ export default function UnmanagedAppsPage() {
           Required Permission
         </h2>
 
-        <div className="rounded-lg border border-black/10 bg-white p-4 flex items-start gap-4">
+        <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4 flex items-start gap-4">
           <Shield className="h-6 w-6 text-accent-cyan flex-shrink-0 mt-1" />
           <div>
             <h3 className="font-semibold text-text-primary mb-2">
@@ -154,7 +154,7 @@ export default function UnmanagedAppsPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-black/10 bg-black/5 p-4 flex items-start gap-3">
+          <div className="rounded-lg border border-overlay/10 bg-overlay/5 p-4 flex items-start gap-3">
             <HelpCircle className="h-5 w-5 text-text-muted flex-shrink-0 mt-0.5" />
             <div>
               <h4 className="font-medium text-text-primary">No Match</h4>
@@ -295,19 +295,19 @@ export default function UnmanagedAppsPage() {
           The top of the Unmanaged Apps page displays key statistics:
         </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h4 className="font-medium text-text-primary mb-1">Total Apps</h4>
             <p className="text-sm text-text-secondary">
               Number of non-Microsoft discovered applications
             </p>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h4 className="font-medium text-text-primary mb-1">Match Breakdown</h4>
             <p className="text-sm text-text-secondary">
               Count of matched, partial, and unmatched apps
             </p>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h4 className="font-medium text-text-primary mb-1">Total Devices</h4>
             <p className="text-sm text-text-secondary">
               Combined device count across all discovered apps

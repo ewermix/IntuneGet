@@ -125,10 +125,10 @@ export function MspStatsOverview({ stats, isLoading }: MspStatsOverviewProps) {
     return (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="p-4 rounded-xl glass-light border border-black/5 animate-pulse">
-            <div className="w-10 h-10 rounded-lg bg-black/10 mb-3" />
-            <div className="w-16 h-8 bg-black/10 rounded mb-2" />
-            <div className="w-24 h-4 bg-black/10 rounded" />
+          <div key={i} className="p-4 rounded-xl glass-light border border-overlay/5 animate-pulse">
+            <div className="w-10 h-10 rounded-lg bg-overlay/10 mb-3" />
+            <div className="w-16 h-8 bg-overlay/10 rounded mb-2" />
+            <div className="w-24 h-4 bg-overlay/10 rounded" />
           </div>
         ))}
       </div>
@@ -137,7 +137,7 @@ export function MspStatsOverview({ stats, isLoading }: MspStatsOverviewProps) {
 
   if (!stats) {
     return (
-      <div className="p-8 rounded-xl glass-light border border-black/5 text-center">
+      <div className="p-8 rounded-xl glass-light border border-overlay/5 text-center">
         <Building2 className="w-10 h-10 text-text-muted mx-auto mb-3" />
         <p className="text-text-secondary">No statistics available</p>
       </div>

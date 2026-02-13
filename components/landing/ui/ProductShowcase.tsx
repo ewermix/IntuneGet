@@ -35,7 +35,7 @@ export function ProductShowcase({ className = "", compact = false }: ProductShow
     )}>
       {/* Main product screenshot mockup */}
       <motion.div
-        className="relative bg-white rounded-xl shadow-soft-xl border border-stone-200/60 overflow-hidden"
+        className="relative bg-bg-elevated rounded-xl shadow-soft-xl border border-overlay/[0.06] overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{
@@ -46,17 +46,17 @@ export function ProductShowcase({ className = "", compact = false }: ProductShow
       >
         {/* Browser chrome */}
         <div className={cn(
-          "flex items-center gap-2 bg-stone-50 border-b border-stone-200",
+          "flex items-center gap-2 bg-bg-surface border-b border-overlay/10",
           compact ? "px-3 py-2" : "px-4 py-3"
         )}>
           <div className="flex gap-1.5">
-            <div className={cn("rounded-full bg-stone-300", compact ? "w-2.5 h-2.5" : "w-3 h-3")} />
-            <div className={cn("rounded-full bg-stone-300", compact ? "w-2.5 h-2.5" : "w-3 h-3")} />
-            <div className={cn("rounded-full bg-stone-300", compact ? "w-2.5 h-2.5" : "w-3 h-3")} />
+            <div className={cn("rounded-full bg-overlay/20", compact ? "w-2.5 h-2.5" : "w-3 h-3")} />
+            <div className={cn("rounded-full bg-overlay/20", compact ? "w-2.5 h-2.5" : "w-3 h-3")} />
+            <div className={cn("rounded-full bg-overlay/20", compact ? "w-2.5 h-2.5" : "w-3 h-3")} />
           </div>
           <div className="flex-1 mx-4">
             <div className={cn(
-              "bg-white border border-stone-200 rounded-lg text-stone-500 max-w-md mx-auto",
+              "bg-bg-elevated border border-overlay/10 rounded-lg text-text-muted max-w-md mx-auto",
               compact ? "px-3 py-1 text-xs" : "px-4 py-1.5 text-sm"
             )}>
               intuneget.com/dashboard
@@ -66,7 +66,7 @@ export function ProductShowcase({ className = "", compact = false }: ProductShow
 
         {/* App content mockup */}
         <div className={cn(
-          "bg-stone-50/50",
+          "bg-bg-surface/50",
           compact ? "p-3 md:p-4" : "p-4 md:p-6"
         )}>
           {/* Search bar with dropdown */}
@@ -80,11 +80,11 @@ export function ProductShowcase({ className = "", compact = false }: ProductShow
               onHoverEnd={() => setShowDropdown(false)}
             >
               <div className={cn(
-                "flex items-center gap-2 bg-white border border-stone-200 rounded-lg shadow-soft hover:border-accent-cyan/40 transition-colors cursor-text",
+                "flex items-center gap-2 bg-bg-elevated border border-overlay/10 rounded-lg shadow-soft hover:border-accent-cyan/40 transition-colors cursor-text",
                 compact ? "px-3 py-2" : "px-4 py-2.5 md:py-3"
               )}>
-                <Search className={cn("text-stone-400", compact ? "w-4 h-4" : "w-5 h-5")} />
-                <span className={cn("text-stone-500", compact ? "text-xs" : "text-sm md:text-base")}>
+                <Search className={cn("text-text-muted", compact ? "w-4 h-4" : "w-5 h-5")} />
+                <span className={cn("text-text-muted", compact ? "text-xs" : "text-sm md:text-base")}>
                   Search 10,000+ apps...
                 </span>
               </div>
@@ -92,21 +92,21 @@ export function ProductShowcase({ className = "", compact = false }: ProductShow
               {/* Search results dropdown - hidden in compact */}
               {!compact && (
                 <motion.div
-                  className="absolute top-full left-0 right-0 mt-2 bg-white border border-stone-200 rounded-xl shadow-soft-lg overflow-hidden z-10"
+                  className="absolute top-full left-0 right-0 mt-2 bg-bg-elevated border border-overlay/10 rounded-xl shadow-soft-lg overflow-hidden z-10"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: showDropdown ? 1 : 0, y: showDropdown ? 0 : -10 }}
                   transition={{ duration: 0.2 }}
                   style={{ pointerEvents: showDropdown ? "auto" : "none" }}
                 >
-                  <div className="px-4 py-2 bg-stone-50 border-b border-stone-100">
-                    <span className="text-xs font-medium text-stone-500">
+                  <div className="px-4 py-2 bg-bg-surface border-b border-overlay/[0.06]">
+                    <span className="text-xs font-medium text-text-muted">
                       <span className="text-accent-cyan font-semibold">10,847</span> apps found
                     </span>
                   </div>
                   <div className="py-2">
                     {["Google Chrome", "Microsoft Edge", "Mozilla Firefox", "Brave Browser"].map((app, i) => (
-                      <div key={i} className="px-4 py-2 hover:bg-stone-50 cursor-pointer text-sm text-stone-700 flex items-center gap-2">
-                        <div className="w-5 h-5 bg-stone-100 rounded" />
+                      <div key={i} className="px-4 py-2 hover:bg-overlay/[0.04] cursor-pointer text-sm text-text-secondary flex items-center gap-2">
+                        <div className="w-5 h-5 bg-overlay/[0.06] rounded" />
                         {app}
                       </div>
                     ))}
@@ -134,20 +134,20 @@ export function ProductShowcase({ className = "", compact = false }: ProductShow
           >
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className={cn("text-stone-500", compact ? "text-[10px]" : "text-xs")}>
-                <span className="font-semibold text-stone-700">4</span> Deployed
+              <span className={cn("text-text-muted", compact ? "text-[10px]" : "text-xs")}>
+                <span className="font-semibold text-text-secondary">4</span> Deployed
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-amber-500" />
-              <span className={cn("text-stone-500", compact ? "text-[10px]" : "text-xs")}>
-                <span className="font-semibold text-stone-700">1</span> Pending
+              <span className={cn("text-text-muted", compact ? "text-[10px]" : "text-xs")}>
+                <span className="font-semibold text-text-secondary">1</span> Pending
               </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-stone-300" />
-              <span className={cn("text-stone-500", compact ? "text-[10px]" : "text-xs")}>
-                <span className="font-semibold text-stone-700">3</span> Ready
+              <div className="w-2 h-2 rounded-full bg-overlay/20" />
+              <span className={cn("text-text-muted", compact ? "text-[10px]" : "text-xs")}>
+                <span className="font-semibold text-text-secondary">3</span> Ready
               </span>
             </div>
           </motion.div>
@@ -161,7 +161,7 @@ export function ProductShowcase({ className = "", compact = false }: ProductShow
               <motion.div
                 key={app.name}
                 className={cn(
-                  "bg-white border border-stone-200 rounded-lg flex flex-col items-center hover:border-accent-cyan/40 hover:shadow-soft-md transition-all cursor-pointer group",
+                  "bg-bg-elevated border border-overlay/10 rounded-lg flex flex-col items-center hover:border-accent-cyan/40 hover:shadow-soft-md transition-all cursor-pointer group",
                   compact ? "p-2 gap-1.5" : "p-3 md:p-4 gap-2 md:gap-3"
                 )}
                 initial={{ opacity: 0, y: 15 }}
@@ -172,7 +172,7 @@ export function ProductShowcase({ className = "", compact = false }: ProductShow
                 }}
               >
                 <div className={cn(
-                  "bg-stone-100 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform",
+                  "bg-overlay/[0.06] rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform",
                   compact ? "w-8 h-8" : "w-10 h-10 md:w-12 md:h-12"
                 )}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -186,7 +186,7 @@ export function ProductShowcase({ className = "", compact = false }: ProductShow
                   />
                 </div>
                 <span className={cn(
-                  "font-medium text-stone-700 text-center line-clamp-1",
+                  "font-medium text-text-secondary text-center line-clamp-1",
                   compact ? "text-[10px]" : "text-xs md:text-sm"
                 )}>{app.name}</span>
                 {app.status === "deployed" && (
@@ -208,7 +208,7 @@ export function ProductShowcase({ className = "", compact = false }: ProductShow
                   </span>
                 )}
                 {app.status === "ready" && (
-                  <span className={cn("text-stone-400", compact ? "text-[9px]" : "text-xs")}>Ready</span>
+                  <span className={cn("text-text-muted", compact ? "text-[9px]" : "text-xs")}>Ready</span>
                 )}
               </motion.div>
             ))}
@@ -221,7 +221,7 @@ export function ProductShowcase({ className = "", compact = false }: ProductShow
         <>
           {/* Floating upload progress card */}
           <motion.div
-            className="absolute -right-4 md:right-8 top-16 md:top-24 bg-white rounded-xl shadow-soft-lg border border-stone-200 p-3 md:p-4 w-48 md:w-56 hidden sm:block"
+            className="absolute -right-4 md:right-8 top-16 md:top-24 bg-bg-elevated rounded-xl shadow-soft-lg border border-overlay/10 p-3 md:p-4 w-48 md:w-56 hidden sm:block"
             initial={{ opacity: 0, x: 30, y: 20 }}
             animate={{
               opacity: 1,
@@ -241,11 +241,11 @@ export function ProductShowcase({ className = "", compact = false }: ProductShow
                 <Upload className="w-4 h-4 md:w-5 md:h-5 text-accent-cyan" />
               </div>
               <div>
-                <p className="text-sm font-medium text-stone-700">Uploading</p>
-                <p className="text-xs text-stone-400">Slack</p>
+                <p className="text-sm font-medium text-text-secondary">Uploading</p>
+                <p className="text-xs text-text-muted">Slack</p>
               </div>
             </div>
-            <div className="relative h-2 bg-stone-100 rounded-full overflow-hidden">
+            <div className="relative h-2 bg-overlay/[0.06] rounded-full overflow-hidden">
               <motion.div
                 className="absolute inset-y-0 left-0 bg-accent-cyan rounded-full"
                 initial={{ width: "0%" }}
@@ -257,12 +257,12 @@ export function ProductShowcase({ className = "", compact = false }: ProductShow
                 }}
               />
             </div>
-            <p className="text-xs text-stone-500 mt-2 text-right">68%</p>
+            <p className="text-xs text-text-muted mt-2 text-right">68%</p>
           </motion.div>
 
           {/* Floating stats card */}
           <motion.div
-            className="absolute -left-4 md:left-8 bottom-4 md:bottom-16 bg-white rounded-xl shadow-soft-lg border border-stone-200 p-3 md:p-4 w-44 md:w-48 hidden sm:block"
+            className="absolute -left-4 md:left-8 bottom-4 md:bottom-16 bg-bg-elevated rounded-xl shadow-soft-lg border border-overlay/10 p-3 md:p-4 w-44 md:w-48 hidden sm:block"
             initial={{ opacity: 0, x: -30, y: -20 }}
             animate={{
               opacity: 1,
@@ -282,19 +282,19 @@ export function ProductShowcase({ className = "", compact = false }: ProductShow
                 <BarChart3 className="w-4 h-4 md:w-5 md:h-5 text-emerald-600" />
               </div>
               <div>
-                <p className="text-sm font-medium text-stone-700">This Week</p>
-                <p className="text-xs text-stone-400">Deployments</p>
+                <p className="text-sm font-medium text-text-secondary">This Week</p>
+                <p className="text-xs text-text-muted">Deployments</p>
               </div>
             </div>
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-stone-900">47</span>
+              <span className="text-2xl font-bold text-text-primary">47</span>
               <span className="text-xs text-emerald-600 font-medium">+23%</span>
             </div>
           </motion.div>
 
           {/* Success notification */}
           <motion.div
-            className="absolute right-4 md:right-24 -bottom-2 md:bottom-8 bg-white rounded-xl shadow-soft-lg border border-emerald-200 p-2.5 md:p-3 flex items-center gap-3 hidden sm:flex"
+            className="absolute right-4 md:right-24 -bottom-2 md:bottom-8 bg-bg-elevated rounded-xl shadow-soft-lg border border-emerald-200 p-2.5 md:p-3 flex items-center gap-3 hidden sm:flex"
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{
               opacity: 1,
@@ -313,8 +313,8 @@ export function ProductShowcase({ className = "", compact = false }: ProductShow
               <CheckCircle className="w-4 h-4 text-white" />
             </div>
             <div>
-              <p className="text-sm font-medium text-stone-700">VS Code deployed!</p>
-              <p className="text-xs text-stone-400">Just now</p>
+              <p className="text-sm font-medium text-text-secondary">VS Code deployed!</p>
+              <p className="text-xs text-text-muted">Just now</p>
             </div>
           </motion.div>
         </>

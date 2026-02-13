@@ -281,12 +281,12 @@ export default function UpdatesPage() {
         onValueChange={(v: string) => setActiveTab(v as 'available' | 'history')}
       >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <TabsList className="glass-light border border-black/5">
-            <TabsTrigger value="available" className="data-[state=active]:bg-black/10">
+          <TabsList className="glass-light border border-overlay/5">
+            <TabsTrigger value="available" className="data-[state=active]:bg-overlay/10">
               <Package className="w-4 h-4 mr-2" />
               Available Updates
             </TabsTrigger>
-            <TabsTrigger value="history" className="data-[state=active]:bg-black/10">
+            <TabsTrigger value="history" className="data-[state=active]:bg-overlay/10">
               <History className="w-4 h-4 mr-2" />
               Update History
             </TabsTrigger>
@@ -304,7 +304,7 @@ export default function UpdatesPage() {
                   placeholder="Search updates..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 bg-bg-elevated border-black/10 text-text-primary placeholder:text-text-muted"
+                  className="pl-9 bg-bg-elevated border-overlay/10 text-text-primary placeholder:text-text-muted"
                 />
               </div>
 

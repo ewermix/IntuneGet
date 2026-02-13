@@ -101,17 +101,17 @@ export default function MspSetupPage() {
 
       {/* Features */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="p-4 rounded-xl bg-black/5 border border-black/10 text-center">
+        <div className="p-4 rounded-xl bg-overlay/5 border border-overlay/10 text-center">
           <Users className="w-6 h-6 text-accent-cyan mx-auto mb-2" />
           <p className="text-sm font-medium text-text-primary">Multi-Tenant</p>
           <p className="text-xs text-text-muted mt-1">Manage all customers</p>
         </div>
-        <div className="p-4 rounded-xl bg-black/5 border border-black/10 text-center">
+        <div className="p-4 rounded-xl bg-overlay/5 border border-overlay/10 text-center">
           <Package className="w-6 h-6 text-accent-violet mx-auto mb-2" />
           <p className="text-sm font-medium text-text-primary">Unified Deployment</p>
           <p className="text-xs text-text-muted mt-1">Deploy apps anywhere</p>
         </div>
-        <div className="p-4 rounded-xl bg-black/5 border border-black/10 text-center">
+        <div className="p-4 rounded-xl bg-overlay/5 border border-overlay/10 text-center">
           <Shield className="w-6 h-6 text-green-500 mx-auto mb-2" />
           <p className="text-sm font-medium text-text-primary">Secure</p>
           <p className="text-xs text-text-muted mt-1">Consent-based access</p>
@@ -120,7 +120,7 @@ export default function MspSetupPage() {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="p-6 rounded-xl bg-black/5 border border-black/10">
+        <div className="p-6 rounded-xl bg-overlay/5 border border-overlay/10">
           <h2 className="text-lg font-medium text-text-primary mb-4">Organization Details</h2>
 
           <div className="space-y-4">
@@ -133,7 +133,7 @@ export default function MspSetupPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g., Acme IT Services"
-                className="w-full px-3 py-2 bg-black/5 border border-black/10 rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-accent-cyan/50"
+                className="w-full px-3 py-2 bg-overlay/5 border border-overlay/10 rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-accent-cyan/50"
                 required
                 minLength={2}
                 maxLength={100}
@@ -157,7 +157,7 @@ export default function MspSetupPage() {
                   }}
                   placeholder="acme-it-services"
                   className={cn(
-                    "flex-1 px-3 py-2 bg-black/5 border border-black/10 rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-accent-cyan/50",
+                    "flex-1 px-3 py-2 bg-overlay/5 border border-overlay/10 rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-accent-cyan/50",
                     !useCustomSlug && "text-text-muted"
                   )}
                 />

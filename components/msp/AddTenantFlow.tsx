@@ -84,7 +84,7 @@ export function AddTenantFlow({ onComplete, onCancel }: AddTenantFlowProps) {
         )}>
           <span className={cn(
             'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
-            step === 'details' ? 'bg-accent-cyan text-black' : 'bg-black/10 text-text-secondary'
+            step === 'details' ? 'bg-accent-cyan text-black' : 'bg-overlay/10 text-text-secondary'
           )}>1</span>
           <span>Details</span>
         </div>
@@ -95,7 +95,7 @@ export function AddTenantFlow({ onComplete, onCancel }: AddTenantFlowProps) {
         )}>
           <span className={cn(
             'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
-            step === 'consent' ? 'bg-accent-cyan text-black' : 'bg-black/10 text-text-secondary'
+            step === 'consent' ? 'bg-accent-cyan text-black' : 'bg-overlay/10 text-text-secondary'
           )}>2</span>
           <span>Consent</span>
         </div>
@@ -103,7 +103,7 @@ export function AddTenantFlow({ onComplete, onCancel }: AddTenantFlowProps) {
 
       {step === 'details' && (
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="p-6 rounded-xl bg-black/5 border border-black/10">
+          <div className="p-6 rounded-xl bg-overlay/5 border border-overlay/10">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-accent-cyan/20 flex items-center justify-center">
                 <Building2 className="w-5 h-5 text-accent-cyan" />
@@ -124,7 +124,7 @@ export function AddTenantFlow({ onComplete, onCancel }: AddTenantFlowProps) {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="e.g., Contoso Inc"
-                  className="w-full px-3 py-2 bg-black/5 border border-black/10 rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-accent-cyan/50"
+                  className="w-full px-3 py-2 bg-overlay/5 border border-overlay/10 rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-accent-cyan/50"
                   required
                   minLength={2}
                   maxLength={100}
@@ -143,7 +143,7 @@ export function AddTenantFlow({ onComplete, onCancel }: AddTenantFlowProps) {
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Any additional notes about this customer..."
                   rows={3}
-                  className="w-full px-3 py-2 bg-black/5 border border-black/10 rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-accent-cyan/50 resize-none"
+                  className="w-full px-3 py-2 bg-overlay/5 border border-overlay/10 rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-accent-cyan/50 resize-none"
                   maxLength={500}
                 />
               </div>
@@ -190,7 +190,7 @@ export function AddTenantFlow({ onComplete, onCancel }: AddTenantFlowProps) {
 
       {step === 'consent' && consentUrl && (
         <div className="space-y-6">
-          <div className="p-6 rounded-xl bg-black/5 border border-black/10">
+          <div className="p-6 rounded-xl bg-overlay/5 border border-overlay/10">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
                 <Check className="w-5 h-5 text-green-500" />
@@ -207,7 +207,7 @@ export function AddTenantFlow({ onComplete, onCancel }: AddTenantFlowProps) {
                   Share this link with the customer's Microsoft 365 administrator. They need to grant consent for IntuneGet to manage applications in their tenant.
                 </p>
 
-                <div className="p-3 bg-black/5 rounded-lg border border-black/10">
+                <div className="p-3 bg-overlay/5 rounded-lg border border-overlay/10">
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
@@ -249,7 +249,7 @@ export function AddTenantFlow({ onComplete, onCancel }: AddTenantFlowProps) {
               type="button"
               variant="outline"
               onClick={handleOpenConsent}
-              className="border-black/20 text-text-primary hover:bg-black/5"
+              className="border-black/20 text-text-primary hover:bg-overlay/5"
             >
               <ExternalLink className="w-4 h-4 mr-2" />
               Open consent page
@@ -267,7 +267,7 @@ export function AddTenantFlow({ onComplete, onCancel }: AddTenantFlowProps) {
 
       {step === 'consent' && !consentUrl && (
         <div className="space-y-6">
-          <div className="p-6 rounded-xl bg-black/5 border border-black/10">
+          <div className="p-6 rounded-xl bg-overlay/5 border border-overlay/10">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
                 <Building2 className="w-5 h-5 text-red-500" />

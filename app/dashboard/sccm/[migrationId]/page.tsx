@@ -178,11 +178,11 @@ export default function MigrationDetailPage({ params }: PageProps) {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 w-48 bg-black/5 rounded animate-pulse" />
+        <div className="h-8 w-48 bg-overlay/5 rounded animate-pulse" />
         <SkeletonGrid count={4} columns={4} variant="stat" />
         <div className="space-y-3">
           {[1, 2, 3, 4, 5].map(i => (
-            <div key={i} className="h-20 bg-black/5 rounded-lg animate-pulse" />
+            <div key={i} className="h-20 bg-overlay/5 rounded-lg animate-pulse" />
           ))}
         </div>
       </div>
@@ -229,7 +229,7 @@ export default function MigrationDetailPage({ params }: PageProps) {
               onClick={() => fetchApps(true)}
               disabled={isRefreshing}
               variant="outline"
-              className="border-black/10 text-text-secondary"
+              className="border-overlay/10 text-text-secondary"
             >
               {isRefreshing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
             </Button>
@@ -290,7 +290,7 @@ export default function MigrationDetailPage({ params }: PageProps) {
             placeholder="Search apps..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-black/5 border border-black/10 rounded-lg text-text-primary placeholder-text-muted focus:border-accent-cyan focus:outline-none"
+            className="w-full pl-10 pr-4 py-2 bg-overlay/5 border border-overlay/10 rounded-lg text-text-primary placeholder-text-muted focus:border-accent-cyan focus:outline-none"
           />
         </div>
         <div className="flex gap-2">
@@ -302,7 +302,7 @@ export default function MigrationDetailPage({ params }: PageProps) {
                 'px-3 py-2 rounded-lg text-sm font-medium transition-all',
                 matchStatusFilter === status
                   ? 'bg-gradient-to-r from-accent-cyan to-accent-violet text-white'
-                  : 'bg-black/5 text-text-secondary hover:text-text-primary hover:bg-black/10'
+                  : 'bg-overlay/5 text-text-secondary hover:text-text-primary hover:bg-overlay/10'
               )}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -312,7 +312,7 @@ export default function MigrationDetailPage({ params }: PageProps) {
       </div>
 
       {/* App List Header */}
-      <div className="flex items-center gap-4 py-2 px-4 bg-black/5 rounded-lg">
+      <div className="flex items-center gap-4 py-2 px-4 bg-overlay/5 rounded-lg">
         <input
           type="checkbox"
           checked={selectedApps.size === apps.length && apps.length > 0}
@@ -369,8 +369,8 @@ function AppRow({
   return (
     <div
       className={cn(
-        'flex items-center gap-4 p-4 bg-black/2 border rounded-lg transition-all hover:bg-black/5',
-        isSelected ? 'border-accent-cyan/50 bg-accent-cyan/5' : 'border-black/5'
+        'flex items-center gap-4 p-4 bg-black/2 border rounded-lg transition-all hover:bg-overlay/5',
+        isSelected ? 'border-accent-cyan/50 bg-accent-cyan/5' : 'border-overlay/5'
       )}
     >
       <input
@@ -393,7 +393,7 @@ function AppRow({
         <div className="flex items-center gap-4 mt-1 text-sm text-text-muted">
           {app.manufacturer && <span>{app.manufacturer}</span>}
           {app.version && <span>v{app.version}</span>}
-          {app.technology && <span className="text-xs px-2 py-0.5 bg-black/5 rounded">{app.technology}</span>}
+          {app.technology && <span className="text-xs px-2 py-0.5 bg-overlay/5 rounded">{app.technology}</span>}
           {app.is_deployed && (
             <span className="text-accent-cyan text-xs">
               {app.deployment_count} deployments

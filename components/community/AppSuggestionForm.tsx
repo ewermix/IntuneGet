@@ -106,7 +106,7 @@ export function AppSuggestionForm({ onSuccess, onCancel }: AppSuggestionFormProp
   };
 
   return (
-    <div className="p-4 bg-bg-elevated rounded-xl border border-black/10">
+    <div className="p-4 bg-bg-elevated rounded-xl border border-overlay/10">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Lightbulb className="w-5 h-5 text-accent-cyan" />
@@ -115,7 +115,7 @@ export function AppSuggestionForm({ onSuccess, onCancel }: AppSuggestionFormProp
         {onCancel && (
           <button
             onClick={onCancel}
-            className="p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-black/10 transition-colors"
+            className="p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-overlay/10 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -136,7 +136,7 @@ export function AppSuggestionForm({ onSuccess, onCancel }: AppSuggestionFormProp
             value={wingetId}
             onChange={(e) => setWingetId(e.target.value)}
             placeholder="e.g., Microsoft.VisualStudioCode"
-            className="w-full px-3 py-2 bg-black/5 border border-black/10 rounded-lg text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan/50 focus:ring-1 focus:ring-accent-cyan/30"
+            className="w-full px-3 py-2 bg-overlay/5 border border-overlay/10 rounded-lg text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-cyan/50 focus:ring-1 focus:ring-accent-cyan/30"
             disabled={isSubmitting}
           />
           <p className="mt-1 text-xs text-text-muted">

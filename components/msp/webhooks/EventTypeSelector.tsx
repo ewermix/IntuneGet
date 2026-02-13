@@ -101,7 +101,7 @@ export function EventTypeSelector({
                       'border',
                       isSelected
                         ? 'border-accent-cyan/50 bg-accent-cyan/5'
-                        : 'border-black/10 hover:border-black/20',
+                        : 'border-overlay/10 hover:border-black/20',
                       disabled && 'opacity-50 cursor-not-allowed'
                     )}
                   >

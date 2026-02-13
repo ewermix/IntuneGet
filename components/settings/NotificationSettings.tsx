@@ -134,7 +134,7 @@ export function NotificationSettings({ className }: NotificationSettingsProps) {
 
   if (isLoading) {
     return (
-      <div className={cn('glass-light rounded-xl p-6 border border-black/5', className)}>
+      <div className={cn('glass-light rounded-xl p-6 border border-overlay/5', className)}>
         <div className="flex items-center justify-center py-8">
           <Loader2 className="w-6 h-6 text-text-muted animate-spin" />
         </div>
@@ -143,7 +143,7 @@ export function NotificationSettings({ className }: NotificationSettingsProps) {
   }
 
   return (
-    <div className={cn('glass-light rounded-xl p-6 border border-black/5 hover:border-accent-cyan/20 transition-colors', className)}>
+    <div className={cn('glass-light rounded-xl p-6 border border-overlay/5 hover:border-accent-cyan/20 transition-colors', className)}>
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-lg bg-accent-cyan/10 flex items-center justify-center">
           <Bell className="w-5 h-5 text-accent-cyan" />
@@ -182,7 +182,7 @@ export function NotificationSettings({ className }: NotificationSettingsProps) {
             />
             <div className={cn(
               "w-11 h-6 rounded-full transition-colors",
-              "bg-black/10 peer-checked:bg-accent-cyan",
+              "bg-overlay/10 peer-checked:bg-accent-cyan",
               "peer-focus:ring-2 peer-focus:ring-accent-cyan/20",
               "peer-disabled:opacity-50 peer-disabled:cursor-not-allowed",
               "after:content-[''] after:absolute after:top-[2px] after:left-[2px]",
@@ -205,7 +205,7 @@ export function NotificationSettings({ className }: NotificationSettingsProps) {
                   'px-4 py-2 rounded-lg border text-sm transition-all',
                   preferences.email_frequency === freq
                     ? 'bg-accent-cyan/10 border-accent-cyan/50 text-accent-cyan font-medium'
-                    : 'bg-bg-elevated border-black/10 text-text-secondary hover:border-black/20'
+                    : 'bg-bg-elevated border-overlay/10 text-text-secondary hover:border-black/20'
                 )}
               >
                 {freq.charAt(0).toUpperCase() + freq.slice(1)}
@@ -232,7 +232,7 @@ export function NotificationSettings({ className }: NotificationSettingsProps) {
                 email_address: e.target.value || null,
               })
             }
-            className="bg-bg-elevated border-black/10 text-text-primary placeholder:text-text-muted"
+            className="bg-bg-elevated border-overlay/10 text-text-primary placeholder:text-text-muted"
           />
           <p className="text-xs text-text-muted mt-1">
             Leave blank to use your account email
@@ -259,7 +259,7 @@ export function NotificationSettings({ className }: NotificationSettingsProps) {
             />
             <div className={cn(
               "w-11 h-6 rounded-full transition-colors",
-              "bg-black/10 peer-checked:bg-accent-cyan",
+              "bg-overlay/10 peer-checked:bg-accent-cyan",
               "peer-focus:ring-2 peer-focus:ring-accent-cyan/20",
               "after:content-[''] after:absolute after:top-[2px] after:left-[2px]",
               "after:bg-white after:rounded-full after:h-5 after:w-5",
@@ -305,7 +305,7 @@ export function NotificationSettings({ className }: NotificationSettingsProps) {
               onClick={handleSendTestEmail}
               disabled={isSendingTest || isSaving}
               variant="outline"
-              className="border-black/10 hover:border-accent-cyan/50"
+              className="border-overlay/10 hover:border-accent-cyan/50"
             >
               {isSendingTest ? (
                 <>

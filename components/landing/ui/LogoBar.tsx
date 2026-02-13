@@ -18,7 +18,7 @@ interface LogoBarProps {
 export function LogoBar({ title, logos, className = "" }: LogoBarProps) {
   return (
     <div className={cn("text-center", className)}>
-      <p className="text-sm font-medium text-stone-500 uppercase tracking-wider mb-6">
+      <p className="text-sm font-medium text-text-muted uppercase tracking-wider mb-6">
         {title}
       </p>
       <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
@@ -34,7 +34,7 @@ export function LogoBar({ title, logos, className = "" }: LogoBarProps) {
               height={32}
               className="w-8 h-8 object-contain"
             />
-            <span className="text-sm font-medium text-stone-600 group-hover:text-stone-900">
+            <span className="text-sm font-medium text-text-secondary group-hover:text-text-primary">
               {logo.name}
             </span>
           </div>

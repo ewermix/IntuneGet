@@ -71,7 +71,7 @@ export default function GitHubSetupPage() {
               <li>Works entirely on your infrastructure</li>
             </ul>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <div className="flex items-center gap-2 mb-3">
               <Github className="h-5 w-5 text-text-secondary" />
               <h3 className="font-semibold text-text-primary">GitHub Actions</h3>
@@ -195,7 +195,7 @@ CALLBACK_SECRET=same-secret-as-in-github`}
           Cost Considerations
         </h2>
 
-        <div className="rounded-lg border border-black/10 bg-white p-4 flex items-start gap-4">
+        <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4 flex items-start gap-4">
           <DollarSign className="h-6 w-6 text-accent-cyan flex-shrink-0 mt-1" />
           <div>
             <h3 className="font-semibold text-text-primary mb-2">GitHub Actions Usage</h3>
@@ -223,7 +223,7 @@ CALLBACK_SECRET=same-secret-as-in-github`}
         </h2>
 
         <div className="space-y-4">
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h3 className="font-medium text-text-primary mb-2 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-status-error" />
               Workflow not triggering
@@ -235,7 +235,7 @@ CALLBACK_SECRET=same-secret-as-in-github`}
             </ul>
           </div>
 
-          <div className="rounded-lg border border-black/10 bg-white p-4">
+          <div className="rounded-lg border border-overlay/10 bg-bg-elevated p-4">
             <h3 className="font-medium text-text-primary mb-2 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-status-error" />
               Callback fails

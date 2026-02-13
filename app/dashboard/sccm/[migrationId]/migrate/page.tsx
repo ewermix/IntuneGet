@@ -169,7 +169,7 @@ export default function MigratePage({ params }: PageProps) {
           gradientColors="cyan"
         />
 
-        <div className="glass-light rounded-xl p-8 border border-black/5 text-center">
+        <div className="glass-light rounded-xl p-8 border border-overlay/5 text-center">
           <div className="w-20 h-20 mx-auto bg-status-success/10 rounded-xl flex items-center justify-center mb-6">
             <CheckCircle2 className="w-10 h-10 text-status-success" />
           </div>
@@ -195,7 +195,7 @@ export default function MigratePage({ params }: PageProps) {
 
           <div className="flex items-center justify-center gap-4">
             <Link href={`/dashboard/sccm/${resolvedParams.migrationId}`}>
-              <Button variant="outline" className="border-black/10 text-text-secondary">
+              <Button variant="outline" className="border-overlay/10 text-text-secondary">
                 Back to Migration
               </Button>
             </Link>
@@ -246,14 +246,14 @@ export default function MigratePage({ params }: PageProps) {
       </AnimatePresence>
 
       {/* Options */}
-      <div className="glass-light rounded-xl p-6 border border-black/5">
+      <div className="glass-light rounded-xl p-6 border border-overlay/5">
         <h3 className="text-text-primary font-medium mb-4 flex items-center gap-2">
           <Settings className="w-5 h-5 text-text-secondary" />
           Migration Options
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <label className="flex items-center gap-3 p-3 bg-black/5 rounded-lg cursor-pointer hover:bg-black/10 transition-colors">
+          <label className="flex items-center gap-3 p-3 bg-overlay/5 rounded-lg cursor-pointer hover:bg-overlay/10 transition-colors">
             <input
               type="checkbox"
               checked={options.preserveDetection}
@@ -266,7 +266,7 @@ export default function MigratePage({ params }: PageProps) {
             </div>
           </label>
 
-          <label className="flex items-center gap-3 p-3 bg-black/5 rounded-lg cursor-pointer hover:bg-black/10 transition-colors">
+          <label className="flex items-center gap-3 p-3 bg-overlay/5 rounded-lg cursor-pointer hover:bg-overlay/10 transition-colors">
             <input
               type="checkbox"
               checked={options.preserveInstallCommands}
@@ -279,7 +279,7 @@ export default function MigratePage({ params }: PageProps) {
             </div>
           </label>
 
-          <label className="flex items-center gap-3 p-3 bg-black/5 rounded-lg cursor-pointer hover:bg-black/10 transition-colors">
+          <label className="flex items-center gap-3 p-3 bg-overlay/5 rounded-lg cursor-pointer hover:bg-overlay/10 transition-colors">
             <input
               type="checkbox"
               checked={options.useWingetDefaults}
@@ -297,7 +297,7 @@ export default function MigratePage({ params }: PageProps) {
       {/* Summary */}
       {preview && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="glass-light rounded-lg p-4 border border-black/5">
+          <div className="glass-light rounded-lg p-4 border border-overlay/5">
             <p className="text-text-muted text-sm">Total</p>
             <p className="text-2xl font-bold text-text-primary">{preview.totalApps}</p>
           </div>
@@ -331,9 +331,9 @@ export default function MigratePage({ params }: PageProps) {
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-4 border-t border-black/5">
+      <div className="flex items-center justify-between pt-4 border-t border-overlay/5">
         <Link href={`/dashboard/sccm/${resolvedParams.migrationId}`}>
-          <Button variant="outline" className="border-black/10 text-text-secondary">
+          <Button variant="outline" className="border-overlay/10 text-text-secondary">
             Cancel
           </Button>
         </Link>
@@ -374,7 +374,7 @@ function PreviewItem({
       className={cn(
         'border rounded-lg transition-all',
         item.canMigrate
-          ? 'border-black/5 bg-black/2 hover:border-black/10'
+          ? 'border-overlay/5 bg-black/2 hover:border-overlay/10'
           : 'border-status-error/20 bg-status-error/5'
       )}
     >
@@ -428,7 +428,7 @@ function PreviewItem({
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 pt-2 border-t border-black/5 space-y-3">
+            <div className="px-4 pb-4 pt-2 border-t border-overlay/5 space-y-3">
               {item.warnings.length > 0 && (
                 <div className="p-3 bg-status-warning/10 border border-status-warning/20 rounded-lg">
                   <p className="text-status-warning text-sm font-medium mb-1">Warnings:</p>
@@ -444,14 +444,14 @@ function PreviewItem({
                 <>
                   <div>
                     <p className="text-text-muted text-xs mb-1">Install Command</p>
-                    <code className="text-xs text-text-secondary bg-black/5 px-2 py-1 rounded block truncate">
+                    <code className="text-xs text-text-secondary bg-overlay/5 px-2 py-1 rounded block truncate">
                       {item.installCommand || 'Default WinGet command'}
                     </code>
                   </div>
                   <div>
                     <p className="text-text-muted text-xs mb-1">Detection Rules ({item.detectionRules.length})</p>
                     {item.detectionRules.slice(0, 2).map((rule, i) => (
-                      <code key={i} className="text-xs text-text-secondary bg-black/5 px-2 py-1 rounded block truncate mb-1">
+                      <code key={i} className="text-xs text-text-secondary bg-overlay/5 px-2 py-1 rounded block truncate mb-1">
                         {rule.type}: {JSON.stringify(rule).slice(0, 100)}...
                       </code>
                     ))}

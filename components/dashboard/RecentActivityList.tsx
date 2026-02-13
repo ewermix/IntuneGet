@@ -99,7 +99,7 @@ export function RecentActivityList({ activities, loading }: RecentActivityListPr
           <motion.div
             key={activity.id}
             variants={itemVariants}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-black/5 transition-colors group"
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-overlay/5 transition-colors group"
           >
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center ${

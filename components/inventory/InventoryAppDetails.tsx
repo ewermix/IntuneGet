@@ -41,12 +41,12 @@ export function InventoryAppDetails({ appId, onClose, onUpdate }: InventoryAppDe
       uninstall: { label: 'Uninstall', className: 'bg-red-50 text-red-700' },
       availableWithoutEnrollment: { label: 'Available (Unenrolled)', className: 'bg-amber-50 text-amber-700' },
     };
-    return intents[intent] || { label: intent, className: 'bg-black/5 text-text-muted' };
+    return intents[intent] || { label: intent, className: 'bg-overlay/5 text-text-muted' };
   };
 
   const customHeader = app ? (
     <div className="flex items-start gap-4 flex-1">
-      <div className="w-12 h-12 rounded-xl bg-bg-elevated border border-black/5 flex items-center justify-center flex-shrink-0">
+      <div className="w-12 h-12 rounded-xl bg-bg-elevated border border-overlay/5 flex items-center justify-center flex-shrink-0">
         {app.largeIcon?.value ? (
           <img
             src={`data:${app.largeIcon.type};base64,${app.largeIcon.value}`}
@@ -112,7 +112,7 @@ export function InventoryAppDetails({ appId, onClose, onUpdate }: InventoryAppDe
           <p className="text-sm mt-1">{error.message}</p>
           <Button
             variant="outline"
-            className="mt-4 border-black/10"
+            className="mt-4 border-overlay/10"
             onClick={() => refetch()}
           >
             Try Again
@@ -141,7 +141,7 @@ export function InventoryAppDetails({ appId, onClose, onUpdate }: InventoryAppDe
                   <Terminal className="w-3.5 h-3.5" />
                   Install Command
                 </h4>
-                <div className="bg-bg-deepest rounded-lg p-3 border border-black/5">
+                <div className="bg-bg-deepest rounded-lg p-3 border border-overlay/5">
                   <code className="block text-sm font-mono text-text-primary overflow-x-auto">
                     {app.installCommandLine}
                   </code>
@@ -154,7 +154,7 @@ export function InventoryAppDetails({ appId, onClose, onUpdate }: InventoryAppDe
                   <Terminal className="w-3.5 h-3.5" />
                   Uninstall Command
                 </h4>
-                <div className="bg-bg-deepest rounded-lg p-3 border border-black/5">
+                <div className="bg-bg-deepest rounded-lg p-3 border border-overlay/5">
                   <code className="block text-sm font-mono text-text-primary overflow-x-auto">
                     {app.uninstallCommandLine}
                   </code>
@@ -176,7 +176,7 @@ export function InventoryAppDetails({ appId, onClose, onUpdate }: InventoryAppDe
                   return (
                     <div
                       key={assignment.id}
-                      className="flex items-center justify-between p-3 bg-bg-elevated rounded-lg border border-black/5"
+                      className="flex items-center justify-between p-3 bg-bg-elevated rounded-lg border border-overlay/5"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-bg-surface flex items-center justify-center">
@@ -235,7 +235,7 @@ export function InventoryAppDetails({ appId, onClose, onUpdate }: InventoryAppDe
 
           {/* Additional Info */}
           {(app.developer || app.owner || app.notes) && (
-            <div className="space-y-3 pt-4 border-t border-black/5">
+            <div className="space-y-3 pt-4 border-t border-overlay/5">
               {app.developer && (
                 <div>
                   <span className="text-sm text-text-muted">Developer: </span>
@@ -259,7 +259,7 @@ export function InventoryAppDetails({ appId, onClose, onUpdate }: InventoryAppDe
 
           {/* Links */}
           {(app.informationUrl || app.privacyInformationUrl) && (
-            <div className="flex gap-3 pt-4 border-t border-black/5">
+            <div className="flex gap-3 pt-4 border-t border-overlay/5">
               {app.informationUrl && (
                 <a
                   href={app.informationUrl}
@@ -298,7 +298,7 @@ function MetadataItem({
   value: string;
 }) {
   return (
-    <div className="bg-bg-elevated rounded-lg p-3 border border-black/5">
+    <div className="bg-bg-elevated rounded-lg p-3 border border-overlay/5">
       <div className="flex items-center gap-2 text-text-muted mb-1">
         <Icon className="w-4 h-4" />
         <span className="text-xs">{label}</span>

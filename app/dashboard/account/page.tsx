@@ -181,7 +181,7 @@ export default function AccountPage() {
     : 0;
 
   const getTokenStatus = () => {
-    if (tokenExpiry === null) return { label: 'Unknown', bg: 'bg-black/5', text: 'text-text-muted', dot: 'bg-text-muted' };
+    if (tokenExpiry === null) return { label: 'Unknown', bg: 'bg-overlay/5', text: 'text-text-muted', dot: 'bg-text-muted' };
     if (tokenExpiry > 30) return { label: 'Active', bg: 'bg-status-success/10', text: 'text-status-success', dot: 'bg-status-success' };
     if (tokenExpiry > 5) return { label: 'Expiring Soon', bg: 'bg-status-warning/10', text: 'text-status-warning', dot: 'bg-status-warning' };
     return { label: 'Expiring', bg: 'bg-status-error/10', text: 'text-status-error', dot: 'bg-status-error' };
@@ -219,7 +219,7 @@ export default function AccountPage() {
         {/* Profile Hero Card */}
         <motion.section
           variants={itemVariants}
-          className="glass-light rounded-xl border border-black/5 hover:border-accent-cyan/20 transition-colors relative overflow-hidden"
+          className="glass-light rounded-xl border border-overlay/5 hover:border-accent-cyan/20 transition-colors relative overflow-hidden"
         >
           {/* Decorative header band */}
           <div className="h-28 relative overflow-hidden">
@@ -271,7 +271,7 @@ export default function AccountPage() {
                 {profileImage && !imageUploading && (
                   <button
                     onClick={handleRemoveImage}
-                    className="absolute -top-1 -right-1 w-5 h-5 bg-bg-elevated border border-black/10 rounded-full flex items-center justify-center hover:bg-status-error hover:text-white hover:border-status-error transition-colors z-10"
+                    className="absolute -top-1 -right-1 w-5 h-5 bg-bg-elevated border border-overlay/10 rounded-full flex items-center justify-center hover:bg-status-error hover:text-white hover:border-status-error transition-colors z-10"
                     title="Remove photo"
                   >
                     <X className="w-3 h-3" />
@@ -387,7 +387,7 @@ export default function AccountPage() {
           {/* Tenant Details */}
           <motion.section
             variants={itemVariants}
-            className="glass-light rounded-xl p-6 border border-black/5 hover:border-accent-violet/20 transition-colors flex flex-col"
+            className="glass-light rounded-xl p-6 border border-overlay/5 hover:border-accent-violet/20 transition-colors flex flex-col"
           >
             <SectionLabel icon={Building2} iconColor="text-accent-violet" bgColor="bg-accent-violet/10" label="Tenant" inline />
 
@@ -400,7 +400,7 @@ export default function AccountPage() {
                 </div>
               </div>
 
-              <div className="h-px bg-black/5" />
+              <div className="h-px bg-overlay/5" />
 
               <div>
                 <div className="flex items-center justify-between mb-1">
@@ -408,7 +408,7 @@ export default function AccountPage() {
                   {user?.tenantId && user.tenantId !== 'Not available' && (
                     <button
                       onClick={() => copyToClipboard(user.tenantId, 'tenantId')}
-                      className="p-1 rounded hover:bg-black/5 text-text-muted hover:text-text-primary transition-colors"
+                      className="p-1 rounded hover:bg-overlay/5 text-text-muted hover:text-text-primary transition-colors"
                       title="Copy to clipboard"
                     >
                       <AnimatePresence mode="wait">
@@ -430,7 +430,7 @@ export default function AccountPage() {
                 </p>
               </div>
 
-              <div className="h-px bg-black/5" />
+              <div className="h-px bg-overlay/5" />
 
               <a
                 href="https://intune.microsoft.com"
@@ -450,7 +450,7 @@ export default function AccountPage() {
           {/* Session */}
           <motion.section
             variants={itemVariants}
-            className="glass-light rounded-xl p-6 border border-black/5 hover:border-accent-cyan/20 transition-colors flex flex-col"
+            className="glass-light rounded-xl p-6 border border-overlay/5 hover:border-accent-cyan/20 transition-colors flex flex-col"
           >
             <SectionLabel icon={Shield} iconColor="text-accent-cyan" bgColor="bg-accent-cyan/10" label="Session" inline />
 
@@ -474,21 +474,21 @@ export default function AccountPage() {
                 </div>
               </div>
 
-              <div className="h-px bg-black/5" />
+              <div className="h-px bg-overlay/5" />
 
               <div className="flex items-center justify-between">
                 <span className="text-sm text-text-secondary">Provider</span>
                 <span className="text-sm font-medium text-text-primary">Microsoft Entra ID</span>
               </div>
 
-              <div className="h-px bg-black/5" />
+              <div className="h-px bg-overlay/5" />
 
               <div className="flex items-center justify-between">
                 <span className="text-sm text-text-secondary">Scopes</span>
                 <span className="text-xs font-mono text-text-muted">DeviceManagement*</span>
               </div>
 
-              <div className="h-px bg-black/5" />
+              <div className="h-px bg-overlay/5" />
 
               {/* Sign Out inline */}
               <div className="pt-1 mt-auto">
@@ -581,7 +581,7 @@ function IdentityField({
   copied?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-3 py-3 border-t border-black/5">
+    <div className="flex items-center gap-3 py-3 border-t border-overlay/5">
       <Icon className="w-4 h-4 text-text-muted flex-shrink-0" />
       <div className="min-w-0 flex-1">
         <p className="text-xs text-text-muted">{label}</p>
@@ -596,7 +596,7 @@ function IdentityField({
       {copyable && onCopy && value && value !== 'Not available' && (
         <button
           onClick={() => onCopy(value)}
-          className="flex-shrink-0 p-1.5 rounded-md hover:bg-black/5 text-text-muted hover:text-text-primary transition-colors"
+          className="flex-shrink-0 p-1.5 rounded-md hover:bg-overlay/5 text-text-muted hover:text-text-primary transition-colors"
           title="Copy to clipboard"
         >
           <AnimatePresence mode="wait">

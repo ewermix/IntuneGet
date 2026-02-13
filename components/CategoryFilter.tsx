@@ -80,7 +80,7 @@ export function CategoryFilter({
         {canScrollLeft && (
           <button
             onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-bg-elevated border border-black/10 rounded-full shadow-soft hover:bg-bg-surface transition-colors"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-bg-elevated border border-overlay/10 rounded-full shadow-soft hover:bg-bg-surface transition-colors"
           >
             <ChevronLeft className="w-4 h-4 text-text-secondary" />
           </button>
@@ -117,7 +117,7 @@ export function CategoryFilter({
         {canScrollRight && (
           <button
             onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-bg-elevated border border-black/10 rounded-full shadow-soft hover:bg-bg-surface transition-colors"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-bg-elevated border border-overlay/10 rounded-full shadow-soft hover:bg-bg-surface transition-colors"
           >
             <ChevronRight className="w-4 h-4 text-text-secondary" />
           </button>
@@ -142,7 +142,7 @@ function CategoryPill({ label, count, isSelected, onClick }: CategoryPillProps) 
         'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 border',
         isSelected
           ? 'bg-accent-cyan text-white border-accent-cyan/70 shadow-soft'
-          : 'bg-bg-surface border-black/10 text-text-secondary hover:text-text-primary hover:border-black/20 hover:bg-bg-elevated'
+          : 'bg-bg-surface border-overlay/10 text-text-secondary hover:text-text-primary hover:border-black/20 hover:bg-bg-elevated'
       )}
     >
       {label === 'All' && <Tag className="w-3 h-3" />}
@@ -150,7 +150,7 @@ function CategoryPill({ label, count, isSelected, onClick }: CategoryPillProps) 
       <span
         className={cn(
           'text-xs px-1.5 py-0.5 rounded-full',
-          isSelected ? 'bg-white/20 text-white' : 'bg-black/5 text-text-muted'
+          isSelected ? 'bg-white/20 text-white' : 'bg-overlay/5 text-text-muted'
         )}
       >
         {count}

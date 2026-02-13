@@ -158,7 +158,7 @@ export function MspReportsDashboard() {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex flex-wrap gap-2">
           {/* Date range selector */}
-          <div className="flex rounded-lg overflow-hidden border border-black/10">
+          <div className="flex rounded-lg overflow-hidden border border-overlay/10">
             {dateRanges.map((range) => (
               <button
                 key={range.label}
@@ -166,7 +166,7 @@ export function MspReportsDashboard() {
                 className={`px-3 py-1.5 text-sm transition-colors ${
                   selectedRange.label === range.label
                     ? 'bg-accent-cyan/20 text-accent-cyan'
-                    : 'bg-transparent text-text-secondary hover:text-text-primary hover:bg-black/5'
+                    : 'bg-transparent text-text-secondary hover:text-text-primary hover:bg-overlay/5'
                 }`}
               >
                 {range.label}
@@ -179,7 +179,7 @@ export function MspReportsDashboard() {
             <select
               value={selectedTenantId}
               onChange={(e) => setSelectedTenantId(e.target.value)}
-              className="px-3 py-1.5 text-sm rounded-lg border border-black/10 bg-transparent text-text-primary focus:outline-none focus:border-accent-cyan"
+              className="px-3 py-1.5 text-sm rounded-lg border border-overlay/10 bg-transparent text-text-primary focus:outline-none focus:border-accent-cyan"
             >
               <option value="">All tenants</option>
               {activeTenants.map((tenant) => (
@@ -232,7 +232,7 @@ export function MspReportsDashboard() {
       {/* Charts Grid */}
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Deployments Over Time */}
-        <div className="p-6 rounded-xl glass-light border border-black/5">
+        <div className="p-6 rounded-xl glass-light border border-overlay/5">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-5 h-5 text-accent-cyan" />
             <h3 className="text-lg font-medium text-text-primary">Deployment Trends</h3>
@@ -241,7 +241,7 @@ export function MspReportsDashboard() {
         </div>
 
         {/* Deployments by Tenant */}
-        <div className="p-6 rounded-xl glass-light border border-black/5">
+        <div className="p-6 rounded-xl glass-light border border-overlay/5">
           <div className="flex items-center gap-2 mb-4">
             <Building2 className="w-5 h-5 text-accent-violet" />
             <h3 className="text-lg font-medium text-text-primary">Deployments by Tenant</h3>
@@ -250,7 +250,7 @@ export function MspReportsDashboard() {
         </div>
 
         {/* Success Rate by Tenant */}
-        <div className="p-6 rounded-xl glass-light border border-black/5">
+        <div className="p-6 rounded-xl glass-light border border-overlay/5">
           <div className="flex items-center gap-2 mb-4">
             <CheckCircle2 className="w-5 h-5 text-emerald-400" />
             <h3 className="text-lg font-medium text-text-primary">Success Rate by Tenant</h3>
@@ -259,7 +259,7 @@ export function MspReportsDashboard() {
         </div>
 
         {/* Top Apps */}
-        <div className="p-6 rounded-xl glass-light border border-black/5">
+        <div className="p-6 rounded-xl glass-light border border-overlay/5">
           <div className="flex items-center gap-2 mb-4">
             <Package className="w-5 h-5 text-blue-400" />
             <h3 className="text-lg font-medium text-text-primary">Top Deployed Apps</h3>
@@ -269,7 +269,7 @@ export function MspReportsDashboard() {
               data.top_apps.slice(0, 8).map((app, index) => (
                 <div
                   key={app.winget_id}
-                  className="flex items-center justify-between py-2 px-3 rounded-lg bg-black/5"
+                  className="flex items-center justify-between py-2 px-3 rounded-lg bg-overlay/5"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <span className="text-sm font-medium text-text-muted w-6">
@@ -309,7 +309,7 @@ interface StatCardProps {
 
 function StatCard({ icon: Icon, label, value, color, subtitle }: StatCardProps) {
   return (
-    <div className="p-4 rounded-xl glass-light border border-black/5">
+    <div className="p-4 rounded-xl glass-light border border-overlay/5">
       <div className="flex items-center gap-2 mb-2">
         <Icon className={`w-4 h-4 ${color}`} />
         <span className="text-xs text-text-muted">{label}</span>

@@ -5,6 +5,8 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { MicrosoftAuthProvider } from "@/components/providers/MicrosoftAuthProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { UserSettingsProvider } from "@/components/providers/UserSettingsProvider";
 import { MspProvider } from "@/contexts/MspContext";
 
 // Analytics configuration
@@ -179,16 +181,20 @@ export default function RootLayout({
   const content = (
     <QueryProvider>
       <MicrosoftAuthProvider>
-        <MspProvider>
-          {children}
-          <Toaster />
-        </MspProvider>
+        <UserSettingsProvider>
+          <ThemeProvider>
+            <MspProvider>
+              {children}
+              <Toaster />
+            </MspProvider>
+          </ThemeProvider>
+        </UserSettingsProvider>
       </MicrosoftAuthProvider>
     </QueryProvider>
   );
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://plausible.io" />
         <link rel="dns-prefetch" href="https://api.github.com" />
@@ -198,6 +204,26 @@ export default function RootLayout({
               NEXT_PUBLIC_AZURE_AD_CLIENT_ID:
                 process.env.NEXT_PUBLIC_AZURE_AD_CLIENT_ID || "",
             })}`,
+          }}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(() => {
+  try {
+    const storedTheme = localStorage.getItem("intuneget-theme");
+    if (storedTheme === "light" || storedTheme === "dark") {
+      document.documentElement.classList.toggle("dark", storedTheme === "dark");
+      return;
+    }
+
+  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.classList.toggle("dark", prefersDark);
+  } catch (error) {
+    if (typeof console !== "undefined" && console.warn) {
+      console.warn("Failed to initialize theme preference:", error);
+    }
+  }
+})();`,
           }}
         />
         <script

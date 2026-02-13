@@ -59,7 +59,7 @@ export function ProgressStepper({
                     isJobCompleted && 'bg-status-success/20 border-2 border-status-success',
                     !isJobFailed && !isJobCompleted && isCompleted && 'bg-status-success/20 border-2 border-status-success',
                     !isJobFailed && !isJobCompleted && isCurrent && 'bg-accent-cyan/20 border-2 border-accent-cyan',
-                    isPending && !isJobCompleted && 'bg-bg-elevated border-2 border-black/10'
+                    isPending && !isJobCompleted && 'bg-bg-elevated border-2 border-overlay/10'
                   )}
                 >
                   {isJobFailed && isCurrent ? (
@@ -89,7 +89,7 @@ export function ProgressStepper({
 
               {/* Connector Line */}
               {index < PROGRESS_STAGES.length - 1 && (
-                <div className="flex-1 mx-2 h-0.5 mt-[-16px] overflow-hidden rounded-full bg-black/5">
+                <div className="flex-1 mx-2 h-0.5 mt-[-16px] overflow-hidden rounded-full bg-overlay/5">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{

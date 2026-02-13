@@ -36,7 +36,7 @@ interface PageHeaderProps {
 }
 
 const badgeVariants = {
-  default: 'bg-black/10 text-text-secondary',
+  default: 'bg-overlay/10 text-text-secondary',
   success: 'bg-status-success/10 text-status-success',
   warning: 'bg-status-warning/10 text-status-warning',
   error: 'bg-status-error/10 text-status-error'
@@ -228,7 +228,7 @@ export function CardHeader({
   return (
     <div
       className={cn(
-        'flex items-start justify-between gap-4 pb-4 mb-4 border-b border-black/5',
+        'flex items-start justify-between gap-4 pb-4 mb-4 border-b border-overlay/5',
         className
       )}
     >

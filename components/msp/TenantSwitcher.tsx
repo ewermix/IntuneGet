@@ -46,7 +46,7 @@ export function TenantSwitcher({ className }: TenantSwitcherProps) {
     <div ref={dropdownRef} className={cn('relative', className)}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-black/5 hover:bg-black/10 border border-black/10 transition-all duration-200"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-overlay/5 hover:bg-overlay/10 border border-overlay/10 transition-all duration-200"
       >
         <Building2 className="w-4 h-4 text-accent-cyan" />
         <span className="text-sm font-medium text-text-primary max-w-[150px] truncate">
@@ -60,8 +60,8 @@ export function TenantSwitcher({ className }: TenantSwitcherProps) {
 
       {/* Dropdown menu */}
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-64 bg-bg-surface border border-black/10 rounded-lg shadow-xl z-50 overflow-hidden animate-fade-in">
-          <div className="p-2 border-b border-black/5">
+        <div className="absolute top-full right-0 mt-2 w-64 bg-bg-surface border border-overlay/10 rounded-lg shadow-xl z-50 overflow-hidden animate-fade-in">
+          <div className="p-2 border-b border-overlay/5">
             <p className="text-xs text-text-muted px-2 py-1">Switch tenant</p>
           </div>
 
@@ -74,7 +74,7 @@ export function TenantSwitcher({ className }: TenantSwitcherProps) {
                   'w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors',
                   selectedTenant?.id === tenant.id
                     ? 'bg-accent-cyan/10 text-text-primary'
-                    : 'text-text-secondary hover:bg-black/5 hover:text-text-primary'
+                    : 'text-text-secondary hover:bg-overlay/5 hover:text-text-primary'
                 )}
               >
                 <div className="flex-1 min-w-0">
@@ -90,10 +90,10 @@ export function TenantSwitcher({ className }: TenantSwitcherProps) {
             ))}
           </div>
 
-          <div className="p-2 border-t border-black/5 space-y-1">
+          <div className="p-2 border-t border-overlay/5 space-y-1">
             <Link
               href="/dashboard/msp/tenants/add"
-              className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-text-secondary hover:text-text-primary hover:bg-black/5 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-text-secondary hover:text-text-primary hover:bg-overlay/5 transition-colors"
               onClick={() => setIsOpen(false)}
             >
               <Plus className="w-4 h-4" />
@@ -101,7 +101,7 @@ export function TenantSwitcher({ className }: TenantSwitcherProps) {
             </Link>
             <Link
               href="/dashboard/msp/tenants"
-              className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-text-secondary hover:text-text-primary hover:bg-black/5 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-text-secondary hover:text-text-primary hover:bg-overlay/5 transition-colors"
               onClick={() => setIsOpen(false)}
             >
               <Settings className="w-4 h-4" />

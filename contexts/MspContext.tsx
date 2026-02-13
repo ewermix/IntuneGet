@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 import { useMicrosoftAuth } from '@/hooks/useMicrosoftAuth';
+import { useUserSettings } from '@/components/providers/UserSettingsProvider';
 import type {
   MspOrganization,
   MspOrganizationStats,
@@ -14,12 +15,11 @@ import type {
   GetTenantsResponse,
 } from '@/types/msp';
 
-const SELECTED_TENANT_KEY = 'msp_selected_tenant_id';
-
 const MspContext = createContext<MspContextValue | null>(null);
 
 export function MspProvider({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, getAccessToken } = useMicrosoftAuth();
+  const { settings, setSelectedTenantId: setStoredSelectedTenantId } = useUserSettings();
 
   // Organization state
   const [organization, setOrganization] = useState<MspOrganization | null>(null);
@@ -32,7 +32,7 @@ export function MspProvider({ children }: { children: React.ReactNode }) {
   const [isLoadingTenants, setIsLoadingTenants] = useState(false);
 
   // Selected tenant state
-  const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
+  const [selectedTenantId, setSelectedTenantIdState] = useState<string | null>(null);
 
   // Compute selected tenant from managed tenants
   const selectedTenant = useMemo(() => {
@@ -40,26 +40,9 @@ export function MspProvider({ children }: { children: React.ReactNode }) {
     return managedTenants.find(t => t.tenant_id === selectedTenantId) || null;
   }, [selectedTenantId, managedTenants]);
 
-  // Load selected tenant from localStorage on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(SELECTED_TENANT_KEY);
-      if (stored) {
-        setSelectedTenantId(stored);
-      }
-    }
-  }, []);
-
-  // Persist selected tenant to localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      if (selectedTenantId) {
-        localStorage.setItem(SELECTED_TENANT_KEY, selectedTenantId);
-      } else {
-        localStorage.removeItem(SELECTED_TENANT_KEY);
-      }
-    }
-  }, [selectedTenantId]);
+    setSelectedTenantIdState(settings.selectedTenantId);
+  }, [settings.selectedTenantId]);
 
   // Refresh organization data
   const refreshOrganization = useCallback(async () => {
@@ -160,14 +143,16 @@ export function MspProvider({ children }: { children: React.ReactNode }) {
 
       // If selected tenant is no longer in the list, clear selection
       if (selectedTenantId && !data.tenants.some(t => t.tenant_id === selectedTenantId)) {
-        setSelectedTenantId(null);
+        setSelectedTenantIdState(null);
+        void setStoredSelectedTenantId(null);
       }
 
       // Auto-select first active tenant if none selected
       if (!selectedTenantId && data.tenants.length > 0) {
         const firstActive = data.tenants.find(t => t.consent_status === 'granted' && t.tenant_id);
         if (firstActive?.tenant_id) {
-          setSelectedTenantId(firstActive.tenant_id);
+          setSelectedTenantIdState(firstActive.tenant_id);
+          void setStoredSelectedTenantId(firstActive.tenant_id);
         }
       }
     } catch (error) {
@@ -175,7 +160,7 @@ export function MspProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoadingTenants(false);
     }
-  }, [isMspUser, organization, getAccessToken, selectedTenantId]);
+  }, [isMspUser, organization, getAccessToken, selectedTenantId, setStoredSelectedTenantId]);
 
   // Add tenant
   const addTenant = useCallback(async (data: AddTenantRequest): Promise<AddTenantResponse> => {
@@ -238,13 +223,15 @@ export function MspProvider({ children }: { children: React.ReactNode }) {
 
   // Select tenant
   const selectTenant = useCallback((tenantId: string | null) => {
-    setSelectedTenantId(tenantId);
-  }, []);
+    setSelectedTenantIdState(tenantId);
+    void setStoredSelectedTenantId(tenantId);
+  }, [setStoredSelectedTenantId]);
 
   // Clear selection
   const clearSelection = useCallback(() => {
-    setSelectedTenantId(null);
-  }, []);
+    setSelectedTenantIdState(null);
+    void setStoredSelectedTenantId(null);
+  }, [setStoredSelectedTenantId]);
 
   // Initial load
   useEffect(() => {

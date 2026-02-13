@@ -55,17 +55,17 @@ export function SuccessStep({ userName }: SuccessStepProps) {
       </div>
 
       {/* Heading */}
-      <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 mb-4">
+      <h1 className="text-2xl sm:text-3xl font-bold text-text-primary mb-4">
         You're All Set, {firstName}!
       </h1>
 
-      <p className="text-lg text-stone-500 mb-8">
+      <p className="text-lg text-text-muted mb-8">
         Your organization is configured and ready to deploy apps to Intune.
       </p>
 
       {/* Tips */}
-      <div className="bg-white border border-stone-200 rounded-xl p-6 mb-8 text-left shadow-soft">
-        <h2 className="text-lg font-semibold text-stone-900 mb-4">
+      <div className="bg-bg-elevated border border-overlay/10 rounded-xl p-6 mb-8 text-left shadow-soft">
+        <h2 className="text-lg font-semibold text-text-primary mb-4">
           Getting Started
         </h2>
         <div className="space-y-4">
@@ -83,8 +83,8 @@ export function SuccessStep({ userName }: SuccessStepProps) {
                 }`} />
               </div>
               <div>
-                <h3 className="font-medium text-stone-900">{tip.title}</h3>
-                <p className="text-sm text-stone-500">{tip.description}</p>
+                <h3 className="font-medium text-text-primary">{tip.title}</h3>
+                <p className="text-sm text-text-muted">{tip.description}</p>
               </div>
             </div>
           ))}
@@ -102,7 +102,7 @@ export function SuccessStep({ userName }: SuccessStepProps) {
       </Button>
 
       {/* Additional info */}
-      <p className="text-xs text-stone-400 mt-6">
+      <p className="text-xs text-text-muted mt-6">
         Any user with Intune permissions in your organization can now use
         IntuneGet.
       </p>

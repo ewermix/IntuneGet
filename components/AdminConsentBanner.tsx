@@ -162,7 +162,7 @@ export function AdminConsentBanner({ onConsentGranted }: AdminConsentBannerProps
   // Show loading state while verifying
   if (isVerifying && !isVisible) {
     return (
-      <div className="bg-bg-elevated/50 border border-black/10 rounded-xl p-4 mb-6">
+      <div className="bg-bg-elevated/50 border border-overlay/10 rounded-xl p-4 mb-6">
         <div className="flex items-center gap-3">
           <Loader2 className="w-5 h-5 text-accent-cyan animate-spin" />
           <span className="text-text-secondary">Verifying organization setup...</span>
@@ -255,7 +255,7 @@ export function AdminConsentBanner({ onConsentGranted }: AdminConsentBannerProps
                 onClick={() => setShowShareOption(true)}
                 size="sm"
                 variant="outline"
-                className="border-black/10 text-text-primary hover:bg-black/5"
+                className="border-overlay/10 text-text-primary hover:bg-overlay/5"
               >
                 I'm not a Global Admin
               </Button>
@@ -285,7 +285,7 @@ export function AdminConsentBanner({ onConsentGranted }: AdminConsentBannerProps
                       onClick={handleCopyLink}
                       size="sm"
                       variant="outline"
-                      className="border-black/10 flex-shrink-0"
+                      className="border-overlay/10 flex-shrink-0"
                     >
                       {copied ? (
                         <Check className="w-4 h-4 text-green-400" />

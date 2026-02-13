@@ -45,12 +45,12 @@ export const InventoryAppCard = memo(function InventoryAppCard({
         'bg-bg-elevated rounded-xl border p-5 cursor-pointer transition-all shadow-soft',
         isSelected
           ? 'border-accent-cyan/40 shadow-glow-cyan bg-accent-cyan/[0.02]'
-          : 'border-black/5 hover:border-black/10 hover:shadow-soft-md'
+          : 'border-overlay/5 hover:border-overlay/10 hover:shadow-soft-md'
       )}
     >
       <div className="flex items-start gap-4">
         {/* App Icon */}
-        <div className="w-11 h-11 rounded-lg bg-bg-surface border border-black/5 flex items-center justify-center flex-shrink-0">
+        <div className="w-11 h-11 rounded-lg bg-bg-surface border border-overlay/5 flex items-center justify-center flex-shrink-0">
           {app.largeIcon?.value && !iconError ? (
             <img
               src={`data:${app.largeIcon.type || 'image/png'};base64,${app.largeIcon.value}`}
@@ -75,7 +75,7 @@ export const InventoryAppCard = memo(function InventoryAppCard({
               </span>
             )}
             {app.displayVersion && (
-              <span className="text-xs bg-black/5 text-text-muted px-1.5 py-0.5 rounded">
+              <span className="text-xs bg-overlay/5 text-text-muted px-1.5 py-0.5 rounded">
                 v{app.displayVersion}
               </span>
             )}

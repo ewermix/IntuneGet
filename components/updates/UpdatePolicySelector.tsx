@@ -94,7 +94,7 @@ export function UpdatePolicySelector({
           variant="ghost"
           disabled={disabled || isUpdating}
           className={cn(
-            'text-text-secondary hover:text-text-primary hover:bg-black/5',
+            'text-text-secondary hover:text-text-primary hover:bg-overlay/5',
             size === 'sm' && 'h-8 px-2 text-sm'
           )}
         >
@@ -113,7 +113,7 @@ export function UpdatePolicySelector({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-56 bg-bg-elevated border-black/10 shadow-soft-lg"
+        className="w-56 bg-bg-elevated border-overlay/10 shadow-soft-lg"
       >
         {policyOptions.map((option) => (
           <DropdownMenuItem
@@ -121,7 +121,7 @@ export function UpdatePolicySelector({
             onClick={() => handleSelect(option.type)}
             className={cn(
               'flex items-start gap-3 p-3 cursor-pointer',
-              'hover:bg-black/5 focus:bg-black/5'
+              'hover:bg-overlay/5 focus:bg-overlay/5'
             )}
           >
             <option.icon className={cn('w-4 h-4 mt-0.5', option.color)} />

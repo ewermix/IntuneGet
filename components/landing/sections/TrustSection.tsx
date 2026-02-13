@@ -15,15 +15,15 @@ export function TrustSection() {
   ];
 
   return (
-    <section className="relative w-full py-16 md:py-20 bg-white border-y border-stone-200/60">
+    <section className="relative w-full py-16 md:py-20 bg-bg-elevated border-y border-overlay/[0.06]">
       <div className="container relative px-4 md:px-6 mx-auto max-w-6xl">
         {/* Quantified headline */}
         <FadeIn>
           <div className="text-center mb-10 md:mb-12">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-stone-900 mb-3">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-text-primary mb-3">
               Trusted by <span className="gradient-text-cyan">{signinClicks.toLocaleString()}</span> Admins
             </h2>
-            <p className="text-stone-500 max-w-xl mx-auto">
+            <p className="text-text-muted max-w-xl mx-auto">
               From startups to enterprises, teams rely on IntuneGet to streamline their app deployments
             </p>
           </div>
@@ -34,7 +34,7 @@ export function TrustSection() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-12">
             {metrics.map((metric, index) => (
               <div key={metric.label} className="text-center">
-                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-stone-900 mb-1">
+                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-text-primary mb-1">
                   <CountUp
                     end={metric.value}
                     suffix={metric.suffix}
@@ -42,7 +42,7 @@ export function TrustSection() {
                     delay={0.2 + index * 0.1}
                   />
                 </div>
-                <div className="text-xs sm:text-sm text-stone-500">{metric.label}</div>
+                <div className="text-xs sm:text-sm text-text-muted">{metric.label}</div>
               </div>
             ))}
           </div>

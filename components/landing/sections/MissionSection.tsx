@@ -33,7 +33,7 @@ export function MissionSection() {
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <section className="relative w-full py-24 md:py-32 overflow-hidden bg-white">
+    <section className="relative w-full py-24 md:py-32 overflow-hidden bg-bg-elevated">
       <div className="container relative px-4 md:px-6 mx-auto max-w-5xl">
         {/* Mission statement */}
         <div className="text-center mb-16 md:mb-20">
@@ -45,12 +45,12 @@ export function MissionSection() {
           <TextReveal
             as="h2"
             text="We Believe IT Teams Shouldn't Waste Hours on Repetitive Packaging"
-            className="text-3xl md:text-4xl lg:text-5xl font-bold text-stone-900 mb-6"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold text-text-primary mb-6"
             delay={0.1}
             staggerDelay={0.035}
           />
           <FadeIn delay={0.2}>
-            <p className="mx-auto max-w-3xl text-lg md:text-xl text-stone-600 leading-relaxed">
+            <p className="mx-auto max-w-3xl text-lg md:text-xl text-text-secondary leading-relaxed">
               IntuneGet started as a personal project to solve a real problem: spending entire Fridays
               packaging apps that should take minutes. Now it&apos;s used by IT teams at organizations
               worldwide, helping them focus on what actually matters - keeping their organizations
@@ -67,7 +67,7 @@ export function MissionSection() {
           {values.map((value) => (
             <StaggerItem key={value.title}>
               <motion.div
-                className="p-6 md:p-8 rounded-2xl bg-white border border-stone-200/60 shadow-card hover:shadow-card-hover transition-shadow duration-300"
+                className="p-6 md:p-8 rounded-2xl bg-bg-elevated border border-overlay/[0.06] shadow-card hover:shadow-card-hover transition-shadow duration-300"
                 whileHover={
                   shouldReduceMotion
                     ? {}
@@ -77,10 +77,10 @@ export function MissionSection() {
                 <div className="w-12 h-12 rounded-xl bg-accent-cyan/10 flex items-center justify-center mb-4">
                   <value.icon className="w-6 h-6 text-accent-cyan" />
                 </div>
-                <h3 className="text-lg font-semibold text-stone-900 mb-2">
+                <h3 className="text-lg font-semibold text-text-primary mb-2">
                   {value.title}
                 </h3>
-                <p className="text-stone-600 leading-relaxed">
+                <p className="text-text-secondary leading-relaxed">
                   {value.description}
                 </p>
               </motion.div>
@@ -90,7 +90,7 @@ export function MissionSection() {
 
         {/* Founder note - 5B: SlideIn */}
         <SlideIn direction="up" distance={30} duration={0.7} delay={0.2}>
-          <div className="mt-12 md:mt-16 p-6 md:p-8 rounded-2xl bg-stone-50 border border-stone-200/60">
+          <div className="mt-12 md:mt-16 p-6 md:p-8 rounded-2xl bg-bg-surface border border-overlay/[0.06]">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
               <div className="flex-shrink-0">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent-cyan to-accent-violet flex items-center justify-center text-white font-bold text-lg">
@@ -98,12 +98,12 @@ export function MissionSection() {
                 </div>
               </div>
               <div>
-                <p className="text-stone-700 leading-relaxed mb-2">
+                <p className="text-text-secondary leading-relaxed mb-2">
                   &ldquo;I built IntuneGet because I was tired of spending my Fridays packaging apps instead of
                   solving real problems. If this tool saves you even one afternoon, it&apos;s done its job.&rdquo;
                 </p>
-                <p className="text-sm text-stone-500">
-                  <span className="font-medium text-stone-700">Ugur Koc</span> - Creator of IntuneGet
+                <p className="text-sm text-text-muted">
+                  <span className="font-medium text-text-secondary">Ugur Koc</span> - Creator of IntuneGet
                 </p>
               </div>
             </div>

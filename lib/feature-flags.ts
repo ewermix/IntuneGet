@@ -169,7 +169,7 @@ export function getTierDisplayName(tier: SubscriptionTier): string {
  */
 export function getTierColor(tier: SubscriptionTier): string {
   const colors: Record<SubscriptionTier, string> = {
-    free: 'text-gray-500 bg-gray-500/10',
+    free: 'text-text-muted bg-bg-surface0/10',
     pro: 'text-blue-500 bg-blue-500/10',
     msp: 'text-purple-500 bg-purple-500/10',
   };

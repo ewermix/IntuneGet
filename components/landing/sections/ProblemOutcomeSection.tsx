@@ -22,7 +22,7 @@ export function ProblemOutcomeSection() {
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <section className="relative w-full py-16 md:py-24 bg-stone-50">
+    <section className="relative w-full py-16 md:py-24 bg-bg-surface">
       <div className="container relative px-4 md:px-6 mx-auto max-w-6xl">
         {/* Section header */}
         <FadeIn>
@@ -30,10 +30,10 @@ export function ProblemOutcomeSection() {
             <span className="inline-block font-mono text-xs tracking-wider text-accent-cyan uppercase">
               Before & After
             </span>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-stone-900">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-text-primary">
               Transform Your Deployment Workflow
             </h2>
-            <p className="mx-auto max-w-2xl text-lg text-stone-600">
+            <p className="mx-auto max-w-2xl text-lg text-text-secondary">
               See how IntuneGet eliminates the complexity from enterprise app deployment
             </p>
           </div>
@@ -44,18 +44,18 @@ export function ProblemOutcomeSection() {
           {/* The Old Way */}
           <FadeIn delay={0.1}>
             <motion.div
-              className="relative bg-white rounded-2xl border border-stone-200 p-6 md:p-8 h-full"
+              className="relative bg-bg-elevated rounded-2xl border border-overlay/10 p-6 md:p-8 h-full"
               whileHover={shouldReduceMotion ? {} : { y: -4 }}
               transition={{ duration: 0.3 }}
             >
               {/* Header */}
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
                   <X className="w-5 h-5 text-red-500" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-stone-900">The Old Way</h3>
-                  <p className="text-sm text-stone-500">Manual deployment process</p>
+                  <h3 className="text-lg font-semibold text-text-primary">The Old Way</h3>
+                  <p className="text-sm text-text-muted">Manual deployment process</p>
                 </div>
               </div>
 
@@ -64,7 +64,7 @@ export function ProblemOutcomeSection() {
                 {problems.map((item, index) => (
                   <motion.div
                     key={item.text}
-                    className="flex items-start gap-3 p-3 rounded-lg bg-red-50/50 border border-red-100"
+                    className="flex items-start gap-3 p-3 rounded-lg bg-red-500/[0.06] border border-red-500/15"
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
@@ -74,15 +74,15 @@ export function ProblemOutcomeSection() {
                     }}
                   >
                     <item.icon className="w-5 h-5 text-red-400 mt-0.5 shrink-0" />
-                    <span className="text-stone-700">{item.text}</span>
+                    <span className="text-text-secondary">{item.text}</span>
                   </motion.div>
                 ))}
               </div>
 
               {/* Time metric */}
-              <div className="mt-6 pt-6 border-t border-stone-100">
+              <div className="mt-6 pt-6 border-t border-overlay/10">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-stone-500">Average deployment time</span>
+                  <span className="text-sm text-text-muted">Average deployment time</span>
                   <span className="text-2xl font-bold text-red-500">8+ hours</span>
                 </div>
               </div>
@@ -92,7 +92,7 @@ export function ProblemOutcomeSection() {
           {/* The IntuneGet Way */}
           <FadeIn delay={0.2}>
             <motion.div
-              className="relative bg-white rounded-2xl border-2 border-accent-cyan/20 p-6 md:p-8 h-full shadow-glow-cyan"
+              className="relative bg-bg-elevated rounded-2xl border-2 border-accent-cyan/20 p-6 md:p-8 h-full shadow-glow-cyan"
               whileHover={shouldReduceMotion ? {} : { y: -4 }}
               transition={{ duration: 0.3 }}
             >
@@ -109,8 +109,8 @@ export function ProblemOutcomeSection() {
                   <Check className="w-5 h-5 text-accent-cyan" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-stone-900">The IntuneGet Way</h3>
-                  <p className="text-sm text-stone-500">Automated deployment</p>
+                  <h3 className="text-lg font-semibold text-text-primary">The IntuneGet Way</h3>
+                  <p className="text-sm text-text-muted">Automated deployment</p>
                 </div>
               </div>
 
@@ -129,7 +129,7 @@ export function ProblemOutcomeSection() {
                     }}
                   >
                     <item.icon className="w-5 h-5 text-accent-cyan mt-0.5 shrink-0" />
-                    <span className="text-stone-700">{item.text}</span>
+                    <span className="text-text-secondary">{item.text}</span>
                   </motion.div>
                 ))}
               </div>
@@ -137,7 +137,7 @@ export function ProblemOutcomeSection() {
               {/* Time metric */}
               <div className="mt-6 pt-6 border-t border-accent-cyan/10">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-stone-500">Average deployment time</span>
+                  <span className="text-sm text-text-muted">Average deployment time</span>
                   <div className="flex items-center gap-2">
                     <span className="text-2xl font-bold text-accent-cyan">12 min</span>
                     <span className="flex items-center text-xs text-emerald-600 font-medium">

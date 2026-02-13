@@ -63,7 +63,7 @@ export function CapabilityCard({
     <motion.div
       className={cn(
         "group relative flex flex-col p-5 md:p-6 rounded-xl",
-        "bg-white border border-stone-200/60",
+        "bg-bg-elevated border border-overlay/[0.06]",
         "shadow-card hover:shadow-card-hover",
         "transition-shadow duration-300",
         className
@@ -107,10 +107,10 @@ export function CapabilityCard({
 
       {/* Content */}
       <div className="relative flex-1">
-        <h3 className="text-base font-semibold text-stone-900 mb-2 tracking-tight">
+        <h3 className="text-base font-semibold text-text-primary mb-2 tracking-tight">
           {title}
         </h3>
-        <p className="text-sm text-stone-600 leading-relaxed mb-3">
+        <p className="text-sm text-text-secondary leading-relaxed mb-3">
           {description}
         </p>
 
@@ -120,7 +120,7 @@ export function CapabilityCard({
             {features.map((feature, index) => (
               <motion.li
                 key={index}
-                className="flex items-center text-xs text-stone-500"
+                className="flex items-center text-xs text-text-muted"
                 initial={{ opacity: 0.7 }}
                 whileHover={{ opacity: 1 }}
               >

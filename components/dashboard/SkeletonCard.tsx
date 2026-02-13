@@ -12,12 +12,12 @@ export function Skeleton({ className, style }: SkeletonProps) {
   return (
     <div
       className={cn(
-        'animate-pulse rounded bg-black/5',
+        'animate-pulse rounded bg-overlay/5',
         'relative overflow-hidden',
         // Shimmer effect
         "after:absolute after:inset-0 after:-translate-x-full",
         "after:animate-shimmer after:bg-gradient-to-r",
-        "after:from-transparent after:via-white/5 after:to-transparent",
+        "after:from-transparent after:via-overlay/5 after:to-transparent",
         className
       )}
       style={style}
@@ -50,7 +50,7 @@ export function SkeletonCard({
     return (
       <div
         className={cn(
-          'glass-light rounded-xl p-6 border border-black/5',
+          'glass-light rounded-xl p-6 border border-overlay/5',
           className
         )}
       >
@@ -71,7 +71,7 @@ export function SkeletonCard({
     return (
       <div
         className={cn(
-          'glass-light rounded-xl p-6 border border-black/5',
+          'glass-light rounded-xl p-6 border border-overlay/5',
           className
         )}
       >
@@ -99,7 +99,7 @@ export function SkeletonCard({
     return (
       <div
         className={cn(
-          'glass-light rounded-xl p-4 border border-black/5 flex items-center gap-4',
+          'glass-light rounded-xl p-4 border border-overlay/5 flex items-center gap-4',
           className
         )}
       >
@@ -117,12 +117,12 @@ export function SkeletonCard({
   return (
     <div
       className={cn(
-        'glass-light rounded-xl p-6 border border-black/5',
+        'glass-light rounded-xl p-6 border border-overlay/5',
         className
       )}
     >
       {showHeader && (
-        <div className="flex items-center justify-between mb-4 pb-4 border-b border-black/5">
+        <div className="flex items-center justify-between mb-4 pb-4 border-b border-overlay/5">
           <Skeleton className="h-5 w-32" />
           {showIcon && <Skeleton className="w-8 h-8 rounded-lg" />}
         </div>
@@ -185,13 +185,13 @@ export function SkeletonTable({
   return (
     <div
       className={cn(
-        'glass-light rounded-xl border border-black/5 overflow-hidden',
+        'glass-light rounded-xl border border-overlay/5 overflow-hidden',
         className
       )}
     >
       {/* Header */}
       {showHeader && (
-        <div className="flex items-center gap-4 px-6 py-4 border-b border-black/5 bg-black/[0.02]">
+        <div className="flex items-center gap-4 px-6 py-4 border-b border-overlay/5 bg-overlay/[0.02]">
           {[...Array(columns)].map((_, i) => (
             <Skeleton
               key={i}
@@ -202,7 +202,7 @@ export function SkeletonTable({
       )}
 
       {/* Rows */}
-      <div className="divide-y divide-white/5">
+      <div className="divide-y divide-overlay/5">
         {[...Array(rows)].map((_, rowIndex) => (
           <div key={rowIndex} className="flex items-center gap-4 px-6 py-4">
             {[...Array(columns)].map((_, colIndex) => (

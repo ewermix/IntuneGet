@@ -33,13 +33,13 @@ export default function Error({
             </button>
             <Link
               href="/"
-              className="inline-flex items-center justify-center gap-2 px-8 py-3 text-base font-semibold text-stone-700 bg-white border border-stone-200 rounded-xl hover:bg-stone-50 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3 text-base font-semibold text-text-secondary bg-bg-elevated border border-overlay/10 rounded-xl hover:bg-overlay/[0.04] transition-all"
             >
               Back to Home
             </Link>
             <Link
               href="/docs"
-              className="inline-flex items-center justify-center gap-2 px-8 py-3 text-base font-semibold text-stone-700 bg-white border border-stone-200 rounded-xl hover:bg-stone-50 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3 text-base font-semibold text-text-secondary bg-bg-elevated border border-overlay/10 rounded-xl hover:bg-overlay/[0.04] transition-all"
             >
               Documentation
             </Link>

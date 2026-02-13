@@ -161,10 +161,10 @@ export default function MspTenantsPage() {
   if (isLoadingOrganization) {
     return (
       <div className="space-y-6">
-        <div className="h-8 w-48 bg-black/10 rounded animate-pulse" />
+        <div className="h-8 w-48 bg-overlay/10 rounded animate-pulse" />
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 bg-black/5 rounded-xl animate-pulse" />
+            <div key={i} className="h-32 bg-overlay/5 rounded-xl animate-pulse" />
           ))}
         </div>
       </div>
@@ -251,7 +251,7 @@ export default function MspTenantsPage() {
 
       {/* Empty state */}
       {!isLoadingTenants && managedTenants.length === 0 && (
-        <div className="p-12 rounded-xl bg-black/5 border border-black/10 text-center">
+        <div className="p-12 rounded-xl bg-overlay/5 border border-overlay/10 text-center">
           <Building2 className="w-12 h-12 text-text-muted mx-auto mb-4" />
           <h2 className="text-lg font-medium text-text-primary mb-2">No customer tenants yet</h2>
           <p className="text-text-muted mb-6 max-w-md mx-auto">

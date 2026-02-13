@@ -44,7 +44,7 @@ export function FAQSection() {
   };
 
   return (
-    <section className="relative w-full py-16 md:py-24 lg:py-32 bg-white overflow-hidden">
+    <section className="relative w-full py-16 md:py-24 lg:py-32 bg-bg-elevated overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-grid-gray-100/25 [mask-image:radial-gradient(white,transparent_85%)]" />
       <div className="absolute top-1/2 left-0 w-96 h-96 bg-blue-50 rounded-full mix-blend-multiply blur-3xl opacity-50 animate-blob" />
@@ -61,7 +61,7 @@ export function FAQSection() {
           <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl gradient-text-blue mb-4">
             Everything You Need to Know
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-text-secondary max-w-2xl mx-auto">
             Get answers to the most common questions about IntuneGet and how it
             can transform your app deployment workflow.
           </p>
@@ -71,7 +71,7 @@ export function FAQSection() {
           {faqs.map((faq, index) => (
             <div
               key={index}
-              className="group bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl shadow-soft hover:shadow-lg transition-all duration-300 animate-fade-up"
+              className="group bg-bg-elevated/80 backdrop-blur-sm border border-overlay/10 rounded-2xl shadow-soft hover:shadow-lg transition-all duration-300 animate-fade-up"
               style={
                 {
                   "--animation-delay": `${(index + 1) * 100}ms`,
@@ -82,9 +82,9 @@ export function FAQSection() {
                 onClick={() => toggleFAQ(index)}
                 aria-expanded={openIndex === index}
                 aria-controls={`faq-answer-${index}`}
-                className="w-full px-6 py-6 text-left flex items-center justify-between hover:bg-gray-50/50 rounded-2xl transition-colors duration-200"
+                className="w-full px-6 py-6 text-left flex items-center justify-between hover:bg-overlay/[0.04]/50 rounded-2xl transition-colors duration-200"
               >
-                <h3 id={`faq-question-${index}`} className="text-lg font-semibold text-gray-900 pr-4">
+                <h3 id={`faq-question-${index}`} className="text-lg font-semibold text-text-primary pr-4">
                   {faq.question}
                 </h3>
                 <div
@@ -92,7 +92,7 @@ export function FAQSection() {
                     openIndex === index ? "rotate-180" : ""
                   }`}
                 >
-                  <ChevronDown className="h-5 w-5 text-gray-500" />
+                  <ChevronDown className="h-5 w-5 text-text-muted" />
                 </div>
               </button>
 
@@ -108,7 +108,7 @@ export function FAQSection() {
               >
                 <div className="px-6 pb-6">
                   <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mb-4" />
-                  <p className="text-gray-600 leading-relaxed">{faq.answer}</p>
+                  <p className="text-text-secondary leading-relaxed">{faq.answer}</p>
                 </div>
               </div>
             </div>

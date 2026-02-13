@@ -9,7 +9,7 @@ interface TableProps {
 
 export function Table({ children, className }: TableProps) {
   return (
-    <div className="my-6 overflow-x-auto rounded-lg border border-black/10">
+    <div className="my-6 overflow-x-auto rounded-lg border border-overlay/10">
       <table className={cn("w-full text-sm", className)}>{children}</table>
     </div>
   );
@@ -17,7 +17,7 @@ export function Table({ children, className }: TableProps) {
 
 export function TableHead({ children }: { children: React.ReactNode }) {
   return (
-    <thead className="bg-stone-50 border-b border-black/5">{children}</thead>
+    <thead className="bg-bg-surface border-b border-overlay/5">{children}</thead>
   );
 }
 
@@ -33,7 +33,7 @@ export function TableRow({
   className?: string;
 }) {
   return (
-    <tr className={cn("hover:bg-black/[0.02] transition-colors", className)}>
+    <tr className={cn("hover:bg-overlay/[0.02] transition-colors", className)}>
       {children}
     </tr>
   );

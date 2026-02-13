@@ -20,6 +20,7 @@ interface CartActions {
   addItem: (item: Omit<CartItem, 'id' | 'addedAt'>) => void;
   addItemSilent: (item: Omit<CartItem, 'id' | 'addedAt'>) => void;
   setAutoOpenOnAdd: (enabled: boolean) => void;
+  setAutoOpenOnAddFromServer: (enabled: boolean) => void;
   removeItem: (id: string) => void;
   updateItem: (id: string, updates: Partial<CartItem>) => void;
   clearCart: () => void;
@@ -77,6 +78,9 @@ export const useCartStore = create<CartStore>()(
       },
 
       setAutoOpenOnAdd: (enabled) => {
+        set({ autoOpenOnAdd: enabled });
+      },
+      setAutoOpenOnAddFromServer: (enabled) => {
         set({ autoOpenOnAdd: enabled });
       },
 

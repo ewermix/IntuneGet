@@ -168,7 +168,7 @@ export function SuggestionsList({
   return (
     <div className="space-y-4">
       {showFilters && (
-        <div className="flex flex-wrap items-center gap-4 p-4 bg-black/5 rounded-xl">
+        <div className="flex flex-wrap items-center gap-4 p-4 bg-overlay/5 rounded-xl">
           <div className="flex items-center gap-2">
             <label className="text-sm text-text-secondary">Status:</label>
             <select
@@ -177,7 +177,7 @@ export function SuggestionsList({
                 setStatus(e.target.value as typeof status);
                 setPage(1);
               }}
-              className="px-3 py-1.5 bg-bg-elevated border border-black/10 rounded-lg text-sm text-text-primary focus:outline-none focus:border-accent-cyan/50"
+              className="px-3 py-1.5 bg-bg-elevated border border-overlay/10 rounded-lg text-sm text-text-primary focus:outline-none focus:border-accent-cyan/50"
             >
               <option value="all">All</option>
               <option value="pending">Pending</option>
@@ -195,7 +195,7 @@ export function SuggestionsList({
                 setSort(e.target.value as typeof sort);
                 setPage(1);
               }}
-              className="px-3 py-1.5 bg-bg-elevated border border-black/10 rounded-lg text-sm text-text-primary focus:outline-none focus:border-accent-cyan/50"
+              className="px-3 py-1.5 bg-bg-elevated border border-overlay/10 rounded-lg text-sm text-text-primary focus:outline-none focus:border-accent-cyan/50"
             >
               <option value="votes">Most Votes</option>
               <option value="newest">Newest</option>
@@ -229,7 +229,7 @@ export function SuggestionsList({
               <div
                 key={suggestion.id}
                 className={cn(
-                  'flex gap-4 p-4 bg-bg-elevated rounded-xl border border-black/10 transition-all duration-200',
+                  'flex gap-4 p-4 bg-bg-elevated rounded-xl border border-overlay/10 transition-all duration-200',
                   onSuggestionClick && 'cursor-pointer hover:border-black/20'
                 )}
                 onClick={() => onSuggestionClick?.(suggestion)}
@@ -284,7 +284,7 @@ export function SuggestionsList({
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 text-sm border border-black/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-black/5"
+                className="px-3 py-1.5 text-sm border border-overlay/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-overlay/5"
               >
                 Previous
               </button>
@@ -294,7 +294,7 @@ export function SuggestionsList({
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="px-3 py-1.5 text-sm border border-black/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-black/5"
+                className="px-3 py-1.5 text-sm border border-overlay/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-overlay/5"
               >
                 Next
               </button>

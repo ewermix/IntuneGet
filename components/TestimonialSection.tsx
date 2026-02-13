@@ -37,7 +37,7 @@ export function TestimonialSection() {
           <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl gradient-text-blue mb-4">
             Trusted by IT Professionals
           </h2>
-          <p className="mx-auto max-w-[700px] text-lg text-gray-600 mb-12">
+          <p className="mx-auto max-w-[700px] text-lg text-text-secondary mb-12">
             Join hundreds of IT professionals who are already excited about
             IntuneGet
           </p>
@@ -46,7 +46,7 @@ export function TestimonialSection() {
             {stats.map((stat, index) => (
               <div
                 key={index}
-                className="group p-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-soft hover:shadow-xl transition-all duration-300 hover-lift animate-fade-up"
+                className="group p-6 bg-bg-elevated/80 backdrop-blur-sm rounded-2xl shadow-soft hover:shadow-xl transition-all duration-300 hover-lift animate-fade-up"
                 style={
                   {
                     "--animation-delay": `${(index + 1) * 200}ms`,
@@ -60,10 +60,10 @@ export function TestimonialSection() {
                   <div className="text-3xl font-bold gradient-text-blue mb-2">
                     {stat.value}
                   </div>
-                  <div className="text-lg font-semibold text-gray-900 mb-1">
+                  <div className="text-lg font-semibold text-text-primary mb-1">
                     {stat.label}
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-text-secondary">
                     {stat.description}
                   </div>
                 </div>

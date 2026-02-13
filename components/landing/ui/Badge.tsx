@@ -26,7 +26,7 @@ export function Badge({
     violet: "bg-accent-violet/10 border-accent-violet/30 text-accent-violet",
     success: "bg-emerald-500/10 border-emerald-500/30 text-emerald-600",
     warning: "bg-amber-500/10 border-amber-500/30 text-amber-600",
-    dark: "bg-stone-900 border-stone-800 text-white",
+    dark: "bg-surface-inverse border-surface-inverse/80 text-bg-deepest",
   };
 
   const hoverStyles = {
@@ -34,7 +34,7 @@ export function Badge({
     violet: "hover:bg-accent-violet/15 hover:border-accent-violet/40",
     success: "hover:bg-emerald-500/15 hover:border-emerald-500/40",
     warning: "hover:bg-amber-500/15 hover:border-amber-500/40",
-    dark: "hover:bg-stone-800",
+    dark: "hover:bg-surface-inverse/90",
   };
 
   const content = (

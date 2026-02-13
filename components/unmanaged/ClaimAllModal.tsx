@@ -44,10 +44,10 @@ export function ClaimAllModal({ state, onClose }: ClaimAllModalProps) {
         aria-modal="true"
         aria-labelledby="claim-all-modal-title"
         aria-busy={!isComplete}
-        className="relative w-full max-w-md mx-4 bg-bg-surface rounded-2xl border border-black/10 shadow-2xl overflow-hidden"
+        className="relative w-full max-w-md mx-4 bg-bg-surface rounded-2xl border border-overlay/10 shadow-2xl overflow-hidden"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-black/5">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-overlay/5">
           <h2 id="claim-all-modal-title" className="text-lg font-semibold text-text-primary">
             {isComplete ? 'Claim Complete' : `Claiming ${apps.length} apps...`}
           </h2>
@@ -75,7 +75,7 @@ export function ClaimAllModal({ state, onClose }: ClaimAllModalProps) {
                 </span>
               )}
             </div>
-            <div className="h-2 bg-black/10 rounded-full overflow-hidden">
+            <div className="h-2 bg-overlay/10 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-300 ease-out"
                 style={{ width: `${progress}%` }}
@@ -90,7 +90,7 @@ export function ClaimAllModal({ state, onClose }: ClaimAllModalProps) {
               return (
                 <div
                   key={app.discoveredAppId}
-                  className="flex items-center gap-3 p-2 rounded-lg bg-black/[0.02] border border-black/[0.03]"
+                  className="flex items-center gap-3 p-2 rounded-lg bg-overlay/[0.02] border border-black/[0.03]"
                 >
                   <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center">
                     {status === 'pending' && (
@@ -118,7 +118,7 @@ export function ClaimAllModal({ state, onClose }: ClaimAllModalProps) {
 
           {/* Summary */}
           {isComplete && (
-            <div className="text-center p-4 rounded-lg bg-black/[0.02] border border-black/[0.03]">
+            <div className="text-center p-4 rounded-lg bg-overlay/[0.02] border border-black/[0.03]">
               <p className="text-text-primary font-medium">
                 {successCount} of {apps.length} apps added to cart
               </p>
@@ -132,7 +132,7 @@ export function ClaimAllModal({ state, onClose }: ClaimAllModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-black/5 bg-bg-elevated/50">
+        <div className="px-6 py-4 border-t border-overlay/5 bg-bg-elevated/50">
           <Button
             onClick={onClose}
             disabled={!isComplete}

@@ -26,7 +26,7 @@ export function FeatureCard({
     <motion.div
       className={cn(
         "group relative flex flex-col p-6 md:p-8 rounded-2xl",
-        "bg-white border border-stone-200/60",
+        "bg-bg-elevated border border-overlay/[0.06]",
         "shadow-card hover:shadow-card-hover",
         "transition-all duration-300",
         className
@@ -58,10 +58,10 @@ export function FeatureCard({
 
       {/* Content */}
       <div className="relative">
-        <h3 className="text-xl font-semibold text-stone-900 mb-3 tracking-tight">
+        <h3 className="text-xl font-semibold text-text-primary mb-3 tracking-tight">
           {title}
         </h3>
-        <p className="text-stone-600 mb-4 leading-relaxed">{description}</p>
+        <p className="text-text-secondary mb-4 leading-relaxed">{description}</p>
 
         {/* Feature list */}
         {features.length > 0 && (
@@ -69,7 +69,7 @@ export function FeatureCard({
             {features.map((feature, index) => (
               <li
                 key={index}
-                className="flex items-center text-sm text-stone-500"
+                className="flex items-center text-sm text-text-muted"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-accent-cyan mr-3 flex-shrink-0" />
                 {feature}

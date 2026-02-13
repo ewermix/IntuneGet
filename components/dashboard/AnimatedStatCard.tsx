@@ -88,7 +88,7 @@ const colorStyles = {
     icon: 'text-text-secondary',
     iconBg: 'bg-zinc-500/10',
     glow: '',
-    border: 'border-black/5',
+    border: 'border-overlay/5',
     gradient: 'from-white/5 to-transparent'
   }
 };
@@ -119,17 +119,17 @@ export function AnimatedStatCard({
     return (
       <div
         className={cn(
-          'glass-light rounded-xl p-6 border border-black/5',
+          'glass-light rounded-xl p-6 border border-overlay/5',
           className
         )}
       >
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="h-4 w-24 bg-black/5 rounded animate-pulse mb-3" />
-            <div className="h-8 w-32 bg-black/10 rounded animate-pulse mb-2" />
-            <div className="h-3 w-20 bg-black/5 rounded animate-pulse" />
+            <div className="h-4 w-24 bg-overlay/5 rounded animate-pulse mb-3" />
+            <div className="h-8 w-32 bg-overlay/10 rounded animate-pulse mb-2" />
+            <div className="h-3 w-20 bg-overlay/5 rounded animate-pulse" />
           </div>
-          <div className="w-12 h-12 rounded-xl bg-black/5 animate-pulse" />
+          <div className="w-12 h-12 rounded-xl bg-overlay/5 animate-pulse" />
         </div>
       </div>
     );

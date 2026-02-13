@@ -28,7 +28,7 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
             'text-sm transition-colors',
             value === preset.value
               ? 'bg-blue-600/10 text-blue-500 hover:bg-blue-600/20 hover:text-blue-400'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              : 'text-text-muted hover:text-text-primary hover:bg-overlay/10'
           )}
         >
           {preset.label}

@@ -64,7 +64,7 @@ export function InventoryFilters({
   }, [debouncedSearch]);
 
   return (
-    <div className="glass-light rounded-xl p-4 border border-black/5">
+    <div className="glass-light rounded-xl p-4 border border-overlay/5">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         {/* Search */}
         <div className="relative w-full sm:w-80">
@@ -74,7 +74,7 @@ export function InventoryFilters({
             placeholder="Search apps..."
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
-            className="pl-10 bg-bg-elevated border-black/10 text-text-primary placeholder:text-text-muted focus:border-accent-cyan/50 focus:ring-accent-cyan/20"
+            className="pl-10 bg-bg-elevated border-overlay/10 text-text-primary placeholder:text-text-muted focus:border-accent-cyan/50 focus:ring-accent-cyan/20"
           />
         </div>
 
@@ -95,7 +95,7 @@ export function InventoryFilters({
                   'text-sm transition-colors',
                   sortBy === option.value
                     ? 'text-accent-cyan bg-accent-cyan/10'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-black/5'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-overlay/5'
                 )}
               >
                 {option.label}
@@ -105,7 +105,7 @@ export function InventoryFilters({
               variant="ghost"
               size="sm"
               onClick={onSortOrderToggle}
-              className="text-text-secondary hover:text-text-primary hover:bg-black/5"
+              className="text-text-secondary hover:text-text-primary hover:bg-overlay/5"
             >
               {sortOrder === 'asc' ? (
                 <SortAsc className="w-4 h-4" />
@@ -116,7 +116,7 @@ export function InventoryFilters({
           </div>
 
           {/* View Toggle */}
-          <div className="flex items-center gap-0.5 ml-2 border border-black/5 rounded-lg p-0.5">
+          <div className="flex items-center gap-0.5 ml-2 border border-overlay/5 rounded-lg p-0.5">
             <button
               onClick={() => onViewModeChange('grid')}
               className={cn(

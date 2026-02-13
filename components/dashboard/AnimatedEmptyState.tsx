@@ -59,7 +59,7 @@ const colorStyles = {
     iconBg: 'bg-zinc-500/10',
     glow: '',
     gradient: 'from-zinc-500/10 to-zinc-500/0',
-    button: 'bg-black/10 hover:bg-black/20',
+    button: 'bg-overlay/10 hover:bg-overlay/20',
     orb1: 'bg-zinc-500/20',
     orb2: 'bg-zinc-600/10'
   }
@@ -265,7 +265,7 @@ export function AnimatedEmptyState({
               className={cn(
                 'px-6 py-2.5 rounded-lg font-medium transition-all duration-200',
                 action.variant === 'secondary'
-                  ? 'bg-black/10 hover:bg-black/20 text-text-primary'
+                  ? 'bg-overlay/10 hover:bg-overlay/20 text-text-primary'
                   : cn(styles.button, 'text-text-primary')
               )}
             >
@@ -275,7 +275,7 @@ export function AnimatedEmptyState({
           {secondaryAction && (
             <button
               onClick={secondaryAction.onClick}
-              className="px-6 py-2.5 rounded-lg font-medium text-text-secondary hover:text-text-primary hover:bg-black/5 transition-all duration-200"
+              className="px-6 py-2.5 rounded-lg font-medium text-text-secondary hover:text-text-primary hover:bg-overlay/5 transition-all duration-200"
             >
               {secondaryAction.label}
             </button>
@@ -314,7 +314,7 @@ export function InlineEmptyState({
         className
       )}
     >
-      <div className="w-12 h-12 rounded-xl bg-black/5 flex items-center justify-center mb-3">
+      <div className="w-12 h-12 rounded-xl bg-overlay/5 flex items-center justify-center mb-3">
         <Icon className="w-6 h-6 text-text-muted" />
       </div>
       <p className="text-sm text-text-secondary mb-3">{message}</p>
