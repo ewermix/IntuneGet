@@ -29,15 +29,22 @@ export const PROGRESS_STAGES: ProgressStage[] = [
   {
     id: 'package',
     label: 'Package',
-    description: 'Creating PSADT and IntuneWin package',
+    description: 'Creating deployment package',
     minProgress: 20,
     maxProgress: 50,
+  },
+  {
+    id: 'authenticate',
+    label: 'Auth',
+    description: 'Authenticating with Intune',
+    minProgress: 50,
+    maxProgress: 60,
   },
   {
     id: 'upload',
     label: 'Upload',
     description: 'Uploading to Intune',
-    minProgress: 50,
+    minProgress: 60,
     maxProgress: 90,
   },
   {
@@ -49,16 +56,23 @@ export const PROGRESS_STAGES: ProgressStage[] = [
   },
 ];
 
-export type StageId = 'queued' | 'download' | 'package' | 'upload' | 'finalize';
+export type StageId = 'queued' | 'download' | 'package' | 'authenticate' | 'upload' | 'finalize';
 
 /**
- * Get the current active stage based on progress percentage
+ * Get the current active stage based on progress percentage.
+ * For failed jobs, returns the stage where the failure occurred.
  */
 export function getCurrentStage(
   progress: number,
-  status: string
+  status: string,
+  errorStage?: string | null
 ): ProgressStage | null {
-  // If job is completed or failed, return null (no active stage)
+  // For failed jobs with a known error stage, return that stage
+  if (status === 'failed' && errorStage) {
+    return getFailedStage(errorStage) || null;
+  }
+
+  // If job is completed or failed (without error stage), return null
   if (['completed', 'deployed', 'failed'].includes(status)) {
     return null;
   }
@@ -79,15 +93,48 @@ export function getCurrentStage(
 }
 
 /**
- * Get all completed stage IDs based on progress
+ * Get all completed stage IDs based on progress.
+ * For failed jobs, returns stages completed before the failure point.
  */
-export function getCompletedStages(progress: number): StageId[] {
+export function getCompletedStages(
+  progress: number,
+  status?: string,
+  errorStage?: string | null
+): StageId[] {
+  // For failed jobs with a known error stage, return stages before the failure
+  if (status === 'failed' && errorStage) {
+    return getCompletedStagesBeforeFailure(errorStage);
+  }
+
   const completed: StageId[] = [];
 
   for (const stage of PROGRESS_STAGES) {
     if (progress >= stage.maxProgress) {
       completed.push(stage.id as StageId);
     }
+  }
+
+  return completed;
+}
+
+/**
+ * Get the stage where a failure occurred based on error_stage value
+ */
+export function getFailedStage(errorStage: string): ProgressStage | undefined {
+  return PROGRESS_STAGES.find((stage) => stage.id === errorStage);
+}
+
+/**
+ * Get all stage IDs that were completed before the failure point
+ */
+export function getCompletedStagesBeforeFailure(errorStage: string): StageId[] {
+  const completed: StageId[] = [];
+
+  for (const stage of PROGRESS_STAGES) {
+    if (stage.id === errorStage) {
+      break;
+    }
+    completed.push(stage.id as StageId);
   }
 
   return completed;

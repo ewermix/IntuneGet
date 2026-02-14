@@ -1,13 +1,12 @@
 'use client';
 
 import { motion, useReducedMotion } from 'framer-motion';
-import { Check, Loader2, Clock } from 'lucide-react';
+import { Check, Loader2, Clock, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   PROGRESS_STAGES,
   getCurrentStage,
   getCompletedStages,
-  type ProgressStage,
 } from '@/lib/progress-stages';
 import { useElapsedTime } from '@/hooks/use-elapsed-time';
 
@@ -17,6 +16,7 @@ interface ProgressStepperProps {
   statusMessage?: string;
   startTime?: string | null;
   endTime?: string | null;
+  errorStage?: string | null;
 }
 
 export function ProgressStepper({
@@ -25,10 +25,11 @@ export function ProgressStepper({
   statusMessage,
   startTime,
   endTime,
+  errorStage,
 }: ProgressStepperProps) {
   const prefersReducedMotion = useReducedMotion();
-  const currentStage = getCurrentStage(progress, status);
-  const completedStages = getCompletedStages(progress);
+  const currentStage = getCurrentStage(progress, status, errorStage);
+  const completedStages = getCompletedStages(progress, status, errorStage);
   const { formattedTime } = useElapsedTime({
     startTime: startTime || null,
     endTime: endTime || null,
@@ -44,6 +45,7 @@ export function ProgressStepper({
         {PROGRESS_STAGES.map((stage, index) => {
           const isCompleted = completedStages.includes(stage.id as never);
           const isCurrent = currentStage?.id === stage.id;
+          const isFailedStage = isJobFailed && isCurrent;
           const isPending = !isCompleted && !isCurrent;
 
           return (
@@ -55,15 +57,17 @@ export function ProgressStepper({
                   animate={{ scale: 1 }}
                   className={cn(
                     'w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300',
-                    isJobFailed && isCurrent && 'bg-status-error/20 border-2 border-status-error',
+                    isFailedStage && 'bg-status-error/20 border-2 border-status-error',
                     isJobCompleted && 'bg-status-success/20 border-2 border-status-success',
                     !isJobFailed && !isJobCompleted && isCompleted && 'bg-status-success/20 border-2 border-status-success',
                     !isJobFailed && !isJobCompleted && isCurrent && 'bg-accent-cyan/20 border-2 border-accent-cyan',
-                    isPending && !isJobCompleted && 'bg-bg-elevated border-2 border-overlay/10'
+                    isJobFailed && isCompleted && !isCurrent && 'bg-status-success/20 border-2 border-status-success',
+                    isPending && !isJobCompleted && !isJobFailed && 'bg-bg-elevated border-2 border-overlay/10',
+                    isPending && isJobFailed && 'bg-bg-elevated border-2 border-overlay/10'
                   )}
                 >
-                  {isJobFailed && isCurrent ? (
-                    <span className="text-status-error text-xs font-bold">!</span>
+                  {isFailedStage ? (
+                    <XCircle className="w-4 h-4 text-status-error" />
                   ) : isJobCompleted || isCompleted ? (
                     <Check className="w-4 h-4 text-status-success" />
                   ) : isCurrent ? (
@@ -77,7 +81,8 @@ export function ProgressStepper({
                 <span
                   className={cn(
                     'mt-2 text-xs font-medium transition-colors',
-                    isJobFailed && isCurrent && 'text-status-error',
+                    isFailedStage && 'text-status-error',
+                    isJobFailed && isCompleted && !isCurrent && 'text-status-success',
                     (isJobCompleted || isCompleted) && !isJobFailed && 'text-status-success',
                     isCurrent && !isJobFailed && !isJobCompleted && 'text-accent-cyan',
                     isPending && !isJobCompleted && 'text-text-muted'
@@ -115,8 +120,12 @@ export function ProgressStepper({
 
       {/* Status Message and Time */}
       <div className="flex items-center justify-between text-sm">
-        <span className="text-text-secondary">
-          {statusMessage || currentStage?.description || 'Processing...'}
+        <span className={cn(
+          isJobFailed ? 'text-status-error' : 'text-text-secondary'
+        )}>
+          {isJobFailed
+            ? statusMessage || (currentStage ? `Failed at: ${currentStage.label}` : 'Failed')
+            : statusMessage || currentStage?.description || 'Processing...'}
         </span>
         <div className="flex items-center gap-2 text-text-muted">
           <Clock className="w-3.5 h-3.5" />
@@ -124,35 +133,37 @@ export function ProgressStepper({
         </div>
       </div>
 
-      {/* Progress Bar */}
-      <div className="h-1.5 bg-bg-elevated rounded-full overflow-hidden">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${progress}%` }}
-          transition={{
-            duration: prefersReducedMotion ? 0 : 0.5,
-            ease: 'easeOut'
-          }}
-          className={cn(
-            'h-full rounded-full',
-            isJobFailed
-              ? 'bg-status-error'
-              : isJobCompleted
-              ? 'bg-status-success'
-              : 'bg-gradient-to-r from-accent-cyan to-accent-violet'
-          )}
-        />
-      </div>
+      {/* Progress Bar - hidden for failed jobs */}
+      {!isJobFailed && (
+        <>
+          <div className="h-1.5 bg-bg-elevated rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{
+                duration: prefersReducedMotion ? 0 : 0.5,
+                ease: 'easeOut'
+              }}
+              className={cn(
+                'h-full rounded-full',
+                isJobCompleted
+                  ? 'bg-status-success'
+                  : 'bg-gradient-to-r from-accent-cyan to-accent-violet'
+              )}
+            />
+          </div>
 
-      {/* Progress Percentage */}
-      <div className="text-right">
-        <span className={cn(
-          'text-xs font-medium tabular-nums',
-          isJobFailed ? 'text-status-error' : isJobCompleted ? 'text-status-success' : 'text-text-secondary'
-        )}>
-          {progress}%
-        </span>
-      </div>
+          {/* Progress Percentage */}
+          <div className="text-right">
+            <span className={cn(
+              'text-xs font-medium tabular-nums',
+              isJobCompleted ? 'text-status-success' : 'text-text-secondary'
+            )}>
+              {progress}%
+            </span>
+          </div>
+        </>
+      )}
     </div>
   );
 }

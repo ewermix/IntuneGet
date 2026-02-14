@@ -57,8 +57,8 @@ interface PackagingJob {
   error_category?: string;
   error_code?: string;
   error_details?: Record<string, unknown>;
-  pipeline_run_id?: number;
-  pipeline_run_url?: string;
+  github_run_id?: number;
+  github_run_url?: string;
   intunewin_url?: string;
   intune_app_id?: string;
   intune_app_url?: string;
@@ -624,14 +624,15 @@ function UploadJobCard({
             </div>
           </div>
 
-          {/* Progress Stepper for active jobs */}
-          {isActive && (
+          {/* Progress Stepper for active and failed jobs */}
+          {(isActive || job.status === 'failed') && (
             <ProgressStepper
               progress={job.progress_percent}
               status={job.status}
               statusMessage={job.status_message}
               startTime={job.packaging_started_at || job.created_at}
-              endTime={null}
+              endTime={job.status === 'failed' ? job.completed_at : null}
+              errorStage={job.error_stage}
             />
           )}
 
@@ -757,10 +758,10 @@ function UploadJobCard({
           )}
 
           {/* Pipeline link */}
-          {job.pipeline_run_url && (
+          {job.github_run_url && (
             <div className="mt-2">
               <a
-                href={job.pipeline_run_url}
+                href={job.github_run_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-text-muted hover:text-text-secondary text-xs transition-colors"

@@ -1,0 +1,218 @@
+/**
+ * Intune App Settings API Route
+ * Updates assignments and categories on an existing Intune app without repackaging
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@/lib/supabase';
+import { resolveTargetTenantId } from '@/lib/msp/tenant-resolution';
+import {
+  getApp,
+  assignToGroups,
+  convertToGraphAssignments,
+  syncAppCategories,
+} from '@/lib/intune-api';
+import type { PackageAssignment, IntuneAppCategorySelection } from '@/types/upload';
+import type { Json } from '@/types/database';
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: intuneAppId } = await params;
+
+    // Get the authorization header
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Decode the token
+    const accessToken = authHeader.slice(7);
+    let tenantId: string;
+    let userId: string;
+
+    try {
+      const tokenPayload = JSON.parse(
+        Buffer.from(accessToken.split('.')[1], 'base64').toString()
+      );
+      userId = tokenPayload.oid || tokenPayload.sub;
+      tenantId = tokenPayload.tid;
+
+      if (!userId) {
+        return NextResponse.json(
+          { error: 'Invalid token: missing user identifier' },
+          { status: 401 }
+        );
+      }
+
+      if (!tenantId) {
+        return NextResponse.json(
+          { error: 'Invalid token: missing tenant identifier' },
+          { status: 401 }
+        );
+      }
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid token format' },
+        { status: 401 }
+      );
+    }
+
+    // Resolve tenant (MSP-aware)
+    const supabase = createServerClient();
+    const mspTenantId = request.headers.get('X-MSP-Tenant-Id');
+
+    const tenantResolution = await resolveTargetTenantId({
+      supabase,
+      userId,
+      tokenTenantId: tenantId,
+      requestedTenantId: mspTenantId,
+    });
+
+    if (tenantResolution.errorResponse) {
+      return tenantResolution.errorResponse;
+    }
+
+    tenantId = tenantResolution.tenantId;
+
+    // Verify admin consent
+    const { data: consentData, error: consentError } = await supabase
+      .from('tenant_consent')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .eq('is_active', true)
+      .single();
+
+    if (consentError || !consentData) {
+      return NextResponse.json(
+        { error: 'Admin consent not found. Please complete the admin consent flow.' },
+        { status: 403 }
+      );
+    }
+
+    // Get service principal token
+    const graphToken = await getServicePrincipalToken(tenantId);
+
+    if (!graphToken) {
+      return NextResponse.json(
+        { error: 'Failed to get Graph API token' },
+        { status: 500 }
+      );
+    }
+
+    // Verify the app still exists in Intune
+    const existingApp = await getApp(graphToken, intuneAppId);
+
+    if (!existingApp) {
+      return NextResponse.json(
+        { error: 'App not found in Intune. It may have been deleted. Try redeploying instead.' },
+        { status: 404 }
+      );
+    }
+
+    // Parse request body
+    const body = await request.json();
+    const {
+      assignments,
+      categories,
+      wingetId,
+    } = body as {
+      assignments?: PackageAssignment[];
+      categories?: IntuneAppCategorySelection[];
+      wingetId?: string;
+    };
+
+    // Apply assignments
+    if (assignments) {
+      const graphAssignments = convertToGraphAssignments(assignments);
+      await assignToGroups(graphToken, intuneAppId, graphAssignments);
+    }
+
+    // Sync categories
+    if (categories) {
+      await syncAppCategories(graphToken, intuneAppId, categories);
+    }
+
+    // Persist updated assignments/categories in the most recent packaging_jobs row
+    if (wingetId) {
+      const { data: latestJob } = await supabase
+        .from('packaging_jobs')
+        .select('id, package_config')
+        .eq('user_id', userId)
+        .eq('tenant_id', tenantId)
+        .eq('winget_id', wingetId)
+        .eq('status', 'deployed')
+        .order('completed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (latestJob?.package_config && typeof latestJob.package_config === 'object' && !Array.isArray(latestJob.package_config)) {
+        const updatedConfig: Record<string, Json | undefined> = {
+          ...(latestJob.package_config as Record<string, Json | undefined>),
+        };
+        if (assignments) {
+          updatedConfig.assignments = assignments as unknown as Json;
+        }
+        if (categories) {
+          updatedConfig.categories = categories as unknown as Json;
+        }
+        await supabase
+          .from('packaging_jobs')
+          .update({ package_config: updatedConfig })
+          .eq('id', latestJob.id);
+      }
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to update app settings';
+    return NextResponse.json(
+      { error: message },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Get access token for the service principal using client credentials flow
+ */
+async function getServicePrincipalToken(tenantId: string): Promise<string | null> {
+  const clientId = process.env.AZURE_CLIENT_ID || process.env.NEXT_PUBLIC_AZURE_AD_CLIENT_ID;
+  const clientSecret = process.env.AZURE_CLIENT_SECRET || process.env.AZURE_AD_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) {
+    return null;
+  }
+
+  try {
+    const tokenResponse = await fetch(
+      `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          client_id: clientId,
+          client_secret: clientSecret,
+          scope: 'https://graph.microsoft.com/.default',
+          grant_type: 'client_credentials',
+        }),
+      }
+    );
+
+    if (!tokenResponse.ok) {
+      return null;
+    }
+
+    const tokenData = await tokenResponse.json();
+    return tokenData.access_token;
+  } catch {
+    return null;
+  }
+}

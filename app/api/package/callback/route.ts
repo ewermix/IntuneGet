@@ -138,7 +138,6 @@ export async function POST(request: NextRequest) {
     if (data.status === 'failed') {
       updateData.error_message = data.message || 'Unknown error';
       updateData.completed_at = new Date().toISOString();
-      updateData.progress_percent = 0;
 
       // Save enhanced error fields if provided
       if (data.errorStage) {

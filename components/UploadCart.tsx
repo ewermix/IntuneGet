@@ -30,7 +30,7 @@ interface PackagingJob {
   winget_id: string;
   display_name: string;
   status: string;
-  pipeline_run_url?: string;
+  github_run_url?: string;
 }
 
 interface PackageApiResponse {
