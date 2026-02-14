@@ -166,16 +166,22 @@ export const sqliteDb: DatabaseAdapter = {
 
     /**
      * Get jobs by user ID
+     * Auto-excludes terminal-state jobs older than 7 days
      */
     async getByUserId(userId: string, limit: number = 50): Promise<PackagingJob[]> {
       const database = getDb();
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
       const stmt = database.prepare(`
         SELECT * FROM packaging_jobs
         WHERE user_id = ?
+        AND (
+          status IN ('queued', 'packaging', 'uploading')
+          OR created_at >= ?
+        )
         ORDER BY created_at DESC
         LIMIT ?
       `);
-      const rows = stmt.all(userId, limit) as Record<string, unknown>[];
+      const rows = stmt.all(userId, sevenDaysAgo, limit) as Record<string, unknown>[];
       return rows.map(parseJobRow);
     },
 
@@ -387,6 +393,47 @@ export const sqliteDb: DatabaseAdapter = {
       }
 
       return stats;
+    },
+
+    /**
+     * Delete a single job by ID
+     */
+    async deleteById(id: string): Promise<boolean> {
+      const database = getDb();
+      // Clear FK reference in msp_batch_deployment_items if the table exists
+      try {
+        database.prepare('UPDATE msp_batch_deployment_items SET packaging_job_id = NULL WHERE packaging_job_id = ?').run(id);
+      } catch {
+        // Table may not exist in self-hosted mode
+      }
+      const stmt = database.prepare('DELETE FROM packaging_jobs WHERE id = ?');
+      const result = stmt.run(id);
+      return result.changes > 0;
+    },
+
+    /**
+     * Bulk-delete jobs matching a user ID and a set of statuses
+     */
+    async deleteByUserIdAndStatuses(userId: string, statuses: string[]): Promise<number> {
+      const database = getDb();
+      const placeholders = statuses.map(() => '?').join(', ');
+      // Clear FK references in msp_batch_deployment_items if the table exists
+      try {
+        database.prepare(`
+          UPDATE msp_batch_deployment_items SET packaging_job_id = NULL
+          WHERE packaging_job_id IN (
+            SELECT id FROM packaging_jobs WHERE user_id = ? AND status IN (${placeholders})
+          )
+        `).run(userId, ...statuses);
+      } catch {
+        // Table may not exist in self-hosted mode
+      }
+      const stmt = database.prepare(`
+        DELETE FROM packaging_jobs
+        WHERE user_id = ? AND status IN (${placeholders})
+      `);
+      const result = stmt.run(userId, ...statuses);
+      return result.changes;
     },
   },
 

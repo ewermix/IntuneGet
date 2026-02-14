@@ -144,6 +144,17 @@ export interface DatabaseAdapter {
      * Get job statistics
      */
     getStats(): Promise<JobStats>;
+
+    /**
+     * Delete a single job by ID
+     */
+    deleteById(id: string): Promise<boolean>;
+
+    /**
+     * Bulk-delete jobs matching a user ID and a set of statuses
+     * Returns the number of deleted rows
+     */
+    deleteByUserIdAndStatuses(userId: string, statuses: string[]): Promise<number>;
   };
 
   uploadHistory: {

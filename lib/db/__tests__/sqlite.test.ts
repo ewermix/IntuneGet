@@ -307,6 +307,22 @@ function createTestAdapter(): DatabaseAdapter & { close: () => void } {
 
         return stats;
       },
+
+      async deleteById(id: string): Promise<boolean> {
+        const stmt = db.prepare('DELETE FROM packaging_jobs WHERE id = ?');
+        const result = stmt.run(id);
+        return result.changes > 0;
+      },
+
+      async deleteByUserIdAndStatuses(userId: string, statuses: string[]): Promise<number> {
+        const placeholders = statuses.map(() => '?').join(', ');
+        const stmt = db.prepare(`
+          DELETE FROM packaging_jobs
+          WHERE user_id = ? AND status IN (${placeholders})
+        `);
+        const result = stmt.run(userId, ...statuses);
+        return result.changes;
+      },
     },
 
     uploadHistory: {

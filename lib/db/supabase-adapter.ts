@@ -150,14 +150,20 @@ export const supabaseDb: DatabaseAdapter = {
 
     /**
      * Get jobs by user ID
+     * Auto-excludes terminal-state jobs older than 7 days
      */
     async getByUserId(userId: string, limit: number = 50): Promise<PackagingJob[]> {
       const supabase = createServerClient();
-      const query = getPackagingJobsQuery(supabase);
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const terminalStatuses = ['completed', 'deployed', 'failed', 'cancelled', 'duplicate_skipped'];
+      const activeStatuses = ['queued', 'packaging', 'uploading'];
 
-      const { data, error } = await query
+      // Fetch jobs: either active (any age) or terminal within last 7 days
+      const { data, error } = await supabase
+        .from('packaging_jobs')
         .select('*')
         .eq('user_id', userId)
+        .or(`status.in.(${activeStatuses.join(',')}),created_at.gte.${sevenDaysAgo}`)
         .order('created_at', { ascending: false })
         .limit(limit);
 
@@ -166,7 +172,7 @@ export const supabaseDb: DatabaseAdapter = {
         throw error;
       }
 
-      return data || [];
+      return (data as unknown as PackagingJob[]) || [];
     },
 
     /**
@@ -367,6 +373,76 @@ export const supabaseDb: DatabaseAdapter = {
       }
 
       return stats;
+    },
+
+    /**
+     * Delete a single job by ID.
+     * Clears FK references in msp_batch_deployment_items before deleting.
+     */
+    async deleteById(id: string): Promise<boolean> {
+      const supabase = createServerClient();
+
+      // Clear FK reference in msp_batch_deployment_items (no ON DELETE clause)
+      await supabase
+        .from('msp_batch_deployment_items')
+        .update({ packaging_job_id: null })
+        .eq('packaging_job_id', id);
+
+      const { error } = await supabase
+        .from('packaging_jobs')
+        .delete()
+        .eq('id', id);
+
+      if (isError(error)) {
+        console.error('Error deleting job:', error);
+        throw error;
+      }
+
+      return true;
+    },
+
+    /**
+     * Bulk-delete jobs matching a user ID and a set of statuses.
+     * Clears FK references in msp_batch_deployment_items before deleting.
+     */
+    async deleteByUserIdAndStatuses(userId: string, statuses: string[]): Promise<number> {
+      const supabase = createServerClient();
+
+      // Find IDs to delete first
+      const { data: jobsToDelete, error: fetchError } = await supabase
+        .from('packaging_jobs')
+        .select('id')
+        .eq('user_id', userId)
+        .in('status', statuses);
+
+      if (isError(fetchError)) {
+        console.error('Error fetching jobs for deletion:', fetchError);
+        throw fetchError;
+      }
+
+      const jobIds = (jobsToDelete as unknown as Array<{ id: string }>)?.map((j) => j.id) ?? [];
+      if (jobIds.length === 0) return 0;
+
+      // Clear FK references in msp_batch_deployment_items
+      await supabase
+        .from('msp_batch_deployment_items')
+        .update({ packaging_job_id: null })
+        .in('packaging_job_id', jobIds);
+
+      // Now delete the jobs
+      const { data, error } = await supabase
+        .from('packaging_jobs')
+        .delete()
+        .eq('user_id', userId)
+        .in('status', statuses)
+        .select('id');
+
+      if (isError(error)) {
+        console.error('Error bulk-deleting jobs:', error);
+        throw error;
+      }
+
+      return (data as unknown[])?.length ?? 0;
     },
   },
 

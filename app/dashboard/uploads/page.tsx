@@ -20,6 +20,7 @@ import {
   Users,
   Monitor,
   UserCircle,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -84,6 +85,7 @@ export default function UploadsPage() {
   const [error, setError] = useState<string | null>(null);
   const [cancellingJobId, setCancellingJobId] = useState<string | null>(null);
   const [redeployingJobId, setRedeployingJobId] = useState<string | null>(null);
+  const [isClearingHistory, setIsClearingHistory] = useState(false);
 
   // Get job IDs and status filter from URL params
   const highlightedJobIds = searchParams.get('jobs')?.split(',') || [];
@@ -150,7 +152,7 @@ export default function UploadsPage() {
     fetchJobs(true);
   };
 
-  const handleCancelJob = async (jobId: string) => {
+  const handleCancelJob = async (jobId: string, dismiss?: boolean) => {
     const accessToken = await getAccessToken();
     if (!accessToken) return;
 
@@ -162,7 +164,7 @@ export default function UploadsPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ jobId }),
+        body: JSON.stringify({ jobId, dismiss }),
       });
 
       if (!response.ok) {
@@ -181,6 +183,39 @@ export default function UploadsPage() {
       setError(err instanceof Error ? err.message : 'Failed to cancel job');
     } finally {
       setCancellingJobId(null);
+    }
+  };
+
+  const handleClearHistory = async () => {
+    const accessToken = await getAccessToken();
+    if (!accessToken) return;
+
+    setIsClearingHistory(true);
+    try {
+      const response = await fetch('/api/package/clear-history', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({}),
+      });
+
+      if (!response.ok) {
+        const contentType = response.headers.get('content-type');
+        if (contentType?.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to clear history');
+        }
+        throw new Error(`Failed to clear history (${response.status})`);
+      }
+
+      await fetchJobs();
+    } catch (err) {
+      console.error('Failed to clear history:', err);
+      setError(err instanceof Error ? err.message : 'Failed to clear history');
+    } finally {
+      setIsClearingHistory(false);
     }
   };
 
@@ -271,19 +306,53 @@ export default function UploadsPage() {
         gradient
         gradientColors="mixed"
         actions={
-          <Button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            variant="outline"
-            className="border-overlay/10 text-text-secondary hover:bg-overlay/5 hover:border-black/20"
-          >
-            {isRefreshing ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <RefreshCw className="w-4 h-4 mr-2" />
+          <div className="flex items-center gap-2">
+            {(stats.completed + stats.failed) > 0 && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    disabled={isClearingHistory}
+                    className="border-status-error/20 text-status-error hover:bg-status-error/10 hover:border-status-error/40"
+                  >
+                    {isClearingHistory ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4 mr-2" />
+                    )}
+                    Clear History
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Clear Upload History?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently remove all completed, failed, cancelled, and deployed jobs from your history. Active jobs (queued, packaging, uploading) will not be affected.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Keep History</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleClearHistory}>
+                      Clear All
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
-            Refresh
-          </Button>
+            <Button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              variant="outline"
+              className="border-overlay/10 text-text-secondary hover:bg-overlay/5 hover:border-black/20"
+            >
+              {isRefreshing ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4 mr-2" />
+              )}
+              Refresh
+            </Button>
+          </div>
         }
       />
 
@@ -428,7 +497,7 @@ function UploadJobCard({
   job: PackagingJob;
   index: number;
   isHighlighted?: boolean;
-  onCancel: (jobId: string) => void;
+  onCancel: (jobId: string, dismiss?: boolean) => void;
   isCancelling?: boolean;
   onForceRedeploy: (job: PackagingJob) => void;
   isRedeploying?: boolean;
@@ -599,7 +668,7 @@ function UploadJobCard({
                       </AlertDialogTitle>
                       <AlertDialogDescription>
                         {isDismissable
-                          ? `Are you sure you want to dismiss ${job.display_name} from your list? This will mark it as cancelled.`
+                          ? `Are you sure you want to dismiss ${job.display_name} from your list? This will permanently remove it.`
                           : `Are you sure you want to cancel the upload for ${job.display_name}? This action cannot be undone.`
                         }
                       </AlertDialogDescription>
@@ -608,7 +677,7 @@ function UploadJobCard({
                       <AlertDialogCancel>
                         {isDismissable ? 'Keep' : 'Keep Running'}
                       </AlertDialogCancel>
-                      <AlertDialogAction onClick={() => onCancel(job.id)}>
+                      <AlertDialogAction onClick={() => onCancel(job.id, isDismissable)}>
                         {isDismissable ? 'Dismiss' : 'Cancel Upload'}
                       </AlertDialogAction>
                     </AlertDialogFooter>

@@ -5,11 +5,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase';
+import { getDatabase } from '@/lib/db';
 import { cancelWorkflowRun, isGitHubActionsConfigured } from '@/lib/github-actions';
 import type { Database } from '@/types/database';
 
 interface CancelRequestBody {
   jobId: string;
+  dismiss?: boolean;
 }
 
 type PackagingJobRow = Database['public']['Tables']['packaging_jobs']['Row'];
@@ -59,7 +61,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body: CancelRequestBody = await request.json();
-    const { jobId } = body;
+    const { jobId, dismiss } = body;
 
     if (!jobId) {
       return NextResponse.json(
@@ -93,6 +95,19 @@ export async function POST(request: NextRequest) {
         { error: 'You do not have permission to cancel this job' },
         { status: 403 }
       );
+    }
+
+    // If dismiss flag is set and job is in a terminal state, delete the row
+    const terminalStatuses = ['completed', 'failed', 'cancelled', 'duplicate_skipped', 'deployed'];
+    if (dismiss && terminalStatuses.includes(typedJob.status)) {
+      const db = getDatabase();
+      await db.jobs.deleteById(jobId);
+      return NextResponse.json({
+        success: true,
+        message: 'Job dismissed and removed',
+        jobId,
+        deleted: true,
+      });
     }
 
     // Check if job is already cancelled or deployed (cannot be modified)
