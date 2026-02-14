@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Loader2, CheckCircle, XCircle, Mail, Shield } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Mail, Shield, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMicrosoftAuth } from '@/hooks/useMicrosoftAuth';
 import { getRoleDisplayName } from '@/lib/msp-permissions';
@@ -30,7 +30,7 @@ function AcceptInvitationContent() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const { isAuthenticated, signIn, getAccessToken } = useMicrosoftAuth();
+  const { isAuthenticated, user, signIn, signOut, getAccessToken } = useMicrosoftAuth();
 
   // Validate token on mount
   useEffect(() => {
@@ -99,7 +99,13 @@ function AcceptInvitationContent() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.message || data.error || 'Failed to accept invitation');
+        if (data.signed_in_as) {
+          setError(
+            `This invitation was sent to ${invitationInfo?.email}. You are currently signed in as ${data.signed_in_as}. Please sign out and sign in with the correct account.`
+          );
+        } else {
+          setError(data.message || data.error || 'Failed to accept invitation');
+        }
       } else {
         setSuccess(true);
         // Redirect to dashboard after 2 seconds
@@ -170,6 +176,19 @@ function AcceptInvitationContent() {
         </p>
       </div>
 
+      {/* Signed-in account indicator */}
+      {isAuthenticated && user?.email && (
+        <div className="bg-accent-cyan/5 border border-accent-cyan/20 rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            <User className="w-5 h-5 text-accent-cyan" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-text-muted">Signed in as</p>
+              <p className="font-medium text-text-primary truncate">{user.email}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Invitation details */}
       <div className="bg-overlay/5 rounded-xl p-4 space-y-3">
         <div className="flex items-center gap-3">
@@ -192,8 +211,17 @@ function AcceptInvitationContent() {
 
       {/* Error message */}
       {error && (
-        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
-          {error}
+        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl space-y-3">
+          <p className="text-red-400 text-sm">{error}</p>
+          {isAuthenticated && (
+            <button
+              onClick={() => signOut()}
+              className="flex items-center gap-2 text-sm text-text-muted hover:text-text-primary transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Sign out and try another account
+            </button>
+          )}
         </div>
       )}
 
@@ -237,7 +265,7 @@ function AcceptInvitationContent() {
 
       {/* Note about email matching */}
       <p className="text-xs text-text-muted text-center">
-        You must sign in with the same email address this invitation was sent to: <strong>{invitationInfo?.email}</strong>
+        Sign in with the Microsoft account associated with <strong>{invitationInfo?.email}</strong> to accept this invitation.
       </p>
     </div>
   );

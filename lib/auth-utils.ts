@@ -67,6 +67,60 @@ export async function parseAccessToken(authHeader: string | null): Promise<Token
 }
 
 /**
+ * Response from Microsoft Graph /me endpoint
+ */
+interface GraphMeResponse {
+  mail?: string | null;
+  userPrincipalName?: string | null;
+  otherMails?: (string | null)[];
+}
+
+/**
+ * Resolve all known email addresses for the signed-in user via Microsoft Graph API.
+ * Uses the user's delegated access token (User.Read scope) to call GET /me.
+ * Returns a Set of lowercased email addresses, or null if the Graph call fails.
+ */
+export async function resolveUserEmails(authHeader: string): Promise<Set<string> | null> {
+  try {
+    const response = await fetch(
+      'https://graph.microsoft.com/v1.0/me?$select=mail,userPrincipalName,otherMails',
+      {
+        headers: { Authorization: authHeader },
+      }
+    );
+
+    if (!response.ok) {
+      const errorBody = await response.text().catch(() => 'Unable to read error body');
+      console.warn(`Graph /me call failed with status ${response.status}: ${errorBody}`);
+      return null;
+    }
+
+    const data: GraphMeResponse = await response.json();
+
+    const emails = new Set<string>();
+
+    if (data.mail) {
+      emails.add(data.mail.toLowerCase());
+    }
+    if (data.userPrincipalName) {
+      emails.add(data.userPrincipalName.toLowerCase());
+    }
+    if (data.otherMails) {
+      for (const email of data.otherMails) {
+        if (email) {
+          emails.add(email.toLowerCase());
+        }
+      }
+    }
+
+    return emails.size > 0 ? emails : null;
+  } catch (error) {
+    console.warn('Failed to resolve user emails via Graph API:', error instanceof Error ? error.message : 'Unknown error');
+    return null;
+  }
+}
+
+/**
  * Get the secret key for signing state parameters
  * Falls back to a derived key from client secret if STATE_SECRET is not set
  */

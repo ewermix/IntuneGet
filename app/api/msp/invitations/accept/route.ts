@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase';
-import { parseAccessToken } from '@/lib/auth-utils';
+import { parseAccessToken, resolveUserEmails } from '@/lib/auth-utils';
 import { invitationTokenSchema, validateMspInput } from '@/lib/validators/msp';
 import {
   applyRateLimit,
@@ -87,12 +87,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify email matches (case-insensitive)
-    if (user.userEmail.toLowerCase() !== invitation.email.toLowerCase()) {
+    // Verify email matches using Graph API for reliable resolution
+    const invitationEmail = invitation.email.toLowerCase();
+    const authHeader = request.headers.get('Authorization')!;
+    const graphEmails = await resolveUserEmails(authHeader);
+
+    let emailMatch = false;
+
+    if (graphEmails) {
+      // Primary check: invitation email is in the Graph-resolved email set
+      emailMatch = graphEmails.has(invitationEmail);
+    } else {
+      // Fallback if Graph API fails: use token claim (original behavior)
+      emailMatch = user.userEmail.toLowerCase() === invitationEmail;
+    }
+
+    if (!emailMatch) {
       return NextResponse.json(
         {
           error: 'Email mismatch',
           message: `This invitation was sent to ${invitation.email}. Please sign in with that account.`,
+          signed_in_as: user.userEmail,
         },
         { status: 403 }
       );
@@ -132,13 +147,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Use the invitation email as user_email since we've confirmed the user owns it.
+    // This avoids storing a UPN (e.g. user@tenant.onmicrosoft.com) when the real
+    // email is different (e.g. user@company.com).
+    const resolvedEmail = invitation.email;
+
     // Add user to organization
     const { data: membership, error: membershipError } = await supabase
       .from('msp_user_memberships')
       .insert({
         msp_organization_id: invitation.organization_id,
         user_id: user.userId,
-        user_email: user.userEmail,
+        user_email: resolvedEmail,
         user_name: user.userName,
         user_tenant_id: user.tenantId,
         role: invitation.role,
