@@ -839,21 +839,6 @@ function UploadJobCard({
             </div>
           )}
 
-          {/* Pipeline link */}
-          {job.github_run_url && (
-            <div className="mt-2">
-              <a
-                href={job.github_run_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-text-muted hover:text-text-secondary text-xs transition-colors"
-              >
-                <ExternalLink className="w-3 h-3" />
-                View Pipeline Run
-              </a>
-            </div>
-          )}
-
           {/* Timestamps */}
           <div className="mt-4 flex items-center gap-4 text-xs text-text-muted">
             <span>Created: {new Date(job.created_at).toLocaleString()}</span>
