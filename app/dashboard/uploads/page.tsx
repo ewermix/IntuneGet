@@ -81,13 +81,19 @@ export default function UploadsPage() {
   const [jobs, setJobs] = useState<PackagingJob[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'failed'>('all');
   const [error, setError] = useState<string | null>(null);
   const [cancellingJobId, setCancellingJobId] = useState<string | null>(null);
   const [redeployingJobId, setRedeployingJobId] = useState<string | null>(null);
 
-  // Get job IDs from URL if present (from recent deployment)
+  // Get job IDs and status filter from URL params
   const highlightedJobIds = searchParams.get('jobs')?.split(',') || [];
+  const urlStatus = searchParams.get('status');
+  const initialFilter = (['all', 'active', 'completed', 'failed', 'pending'] as const).includes(
+    urlStatus as 'all' | 'active' | 'completed' | 'failed' | 'pending'
+  )
+    ? (urlStatus === 'pending' ? 'active' : urlStatus as 'all' | 'active' | 'completed' | 'failed')
+    : 'all';
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'failed'>(initialFilter);
 
   const fetchJobs = useCallback(async (showRefreshing = false) => {
     if (!user?.id) return;

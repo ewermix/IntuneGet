@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
 import { AlertCircle, RefreshCw, Package, Server, Building2, Clock, Shield } from 'lucide-react';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useInventoryApps } from '@/hooks/use-inventory';
 import { InventoryAppCard, InventoryAppDetails, InventoryFilters, InventoryListRow } from '@/components/inventory';
 import { PageHeader, AnimatedEmptyState, SkeletonGrid, AnimatedStatCard, StatCardGrid } from '@/components/dashboard';
+import { useUserSettings } from '@/components/providers/UserSettingsProvider';
 
 type SortBy = 'name' | 'publisher' | 'created' | 'modified';
 type SortOrder = 'asc' | 'desc';
@@ -19,7 +20,12 @@ export default function InventoryPage() {
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<SortBy>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const { settings: userSettings, setViewMode: persistViewMode } = useUserSettings();
+  const [viewMode, setViewModeLocal] = useState<'grid' | 'list'>(userSettings.viewMode);
+  const setViewMode = useCallback((mode: 'grid' | 'list') => {
+    setViewModeLocal(mode);
+    void persistViewMode(mode);
+  }, [persistViewMode]);
   const prefersReducedMotion = useReducedMotion();
 
   const apps = data?.apps || [];

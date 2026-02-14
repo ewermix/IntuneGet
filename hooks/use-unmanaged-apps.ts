@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useMicrosoftAuth } from '@/hooks/useMicrosoftAuth';
 import { useMspOptional } from '@/hooks/useMspOptional';
+import { useUserSettings } from '@/components/providers/UserSettingsProvider';
 import { useCartStore } from '@/stores/cart-store';
 import { generateDetectionRules, generateInstallCommand, generateUninstallCommand } from '@/lib/detection-rules';
 import { DEFAULT_PSADT_CONFIG, getDefaultProcessesToClose } from '@/types/psadt';
@@ -103,7 +104,12 @@ export function useUnmanagedApps(): UseUnmanagedAppsReturn {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [filters, setFilters] = useState<UnmanagedAppsFilters>(defaultFilters);
   const [permissionError, setPermissionError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const { settings: userSettings, setViewMode: persistViewMode } = useUserSettings();
+  const [viewMode, setViewModeLocal] = useState<ViewMode>(userSettings.viewMode);
+  const setViewMode = useCallback((mode: ViewMode) => {
+    setViewModeLocal(mode);
+    void persistViewMode(mode);
+  }, [persistViewMode]);
 
   // Modal state
   const [claimModalApp, setClaimModalApp] = useState<UnmanagedApp | null>(null);
@@ -186,9 +192,14 @@ export function useUnmanagedApps(): UseUnmanagedAppsReturn {
     return new Set(cartItems.map(item => item.wingetId));
   }, [cartItems]);
 
-  // Non-Microsoft apps (base filtering)
+  // Non-Microsoft apps (base filtering + dedup by discoveredAppId)
   const nonMicrosoftApps = useMemo(() => {
-    return apps.filter(app => !isMicrosoftApp(app));
+    const seen = new Set<string>();
+    return apps.filter(app => {
+      if (seen.has(app.discoveredAppId)) return false;
+      seen.add(app.discoveredAppId);
+      return !isMicrosoftApp(app);
+    });
   }, [apps]);
 
   // Filter and sort apps

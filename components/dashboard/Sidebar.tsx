@@ -7,7 +7,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   LayoutDashboard,
   Package,
-  Upload,
+  Rocket,
   Menu,
   X,
   Server,
@@ -50,14 +50,14 @@ type NavGroup = {
 const coreNav: NavItem[] = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
   { name: 'App Catalog', href: '/dashboard/apps', icon: Package },
-  { name: 'Unmanaged', href: '/dashboard/unmanaged', icon: Radar },
+  { name: 'Deployments', href: '/dashboard/uploads', icon: Rocket },
+  { name: 'Discovered Apps', href: '/dashboard/unmanaged', icon: Radar },
 ];
 
 const managementNav: NavItem[] = [
   { name: 'SCCM Migration', href: '/dashboard/sccm', icon: FolderSync },
   { name: 'Inventory', href: '/dashboard/inventory', icon: Server, badge: <UpdateBadge /> },
-  { name: 'Updates', href: '/dashboard/updates', icon: ArrowUpCircle },
-  { name: 'Uploads', href: '/dashboard/uploads', icon: Upload },
+  { name: 'App Updates', href: '/dashboard/updates', icon: ArrowUpCircle },
 ];
 
 const analyticsNav: NavItem[] = [

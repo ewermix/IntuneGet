@@ -1,10 +1,14 @@
 export type ThemeMode = "light" | "dark";
+export type ViewMode = "grid" | "list";
 
 export interface UserSettings {
   theme: ThemeMode;
   sidebarCollapsed: boolean;
   selectedTenantId: string | null;
   cartAutoOpenOnAdd: boolean;
+  viewMode: ViewMode;
+  quickStartDismissed: boolean;
+  onboardingCompleted: boolean;
 }
 
 export type UserSettingsUpdate = Partial<UserSettings>;
@@ -14,6 +18,9 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
   sidebarCollapsed: false,
   selectedTenantId: null,
   cartAutoOpenOnAdd: true,
+  viewMode: "grid",
+  quickStartDismissed: false,
+  onboardingCompleted: false,
 };
 
 export interface UserSettingsResponse {

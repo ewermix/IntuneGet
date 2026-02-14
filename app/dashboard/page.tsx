@@ -1,13 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
-import { Package, Upload, Clock, ArrowRight, AlertCircle, CheckCircle2, Loader2, Zap } from 'lucide-react';
+import {
+  Package,
+  Upload,
+  Clock,
+  ArrowRight,
+  AlertCircle,
+  CheckCircle2,
+  Loader2,
+  Zap,
+  X,
+  KeyRound,
+  Rocket,
+  RotateCcw,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMicrosoftAuth } from '@/hooks/useMicrosoftAuth';
 import { AdminConsentBanner } from '@/components/AdminConsentBanner';
 import { useDashboardStats } from '@/hooks/useAnalytics';
-import { RecentActivityList } from '@/components/dashboard';
+import { useOnboardingStatus } from '@/hooks/useOnboardingStatus';
+import { RecentActivityList, PageHeader } from '@/components/dashboard';
+import { useUserSettings } from '@/components/providers/UserSettingsProvider';
 
 function getTimeBasedGreeting(): string {
   const hour = new Date().getHours();
@@ -19,6 +34,8 @@ function getTimeBasedGreeting(): string {
 export default function DashboardPage() {
   const { user } = useMicrosoftAuth();
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { errorType } = useOnboardingStatus();
+  const { settings, setQuickStartDismissed } = useUserSettings();
   const [mounted, setMounted] = useState(false);
   const [greeting, setGreeting] = useState('Welcome back');
 
@@ -27,23 +44,115 @@ export default function DashboardPage() {
     setGreeting(getTimeBasedGreeting());
   }, []);
 
+  const handleDismissQuickStart = async () => {
+    await setQuickStartDismissed(true);
+  };
+
+  // Build attention items
+  const attentionItems = useMemo(() => {
+    const items: Array<{
+      id: string;
+      icon: React.ElementType;
+      title: string;
+      description: string;
+      href: string;
+      actionLabel: string;
+      color: 'error' | 'warning' | 'cyan';
+    }> = [];
+
+    if (stats && stats.failed > 0) {
+      items.push({
+        id: 'failed-deployments',
+        icon: AlertCircle,
+        title: `${stats.failed} failed deployment${stats.failed !== 1 ? 's' : ''}`,
+        description: 'Review failed deployments and take action',
+        href: '/dashboard/uploads?status=failed',
+        actionLabel: 'View Details',
+        color: 'error',
+      });
+    }
+
+    if (errorType === 'network_error' || errorType === 'missing_credentials') {
+      items.push({
+        id: 'token-warning',
+        icon: KeyRound,
+        title: 'Connection issue detected',
+        description: errorType === 'missing_credentials'
+          ? 'Server configuration issue. Contact your administrator.'
+          : 'Unable to verify organization setup. Check your connection.',
+        href: '/dashboard/settings',
+        actionLabel: 'Settings',
+        color: 'warning',
+      });
+    }
+
+    return items;
+  }, [stats, errorType]);
+
   return (
     <div className="space-y-8">
-      {/* Welcome header */}
-      <div className={mounted ? 'animate-fade-up stagger-1' : 'opacity-0'}>
-        <h1 className="text-display-sm text-text-primary">
-          {greeting},{' '}
-          <span className="gradient-text-cyan">{user?.name?.split(' ')[0] || 'User'}</span>
-        </h1>
-        <p className="text-text-secondary mt-2">
-          Deploy Windows applications to Intune with precision and ease
-        </p>
-      </div>
+      {/* Welcome header using PageHeader */}
+      <PageHeader
+        title={`${greeting}, ${user?.name?.split(' ')[0] || 'User'}`}
+        description="Deploy Windows applications to Intune with precision and ease"
+        gradient
+        gradientColors="cyan"
+      />
 
-      {/* Admin consent banner - shows if consent hasn't been granted */}
+      {/* Admin consent banner */}
       <AdminConsentBanner />
 
-      {/* Stat cards with staggered animation */}
+      {/* Needs Attention section */}
+      {attentionItems.length > 0 && (
+        <div className={mounted ? 'animate-fade-up stagger-1' : 'opacity-0'}>
+          <div className="space-y-3">
+            {attentionItems.map((item) => {
+              const colorMap = {
+                error: {
+                  border: 'border-l-status-error',
+                  bg: 'from-status-error/5',
+                  iconColor: 'text-status-error',
+                },
+                warning: {
+                  border: 'border-l-status-warning',
+                  bg: 'from-status-warning/5',
+                  iconColor: 'text-status-warning',
+                },
+                cyan: {
+                  border: 'border-l-accent-cyan',
+                  bg: 'from-accent-cyan/5',
+                  iconColor: 'text-accent-cyan',
+                },
+              };
+              const colors = colorMap[item.color];
+              return (
+                <div
+                  key={item.id}
+                  className={`glass-light rounded-xl p-4 border-l-4 ${colors.border} border-t border-r border-b border-black/[0.08] bg-gradient-to-r ${colors.bg} to-transparent`}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <item.icon className={`w-5 h-5 ${colors.iconColor} flex-shrink-0`} />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-text-primary">{item.title}</p>
+                        <p className="text-xs text-text-muted">{item.description}</p>
+                      </div>
+                    </div>
+                    <Link href={item.href}>
+                      <Button size="sm" variant="ghost" className="text-text-secondary hover:text-text-primary flex-shrink-0">
+                        {item.actionLabel}
+                        <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Stat cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Deployed"
@@ -71,6 +180,7 @@ export default function DashboardPage() {
           loading={statsLoading}
           mounted={mounted}
           delay={3}
+          href="/dashboard/uploads?status=pending"
         />
         <StatCard
           title="Failed"
@@ -80,51 +190,119 @@ export default function DashboardPage() {
           loading={statsLoading}
           mounted={mounted}
           delay={4}
+          href="/dashboard/uploads?status=failed"
         />
       </div>
 
       {/* Main content grid */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Quick start */}
-        <div className={`glass-light rounded-xl p-6 ${mounted ? 'animate-fade-up stagger-5' : 'opacity-0'}`}>
-          <div className="flex items-center gap-2 mb-6">
-            <Zap className="w-5 h-5 text-accent-cyan" />
-            <h2 className="text-lg font-semibold text-text-primary">Quick Start</h2>
-          </div>
-
-          {/* Timeline with gradient line */}
-          <div className="relative">
-            {/* Gradient connecting line */}
-            <div className="absolute left-4 top-8 bottom-8 w-px bg-gradient-to-b from-accent-cyan via-accent-violet to-accent-cyan/20" />
-
-            <div className="space-y-4">
-              <QuickStartStep
-                number={1}
-                title="Browse the App Catalog"
-                description="Search from 10,000+ Winget packages"
-                href="/dashboard/apps"
-              />
-              <QuickStartStep
-                number={2}
-                title="Configure & Add to Cart"
-                description="Select architecture, scope, and detection rules"
-              />
-              <QuickStartStep
-                number={3}
-                title="Deploy to Intune"
-                description="One-click deployment to your tenant"
-              />
+        {/* Quick start - dismissible */}
+        {!settings.quickStartDismissed && (
+          <div className={`glass-light rounded-xl p-6 ${mounted ? 'animate-fade-up stagger-5' : 'opacity-0'}`}>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <Zap className="w-5 h-5 text-accent-cyan" />
+                <h2 className="text-lg font-semibold text-text-primary">Quick Start</h2>
+              </div>
+              <button
+                onClick={handleDismissQuickStart}
+                className="text-text-muted hover:text-text-primary transition-colors p-1 rounded-lg hover:bg-overlay/5"
+                aria-label="Dismiss Quick Start"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
-          </div>
 
-          <Link href="/dashboard/apps">
-            <Button className="w-full mt-6 bg-gradient-to-r from-accent-cyan to-accent-violet hover:opacity-90 text-bg-elevated border-0 shadow-glow-cyan">
-              <Package className="w-4 h-4 mr-2" />
-              Browse App Catalog
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </Link>
-        </div>
+            <div className="relative">
+              <div className="absolute left-4 top-8 bottom-8 w-px bg-gradient-to-b from-accent-cyan via-accent-violet to-accent-cyan/20" />
+
+              <div className="space-y-4">
+                <QuickStartStep
+                  number={1}
+                  title="Browse the App Catalog"
+                  description="Search from 10,000+ Winget packages"
+                  href="/dashboard/apps"
+                />
+                <QuickStartStep
+                  number={2}
+                  title="Configure & Add to Cart"
+                  description="Select architecture, scope, and detection rules"
+                />
+                <QuickStartStep
+                  number={3}
+                  title="Deploy to Intune"
+                  description="One-click deployment to your tenant"
+                />
+              </div>
+            </div>
+
+            <Link href="/dashboard/apps">
+              <Button className="w-full mt-6 bg-gradient-to-r from-accent-cyan to-accent-violet hover:opacity-90 text-bg-elevated border-0 shadow-glow-cyan">
+                <Package className="w-4 h-4 mr-2" />
+                Browse App Catalog
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+          </div>
+        )}
+
+        {/* Frequently deployed - shown when Quick Start is dismissed */}
+        {settings.quickStartDismissed && stats?.frequentlyDeployed && stats.frequentlyDeployed.length > 0 && (
+          <div className={`glass-light rounded-xl p-6 ${mounted ? 'animate-fade-up stagger-5' : 'opacity-0'}`}>
+            <div className="flex items-center gap-2 mb-6">
+              <Rocket className="w-5 h-5 text-accent-cyan" />
+              <h2 className="text-lg font-semibold text-text-primary">Frequently Deployed</h2>
+            </div>
+
+            <div className="space-y-3">
+              {stats.frequentlyDeployed.slice(0, 5).map((app) => (
+                <Link
+                  key={app.winget_id}
+                  href={`/dashboard/apps?search=${encodeURIComponent(app.winget_id)}`}
+                  className="flex items-center justify-between p-3 rounded-lg hover:bg-overlay/5 transition-all group"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-accent-cyan/10 flex items-center justify-center flex-shrink-0">
+                      <Package className="w-4 h-4 text-accent-cyan" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-text-primary truncate group-hover:text-accent-cyan-bright transition-colors">
+                        {app.display_name}
+                      </p>
+                      <p className="text-xs text-text-muted">{app.deploy_count} deployments</p>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="ghost" className="text-text-muted hover:text-accent-cyan flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+                    Redeploy
+                  </Button>
+                </Link>
+              ))}
+            </div>
+
+            <Link href="/dashboard/apps">
+              <Button variant="ghost" className="w-full mt-4 text-text-secondary hover:text-text-primary">
+                Browse All Apps
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+          </div>
+        )}
+
+        {/* If Quick Start dismissed but no frequent apps, show browse CTA */}
+        {settings.quickStartDismissed && (!stats?.frequentlyDeployed || stats.frequentlyDeployed.length === 0) && (
+          <div className={`glass-light rounded-xl p-6 flex flex-col items-center justify-center text-center ${mounted ? 'animate-fade-up stagger-5' : 'opacity-0'}`}>
+            <Package className="w-10 h-10 text-accent-cyan/40 mb-3" />
+            <h3 className="text-text-primary font-medium mb-1">Start deploying</h3>
+            <p className="text-text-muted text-sm mb-4">Browse the App Catalog to deploy your first packages</p>
+            <Link href="/dashboard/apps">
+              <Button className="bg-gradient-to-r from-accent-cyan to-accent-violet hover:opacity-90 text-bg-elevated border-0">
+                <Package className="w-4 h-4 mr-2" />
+                Browse App Catalog
+              </Button>
+            </Link>
+          </div>
+        )}
 
         {/* Recent activity */}
         <div className={`glass-light rounded-xl p-6 ${mounted ? 'animate-fade-up stagger-6' : 'opacity-0'}`}>
@@ -148,23 +326,18 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Intune connection status */}
-      <div className={`glass-light rounded-xl p-6 border-glow-cyan ${mounted ? 'animate-fade-up animation-delay-300' : 'opacity-0'}`}>
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-lg bg-status-success/10 flex items-center justify-center">
-            <CheckCircle2 className="w-6 h-6 text-status-success" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-text-primary font-medium">Connected to Microsoft Intune</h3>
-            <p className="text-text-secondary text-sm mt-1">
-              Tenant: <span className="text-mono text-accent-cyan">{user?.tenantId || 'Not connected'}</span>
-            </p>
-            <p className="text-text-muted text-sm">
-              Signed in as: {user?.email}
-            </p>
+      {/* Intune connection status - compact, only show when connected */}
+      <div className={`glass-light rounded-xl p-4 ${mounted ? 'animate-fade-up animation-delay-300' : 'opacity-0'}`}>
+        <div className="flex items-center gap-3">
+          <CheckCircle2 className="w-5 h-5 text-status-success flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <span className="text-text-primary text-sm font-medium">Connected to Microsoft Intune</span>
+            <span className="text-text-muted text-sm ml-2">
+              {user?.email}
+            </span>
           </div>
           <Link href="/dashboard/settings">
-            <Button variant="outline" size="sm" className="border-overlay/10 text-text-secondary hover:bg-overlay/5 hover:border-accent-cyan/50">
+            <Button variant="ghost" size="sm" className="text-text-muted hover:text-text-primary text-xs">
               Settings
             </Button>
           </Link>
@@ -182,6 +355,7 @@ function StatCard({
   loading,
   mounted,
   delay,
+  href,
 }: {
   title: string;
   value: number;
@@ -190,6 +364,7 @@ function StatCard({
   loading?: boolean;
   mounted?: boolean;
   delay?: number;
+  href?: string;
 }) {
   const colorClasses = {
     cyan: {
@@ -220,17 +395,17 @@ function StatCard({
 
   const classes = colorClasses[color];
 
-  return (
+  const content = (
     <div
-      className={`group glass-light rounded-xl p-6 card-hover-light contain-layout ${mounted ? `animate-fade-up stagger-${delay}` : 'opacity-0'}`}
+      className={`group glass-light rounded-xl p-5 card-hover-light contain-layout ${href ? 'cursor-pointer' : ''} ${mounted ? `animate-fade-up stagger-${delay}` : 'opacity-0'}`}
     >
-      <div className="flex items-center gap-4">
-        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${classes.bg} transition-all ${classes.glow}`}>
-          <Icon className={`w-6 h-6 ${classes.text}`} />
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${classes.bg} transition-all ${classes.glow}`}>
+          <Icon className={`w-5 h-5 ${classes.text}`} />
         </div>
         <div>
           {loading ? (
-            <Loader2 className="w-6 h-6 text-text-secondary animate-spin" />
+            <Loader2 className="w-5 h-5 text-text-secondary animate-spin" />
           ) : (
             <p className="text-2xl font-bold text-text-primary">{value}</p>
           )}
@@ -239,6 +414,12 @@ function StatCard({
       </div>
     </div>
   );
+
+  if (href) {
+    return <Link href={href}>{content}</Link>;
+  }
+
+  return content;
 }
 
 function QuickStartStep({
@@ -254,7 +435,6 @@ function QuickStartStep({
 }) {
   const content = (
     <div className="group relative flex items-start gap-4 p-3 rounded-lg hover:bg-overlay/5 transition-all cursor-pointer">
-      {/* Step number with gradient */}
       <div className="relative z-10 w-8 h-8 rounded-full bg-gradient-to-br from-accent-cyan to-accent-violet text-bg-elevated flex items-center justify-center font-medium text-sm flex-shrink-0 shadow-glow-cyan">
         {number}
       </div>

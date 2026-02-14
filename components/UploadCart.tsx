@@ -24,6 +24,7 @@ import { usePermissionStatus } from '@/hooks/usePermissionStatus';
 import { useMspOptional } from '@/hooks/useMspOptional';
 import { trackDeployment } from '@/hooks/useLandingStats';
 import { PermissionStatusIndicator } from '@/components/PermissionStatusIndicator';
+import { toast } from 'sonner';
 
 interface PackagingJob {
   id: string;
@@ -130,10 +131,17 @@ export function UploadCart() {
         throw new Error(data.message || 'No jobs were created');
       }
 
-      // Success - clear cart and navigate to uploads page
+      // Success - clear cart, show toast, navigate
+      const jobCount = data.jobs.length;
       const jobIds = data.jobs.map((job) => job.id).join(',');
       clearCart();
       closeCart();
+      toast.success(`${jobCount} deployment${jobCount !== 1 ? 's' : ''} started`, {
+        action: {
+          label: 'View Progress',
+          onClick: () => router.push(`/dashboard/uploads?jobs=${jobIds}`),
+        },
+      });
       router.push(`/dashboard/uploads?jobs=${jobIds}`);
     } catch (err) {
       console.error('Deploy error:', err);

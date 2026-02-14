@@ -14,6 +14,8 @@ export {
 } from './SkeletonCard';
 export { PageHeader, SectionHeader, CardHeader } from './PageHeader';
 export { RecentActivityList } from './RecentActivityList';
+export { DeploymentStatusIndicator } from './DeploymentStatusIndicator';
+export { ErrorBoundary } from './ErrorBoundary';
 
 // Sidebar
 export { Sidebar } from './Sidebar';

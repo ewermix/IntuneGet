@@ -14,6 +14,17 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { PageHeader, AnimatedStatCard, StatCardGrid, AnimatedEmptyState } from '@/components/dashboard';
 import { UpdateCard, UpdateCardSkeleton, AutoUpdateHistory } from '@/components/updates';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -185,7 +196,7 @@ export default function UpdatesPage() {
     <div className="space-y-6">
       {/* Header */}
       <PageHeader
-        title="Updates"
+        title="App Updates"
         description="Manage app updates and auto-update policies"
         gradient
         gradientColors="cyan"
@@ -208,12 +219,45 @@ export default function UpdatesPage() {
               Refresh
             </Button>
             {filteredUpdates.length > 0 && (
-              <Button
-                onClick={handleBulkUpdate}
-                className="bg-accent-cyan hover:bg-accent-cyan-bright text-bg-deepest font-medium"
-              >
-                Update All ({filteredUpdates.length})
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button className="bg-accent-cyan hover:bg-accent-cyan-bright text-bg-deepest font-medium">
+                    Update All ({filteredUpdates.length})
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="bg-bg-surface border-overlay/10">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-text-primary">
+                      Update {filteredUpdates.filter(u => u.policy?.policy_type !== 'ignore' && u.policy?.policy_type !== 'pin_version').length} apps?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription className="text-text-secondary">
+                      <span className="block mb-2">
+                        This will trigger updates for the following apps:
+                      </span>
+                      <span className="block max-h-40 overflow-y-auto space-y-1">
+                        {filteredUpdates
+                          .filter(u => u.policy?.policy_type !== 'ignore' && u.policy?.policy_type !== 'pin_version')
+                          .map(u => (
+                            <span key={u.id} className="block text-sm text-text-muted">
+                              {u.display_name} ({u.current_version} → {u.latest_version})
+                            </span>
+                          ))}
+                      </span>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="border-overlay/10 text-text-secondary hover:bg-overlay/5">
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleBulkUpdate}
+                      className="bg-accent-cyan hover:bg-accent-cyan-bright text-bg-deepest font-medium"
+                    >
+                      Update All
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
           </div>
         }

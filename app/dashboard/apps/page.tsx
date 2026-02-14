@@ -36,6 +36,7 @@ import { useDeployedPackages } from '@/hooks/use-deployed-packages';
 import { useDeployedConfig } from '@/hooks/use-deployed-config';
 import type { NormalizedPackage } from '@/types/winget';
 import { getCategoryLabel } from '@/lib/category-utils';
+import { useUserSettings } from '@/components/providers/UserSettingsProvider';
 
 const PREFERRED_COLLECTION_CATEGORIES = [
   'developer-tools',
@@ -66,7 +67,8 @@ export default function AppCatalogPage() {
   const [selectedPackage, setSelectedPackage] = useState<NormalizedPackage | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'popular' | 'name' | 'newest'>('popular');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const { settings: userSettings, setViewMode: persistViewMode } = useUserSettings();
+  const [viewMode, setViewModeLocal] = useState<'grid' | 'list'>(userSettings.viewMode);
   const [mounted, setMounted] = useState(false);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [isSortSectionOpen, setIsSortSectionOpen] = useState(true);
@@ -79,6 +81,11 @@ export default function AppCatalogPage() {
     selectedCategory: null as string | null,
     hasSearched: false,
   });
+
+  const setViewMode = useCallback((mode: 'grid' | 'list') => {
+    setViewModeLocal(mode);
+    void persistViewMode(mode);
+  }, [persistViewMode]);
 
   useEffect(() => {
     setMounted(true);

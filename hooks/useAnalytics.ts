@@ -13,12 +13,19 @@ export interface RecentActivityItem {
   intuneAppUrl?: string;
 }
 
+export interface FrequentlyDeployedApp {
+  winget_id: string;
+  display_name: string;
+  deploy_count: number;
+}
+
 export interface DashboardStats {
   totalDeployed: number;
   thisMonth: number;
   pending: number;
   failed: number;
   recentActivity: RecentActivityItem[];
+  frequentlyDeployed?: FrequentlyDeployedApp[];
 }
 
 export interface DailyDeployment {

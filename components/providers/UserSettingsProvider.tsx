@@ -16,6 +16,7 @@ import { getUserSettings, patchUserSettings } from "@/lib/user-settings";
 import {
   DEFAULT_USER_SETTINGS,
   type ThemeMode,
+  type ViewMode,
   type UserSettings,
   type UserSettingsUpdate,
 } from "@/types/user-settings";
@@ -30,6 +31,9 @@ type UserSettingsContextValue = {
   setSidebarCollapsed: (collapsed: boolean) => Promise<void>;
   setSelectedTenantId: (tenantId: string | null) => Promise<void>;
   setCartAutoOpenOnAdd: (enabled: boolean) => Promise<void>;
+  setViewMode: (mode: ViewMode) => Promise<void>;
+  setQuickStartDismissed: (dismissed: boolean) => Promise<void>;
+  setOnboardingCompleted: (completed: boolean) => Promise<void>;
 };
 
 const UserSettingsContext = createContext<UserSettingsContextValue | null>(null);
@@ -38,6 +42,9 @@ const THEME_KEY = "intuneget-theme";
 const SIDEBAR_COLLAPSE_KEY = "intuneget-sidebar-collapsed";
 const CART_KEY = "intuneget-cart";
 const SELECTED_TENANT_KEY = "msp_selected_tenant_id";
+const VIEW_MODE_KEY = "intuneget-view-mode";
+const QUICK_START_DISMISSED_KEY = "intuneget-quick-start-dismissed";
+const ONBOARDING_COMPLETED_KEY = "intuneget-onboarding-completed";
 
 function isThemeMode(value: unknown): value is ThemeMode {
   return value === "light" || value === "dark";
@@ -123,12 +130,18 @@ function readLegacyUserSettings(): {
   const sidebarValue = readBooleanStorageValue(SIDEBAR_COLLAPSE_KEY);
   const selectedTenant = window.localStorage.getItem(SELECTED_TENANT_KEY);
   const cartAutoOpenOnAdd = readLegacyCartAutoOpenOnAdd();
+  const viewModeValue = window.localStorage.getItem(VIEW_MODE_KEY);
+  const quickStartDismissedValue = readBooleanStorageValue(QUICK_START_DISMISSED_KEY);
+  const onboardingCompletedValue = readBooleanStorageValue(ONBOARDING_COMPLETED_KEY);
 
   const hasTheme = isThemeMode(themeValue);
   const fallbackTheme = getSystemPrefersDark() ? "dark" : DEFAULT_USER_SETTINGS.theme;
   const hasSidebarCollapsed = sidebarValue !== null;
   const hasSelectedTenantId = !!selectedTenant;
   const hasCartAutoOpenOnAdd = cartAutoOpenOnAdd !== null;
+  const hasViewMode = viewModeValue === "grid" || viewModeValue === "list";
+  const hasQuickStartDismissed = quickStartDismissedValue !== null;
+  const hasOnboardingCompleted = onboardingCompletedValue !== null;
 
   return {
     settings: {
@@ -137,6 +150,9 @@ function readLegacyUserSettings(): {
       ...(hasSidebarCollapsed ? { sidebarCollapsed: sidebarValue === true } : {}),
       ...(hasSelectedTenantId ? { selectedTenantId: selectedTenant } : {}),
       ...(hasCartAutoOpenOnAdd ? { cartAutoOpenOnAdd } : {}),
+      ...(hasViewMode ? { viewMode: viewModeValue as "grid" | "list" } : {}),
+      ...(hasQuickStartDismissed ? { quickStartDismissed: quickStartDismissedValue === true } : {}),
+      ...(hasOnboardingCompleted ? { onboardingCompleted: onboardingCompletedValue === true } : {}),
     },
     hasTheme,
     hasSidebarCollapsed,
@@ -210,6 +226,18 @@ function persistLocally(update: UserSettingsUpdate) {
 
   if (update.cartAutoOpenOnAdd !== undefined) {
     writeCartAutoOpenSetting(update.cartAutoOpenOnAdd);
+  }
+
+  if (update.viewMode) {
+    writeStringSetting(VIEW_MODE_KEY, update.viewMode);
+  }
+
+  if (update.quickStartDismissed !== undefined) {
+    writeBooleanSetting(QUICK_START_DISMISSED_KEY, update.quickStartDismissed);
+  }
+
+  if (update.onboardingCompleted !== undefined) {
+    writeBooleanSetting(ONBOARDING_COMPLETED_KEY, update.onboardingCompleted);
   }
 }
 
@@ -381,6 +409,27 @@ export function UserSettingsProvider({ children }: { children: ReactNode }) {
     [updateSettings]
   );
 
+  const setViewMode = useCallback(
+    async (viewMode: ViewMode) => {
+      await updateSettings({ viewMode });
+    },
+    [updateSettings]
+  );
+
+  const setQuickStartDismissed = useCallback(
+    async (quickStartDismissed: boolean) => {
+      await updateSettings({ quickStartDismissed });
+    },
+    [updateSettings]
+  );
+
+  const setOnboardingCompleted = useCallback(
+    async (onboardingCompleted: boolean) => {
+      await updateSettings({ onboardingCompleted });
+    },
+    [updateSettings]
+  );
+
   const value = useMemo<UserSettingsContextValue>(
     () => ({
       settings,
@@ -392,6 +441,9 @@ export function UserSettingsProvider({ children }: { children: ReactNode }) {
       setSidebarCollapsed,
       setSelectedTenantId,
       setCartAutoOpenOnAdd,
+      setViewMode,
+      setQuickStartDismissed,
+      setOnboardingCompleted,
     }),
     [
       hasStoredSettings,
@@ -402,6 +454,9 @@ export function UserSettingsProvider({ children }: { children: ReactNode }) {
       setSidebarCollapsed,
       setSelectedTenantId,
       setCartAutoOpenOnAdd,
+      setViewMode,
+      setQuickStartDismissed,
+      setOnboardingCompleted,
       syncError,
     ]
   );

@@ -20,6 +20,10 @@ function isStoredSettings(value: unknown): value is Record<string, unknown> {
   );
 }
 
+function isViewMode(value: unknown): value is UserSettings['viewMode'] {
+  return value === 'grid' || value === 'list';
+}
+
 function sanitizeSettings(payload: Record<string, unknown>): UserSettingsUpdate {
   const updates: UserSettingsUpdate = {};
 
@@ -37,6 +41,18 @@ function sanitizeSettings(payload: Record<string, unknown>): UserSettingsUpdate 
 
   if (isBoolean(payload.cartAutoOpenOnAdd)) {
     updates.cartAutoOpenOnAdd = payload.cartAutoOpenOnAdd;
+  }
+
+  if (isViewMode(payload.viewMode)) {
+    updates.viewMode = payload.viewMode;
+  }
+
+  if (isBoolean(payload.quickStartDismissed)) {
+    updates.quickStartDismissed = payload.quickStartDismissed;
+  }
+
+  if (isBoolean(payload.onboardingCompleted)) {
+    updates.onboardingCompleted = payload.onboardingCompleted;
   }
 
   return updates;

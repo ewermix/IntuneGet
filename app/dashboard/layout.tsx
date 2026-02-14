@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
   ShoppingCart,
@@ -10,15 +10,18 @@ import {
   Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Toaster } from 'sonner';
 import { useCartStore } from '@/stores/cart-store';
 import { useSidebarStore } from '@/stores/sidebar-store';
 import { useProfileStore } from '@/stores/profile-store';
 import { useMicrosoftAuth } from '@/hooks/useMicrosoftAuth';
 import { useOnboardingStatus } from '@/hooks/useOnboardingStatus';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { TenantSwitcher } from '@/components/msp';
 import { UploadCart } from '@/components/UploadCart';
 import { NotificationBell } from '@/components/notifications';
-import { Sidebar } from '@/components/dashboard';
+import { Sidebar, DeploymentStatusIndicator } from '@/components/dashboard';
+import { CommandPalette } from '@/components/dashboard/CommandPalette';
 import { springPresets } from '@/lib/animations/variants';
 
 export default function DashboardLayout({
@@ -40,15 +43,21 @@ export default function DashboardLayout({
   const [isLoading, setIsLoading] = useState(true);
   const [showRetryBanner, setShowRetryBanner] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const cartItemCount = useCartStore((state) => state.getItemCount());
   const toggleCart = useCartStore((state) => state.toggleCart);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
+  const handleOpenCommandPalette = useCallback(() => {
+    setCommandPaletteOpen(true);
+  }, []);
 
-    return () => clearTimeout(timer);
+  useKeyboardShortcuts({
+    onCommandPalette: handleOpenCommandPalette,
+    onToggleCart: toggleCart,
+  });
+
+  useEffect(() => {
+    setIsLoading(false);
   }, []);
 
   useEffect(() => {
@@ -131,10 +140,21 @@ export default function DashboardLayout({
         {/* Top bar */}
         <header className="sticky top-0 z-30 h-16 glass-light">
           <div className="flex items-center justify-between h-full px-4 lg:px-6">
-            <div className="flex-1 lg:flex-none" />
+            {/* Command palette trigger */}
+            <button
+              onClick={handleOpenCommandPalette}
+              className="hidden lg:flex items-center gap-2 px-3 py-1.5 text-sm text-text-muted hover:text-text-secondary bg-overlay/[0.03] hover:bg-overlay/5 rounded-lg border border-overlay/5 transition-colors"
+            >
+              <span>Search...</span>
+              <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium bg-overlay/10 rounded border border-overlay/5">
+                <span className="text-xs">Cmd</span>K
+              </kbd>
+            </button>
+            <div className="flex-1 lg:hidden" />
 
             <div className="flex items-center gap-3">
               <TenantSwitcher />
+              <DeploymentStatusIndicator />
               <NotificationBell />
               <Button
                 variant="ghost"
@@ -199,6 +219,18 @@ export default function DashboardLayout({
 
       {/* Upload Cart Sidebar */}
       <UploadCart />
+
+      {/* Command Palette */}
+      <CommandPalette open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
+
+      {/* Toast notifications */}
+      <Toaster
+        theme="dark"
+        position="bottom-right"
+        toastOptions={{
+          className: 'bg-bg-surface border border-overlay/10 text-text-primary',
+        }}
+      />
     </div>
   );
 }
