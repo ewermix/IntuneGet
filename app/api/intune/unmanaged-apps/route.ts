@@ -6,7 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase';
 import { resolveTargetTenantId } from '@/lib/msp/tenant-resolution';
-import { matchDiscoveredApp, filterUserApps, isSystemApp } from '@/lib/matching/app-matcher';
+import { matchDiscoveredApp, filterUserApps, isSystemApp, normalizeAppName } from '@/lib/matching/app-matcher';
+import { compareVersions } from '@/lib/version-compare';
 import type {
   GraphUnmanagedApp,
   UnmanagedApp,
@@ -210,8 +211,26 @@ export async function GET(request: NextRequest) {
       nextUrl = graphData['@odata.nextLink'] || null;
     }
 
+    // Consolidate apps: group by normalized name+publisher, keep newest version, sum device counts
+    const appGroups = new Map<string, GraphUnmanagedApp>();
+    for (const app of graphApps) {
+      const key = `${normalizeAppName(app.displayName)}::${(app.publisher || '').toLowerCase().trim()}`;
+      const existing = appGroups.get(key);
+      if (!existing) {
+        appGroups.set(key, { ...app });
+      } else {
+        existing.deviceCount += app.deviceCount;
+        if (app.version && (!existing.version || compareVersions(app.version, existing.version) > 0)) {
+          existing.id = app.id;
+          existing.displayName = app.displayName;
+          existing.version = app.version;
+        }
+      }
+    }
+    const consolidatedApps = [...appGroups.values()];
+
     // Filter to Windows apps only
-    const windowsApps = graphApps.filter(app => app.platform === 'windows');
+    const windowsApps = consolidatedApps.filter(app => app.platform === 'windows');
 
     // Filter user apps (remove system/framework apps) unless includeSystem
     const filteredApps = includeSystem ? windowsApps : filterUserApps(windowsApps);
@@ -305,7 +324,7 @@ export async function GET(request: NextRequest) {
     if (cacheRecords.length > 0) {
       await supabase
         .from('discovered_apps_cache')
-        .insert(cacheRecords);
+        .upsert(cacheRecords, { onConflict: 'tenant_id,discovered_app_id' });
     }
 
     // Only hide deployed apps - pending/deploying/failed should remain visible
