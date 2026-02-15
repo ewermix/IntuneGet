@@ -24,6 +24,17 @@ import { usePermissionStatus } from '@/hooks/usePermissionStatus';
 import { useMspOptional } from '@/hooks/useMspOptional';
 import { trackDeployment } from '@/hooks/useLandingStats';
 import { PermissionStatusIndicator } from '@/components/PermissionStatusIndicator';
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 
 interface PackagingJob {
@@ -45,6 +56,7 @@ export function UploadCart() {
   const router = useRouter();
   const items = useCartStore((state) => state.items);
   const isOpen = useCartStore((state) => state.isOpen);
+  const toggleCart = useCartStore((state) => state.toggleCart);
   const closeCart = useCartStore((state) => state.closeCart);
   const removeItem = useCartStore((state) => state.removeItem);
   const clearCart = useCartStore((state) => state.clearCart);
@@ -70,11 +82,20 @@ export function UploadCart() {
     }
   }, [isOpen, isAuthenticated, permissionStatus, verify]);
 
+  // Escape key handler for sidebar
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeCart();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, closeCart]);
+
   const handleFixPermissions = () => {
     if (permissionError === 'network_error') {
       verify();
     } else {
-      // For consent_not_granted, insufficient_intune_permissions, or missing_credentials
       requestAdminConsent();
     }
   };
@@ -82,12 +103,9 @@ export function UploadCart() {
   const handleDeploy = async () => {
     if (items.length === 0) return;
 
-    // Track deployment immediately (fire-and-forget)
     trackDeployment(items.length);
-
     setError(null);
 
-    // Check authentication
     if (!isAuthenticated) {
       const signedIn = await signIn();
       if (!signedIn) {
@@ -96,7 +114,6 @@ export function UploadCart() {
       }
     }
 
-    // Get access token
     const accessToken = await getAccessToken();
     if (!accessToken) {
       setError('Failed to get access token. Please sign in again.');
@@ -131,7 +148,6 @@ export function UploadCart() {
         throw new Error(data.message || 'No jobs were created');
       }
 
-      // Success - clear cart, show toast, navigate
       const jobCount = data.jobs.length;
       const jobIds = data.jobs.map((job) => job.id).join(',');
       clearCart();
@@ -151,212 +167,250 @@ export function UploadCart() {
     }
   };
 
-  if (!isOpen) return null;
+  const handleClearAll = () => {
+    clearCart();
+  };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
-      {/* Backdrop with blur */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
-        onClick={closeCart}
-      />
+    <>
+      {/* Always-visible floating cart button */}
+      {!isOpen && items.length > 0 && (
+        <button
+          onClick={toggleCart}
+          aria-label={`Open cart with ${items.length} app${items.length !== 1 ? 's' : ''}`}
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-3 rounded-full bg-accent-cyan hover:bg-accent-cyan-dim text-white shadow-lg transition-all hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base"
+        >
+          <ShoppingCart className="w-5 h-5" />
+          <span className="font-semibold">{items.length}</span>
+        </button>
+      )}
 
-      {/* Sidebar with slide animation */}
-      <div className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-bg-surface border-l border-overlay/5 shadow-2xl flex flex-col animate-slide-in-right">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-overlay/5">
-          <div className="flex items-center gap-3">
-            <ShoppingCart className="w-5 h-5 text-accent-cyan" />
-            <h2 className="text-lg font-semibold text-text-primary">
-              Selected Apps
-            </h2>
-            <span className="px-2 py-0.5 bg-gradient-to-r from-accent-cyan/20 to-accent-violet/20 text-accent-cyan text-sm font-medium rounded border border-accent-cyan/20">
-              {items.length}
-            </span>
-          </div>
-          <button
+      {/* Cart sidebar */}
+      {isOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="cart-title">
+          {/* Backdrop with blur */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
             onClick={closeCart}
-            className="text-text-secondary hover:text-text-primary transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
+            aria-hidden="true"
+          />
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto">
-          {items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center px-6">
-              <div className="w-16 h-16 rounded-full bg-bg-elevated flex items-center justify-center mb-4 animate-float-slow">
-                <ShoppingCart className="w-8 h-8 text-text-muted" />
+          {/* Sidebar with slide animation */}
+          <div className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-bg-surface border-l border-overlay/5 shadow-2xl flex flex-col animate-slide-in-right">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-overlay/5">
+              <div className="flex items-center gap-3">
+                <ShoppingCart className="w-5 h-5 text-accent-cyan" />
+                <h2 id="cart-title" className="text-lg font-semibold text-text-primary">
+                  Selected Apps
+                </h2>
+                <span className="px-2 py-0.5 bg-gradient-to-r from-accent-cyan/20 to-accent-violet/20 text-accent-cyan text-sm font-medium rounded border border-accent-cyan/20">
+                  {items.length}
+                </span>
               </div>
-              <h3 className="text-text-primary font-medium mb-1">No apps selected</h3>
-              <p className="text-text-secondary text-sm">
-                Select apps from the catalog to deploy to Intune
-              </p>
+              <button
+                onClick={closeCart}
+                aria-label="Close cart"
+                className="text-text-secondary hover:text-text-primary transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
             </div>
-          ) : (
-            <div className="p-4 space-y-3">
-              {items.map((item, index) => (
-                <div
-                  key={item.id}
-                  className="glass-light rounded-lg p-4 animate-fade-up"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <div className="flex items-start gap-3">
-                    <AppIcon
-                      packageId={item.wingetId}
-                      packageName={item.displayName}
-                      size="md"
-                      className="flex-shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-text-primary font-medium truncate">
-                        {item.displayName}
-                      </h4>
-                      <p className="text-text-muted text-sm truncate">
-                        {item.publisher}
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto">
+              {items.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center px-6">
+                  <div className="w-16 h-16 rounded-full bg-bg-elevated flex items-center justify-center mb-4 animate-float-slow">
+                    <ShoppingCart className="w-8 h-8 text-text-muted" />
+                  </div>
+                  <h3 className="text-text-primary font-medium mb-1">No apps selected</h3>
+                  <p className="text-text-secondary text-sm">
+                    Select apps from the catalog to deploy to Intune
+                  </p>
+                </div>
+              ) : (
+                <div className="p-4 space-y-3">
+                  {items.map((item, index) => (
+                    <div
+                      key={item.id}
+                      className="glass-light rounded-lg p-4 animate-fade-up"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <AppIcon
+                          packageId={item.wingetId}
+                          packageName={item.displayName}
+                          size="md"
+                          className="flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-text-primary font-medium truncate">
+                            {item.displayName}
+                          </h4>
+                          <p className="text-text-muted text-sm truncate">
+                            {item.publisher}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => setEditingItem(item)}
+                            className="text-text-muted hover:text-accent-cyan transition-colors p-1"
+                            disabled={isDeploying}
+                            aria-label={`Edit ${item.displayName} configuration`}
+                          >
+                            <Settings className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => removeItem(item.id)}
+                            className="text-text-muted hover:text-status-error transition-colors p-1"
+                            disabled={isDeploying}
+                            aria-label={`Remove ${item.displayName} from cart`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <span className="px-2 py-1 bg-bg-elevated rounded text-text-primary text-xs border border-overlay/5">
+                          v{item.version}
+                        </span>
+                        <span className="px-2 py-1 bg-bg-elevated rounded text-text-primary text-xs border border-overlay/5">
+                          {item.architecture}
+                        </span>
+                        <span className="px-2 py-1 bg-bg-elevated rounded text-text-primary text-xs border border-overlay/5">
+                          {item.installScope}
+                        </span>
+                        <span className="px-2 py-1 bg-bg-elevated rounded text-text-primary text-xs uppercase border border-overlay/5">
+                          {item.installerType}
+                        </span>
+                        {item.forceCreate && (
+                          <span className="px-2 py-1 bg-accent-cyan/10 rounded text-accent-cyan text-xs font-medium border border-accent-cyan/20 inline-flex items-center gap-1">
+                            <RefreshCw className="w-3 h-3" />
+                            Redeploy
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            {items.length > 0 && (
+              <div className="border-t border-overlay/5 p-4 space-y-4">
+                {/* Permission status indicator */}
+                {isAuthenticated && (
+                  <PermissionStatusIndicator
+                    status={permissionStatus}
+                    error={permissionError}
+                    errorMessage={permissionErrorMessage}
+                    onRetry={() => verify()}
+                    isRetrying={isChecking}
+                  />
+                )}
+
+                {/* Error message */}
+                {error && (
+                  <div className="flex items-start gap-3 p-3 bg-status-error/10 border border-status-error/20 rounded-lg">
+                    <AlertCircle className="w-5 h-5 text-status-error flex-shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <p className="text-status-error font-medium">Deployment failed</p>
+                      <p className="text-status-error/70 mt-1">{error}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Auth warning if not signed in */}
+                {!isAuthenticated && (
+                  <div className="flex items-start gap-3 p-3 bg-accent-cyan/10 border border-accent-cyan/20 rounded-lg">
+                    <AlertCircle className="w-5 h-5 text-accent-cyan flex-shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <p className="text-accent-cyan font-medium">
+                        Microsoft sign-in required
+                      </p>
+                      <p className="text-accent-cyan/70 mt-1">
+                        You&apos;ll be prompted to sign in when you click Deploy.
                       </p>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => setEditingItem(item)}
-                        className="text-text-muted hover:text-accent-cyan transition-colors p-1"
-                        disabled={isDeploying}
-                        title="Edit configuration"
-                      >
-                        <Settings className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => removeItem(item.id)}
-                        className="text-text-muted hover:text-status-error transition-colors p-1"
-                        disabled={isDeploying}
-                        title="Remove from cart"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
                   </div>
+                )}
 
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <span className="px-2 py-1 bg-bg-elevated rounded text-text-primary text-xs border border-overlay/5">
-                      v{item.version}
-                    </span>
-                    <span className="px-2 py-1 bg-bg-elevated rounded text-text-primary text-xs border border-overlay/5">
-                      {item.architecture}
-                    </span>
-                    <span className="px-2 py-1 bg-bg-elevated rounded text-text-primary text-xs border border-overlay/5">
-                      {item.installScope}
-                    </span>
-                    <span className="px-2 py-1 bg-bg-elevated rounded text-text-primary text-xs uppercase border border-overlay/5">
-                      {item.installerType}
-                    </span>
-                    {item.forceCreate && (
-                      <span className="px-2 py-1 bg-accent-cyan/10 rounded text-accent-cyan text-xs font-medium border border-accent-cyan/20 inline-flex items-center gap-1">
-                        <RefreshCw className="w-3 h-3" />
-                        Redeploy
-                      </span>
+                {/* Actions */}
+                <div className="flex gap-3">
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        disabled={isDeploying}
+                        className="flex-1 border-overlay/10 text-text-secondary hover:bg-overlay/5 hover:border-black/20"
+                      >
+                        Clear All
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Clear all selected apps?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will remove {items.length} app{items.length !== 1 ? 's' : ''} from your selection. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleClearAll}>
+                          Clear All
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                  <Button
+                    onClick={isAuthenticated && !canDeploy && permissionStatus !== 'checking' ? handleFixPermissions : handleDeploy}
+                    disabled={isDeploying || (isAuthenticated && permissionStatus === 'checking')}
+                    className={`flex-1 text-white border-0 disabled:opacity-50 ${
+                      isAuthenticated && !canDeploy && permissionStatus !== 'checking'
+                        ? 'bg-status-error hover:bg-status-error/90'
+                        : 'bg-accent-cyan hover:bg-accent-cyan-dim'
+                    }`}
+                  >
+                    {isDeploying ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Deploying...
+                      </>
+                    ) : isAuthenticated && permissionStatus === 'checking' ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Checking...
+                      </>
+                    ) : isAuthenticated && !canDeploy ? (
+                      <>
+                        <Shield className="w-4 h-4 mr-2" />
+                        {permissionError === 'network_error' ? 'Retry Check' : 'Grant Permissions'}
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Deploy to Intune
+                        <ChevronRight className="w-4 h-4 ml-2" />
+                      </>
                     )}
-                  </div>
+                  </Button>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+          </div>
+
+          {/* Cart Item Config Modal */}
+          {editingItem && (
+            <CartItemConfig
+              item={editingItem}
+              onClose={() => setEditingItem(null)}
+            />
           )}
         </div>
-
-        {/* Footer */}
-        {items.length > 0 && (
-          <div className="border-t border-overlay/5 p-4 space-y-4">
-            {/* Permission status indicator */}
-            {isAuthenticated && (
-              <PermissionStatusIndicator
-                status={permissionStatus}
-                error={permissionError}
-                errorMessage={permissionErrorMessage}
-                onRetry={() => verify()}
-                isRetrying={isChecking}
-              />
-            )}
-
-            {/* Error message */}
-            {error && (
-              <div className="flex items-start gap-3 p-3 bg-status-error/10 border border-status-error/20 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-status-error flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <p className="text-status-error font-medium">Deployment failed</p>
-                  <p className="text-status-error/70 mt-1">{error}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Auth warning if not signed in */}
-            {!isAuthenticated && (
-              <div className="flex items-start gap-3 p-3 bg-accent-cyan/10 border border-accent-cyan/20 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-accent-cyan flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <p className="text-accent-cyan font-medium">
-                    Microsoft sign-in required
-                  </p>
-                  <p className="text-accent-cyan/70 mt-1">
-                    You&apos;ll be prompted to sign in when you click Deploy.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={clearCart}
-                disabled={isDeploying}
-                className="flex-1 border-overlay/10 text-text-secondary hover:bg-overlay/5 hover:border-black/20"
-              >
-                Clear All
-              </Button>
-              <Button
-                onClick={isAuthenticated && !canDeploy && permissionStatus !== 'checking' ? handleFixPermissions : handleDeploy}
-                disabled={isDeploying || (isAuthenticated && permissionStatus === 'checking')}
-                className={`flex-1 text-white border-0 disabled:opacity-50 ${
-                  isAuthenticated && !canDeploy && permissionStatus !== 'checking'
-                    ? 'bg-status-error hover:bg-status-error/90'
-                    : 'bg-accent-cyan hover:bg-accent-cyan-dim'
-                }`}
-              >
-                {isDeploying ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Deploying...
-                  </>
-                ) : isAuthenticated && permissionStatus === 'checking' ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Checking...
-                  </>
-                ) : isAuthenticated && !canDeploy ? (
-                  <>
-                    <Shield className="w-4 h-4 mr-2" />
-                    {permissionError === 'network_error' ? 'Retry Check' : 'Grant Permissions'}
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Deploy to Intune
-                    <ChevronRight className="w-4 h-4 ml-2" />
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Cart Item Config Modal */}
-      {editingItem && (
-        <CartItemConfig
-          item={editingItem}
-          onClose={() => setEditingItem(null)}
-        />
       )}
-    </div>
+    </>
   );
 }

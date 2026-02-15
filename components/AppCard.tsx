@@ -1,15 +1,13 @@
 'use client';
 
-import { useState, memo, useCallback } from 'react';
+import { memo, useCallback } from 'react';
 import { ExternalLink, Plus, Check, Loader2, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AppIcon } from '@/components/AppIcon';
 import { CategoryBadge } from '@/components/CategoryFilter';
 import type { NormalizedPackage } from '@/types/winget';
 import { useCartStore } from '@/stores/cart-store';
-import { generateDetectionRules, generateInstallCommand, generateUninstallCommand } from '@/lib/detection-rules';
-import { DEFAULT_PSADT_CONFIG, getDefaultProcessesToClose } from '@/types/psadt';
-import { toast } from '@/hooks/use-toast';
+import { useQuickAdd } from '@/hooks/useQuickAdd';
 
 const installerTypeStyles: Record<string, string> = {
   msi: 'text-blue-600 bg-blue-500/10 border-blue-500/20',
@@ -36,13 +34,14 @@ interface AppCardProps {
   package: NormalizedPackage;
   onSelect?: (pkg: NormalizedPackage) => void;
   isDeployed?: boolean;
+  isBulkSelectMode?: boolean;
+  isBulkSelected?: boolean;
+  onBulkToggle?: (pkg: NormalizedPackage) => void;
 }
 
-function AppCardComponent({ package: pkg, onSelect, isDeployed = false }: AppCardProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const addItem = useCartStore((state) => state.addItem);
+function AppCardComponent({ package: pkg, onSelect, isDeployed = false, isBulkSelectMode = false, isBulkSelected = false, onBulkToggle }: AppCardProps) {
+  const { quickAdd, isLoading } = useQuickAdd(pkg);
 
-  // Optimized cart subscription - only re-renders when this specific item's cart status changes
   const inCart = useCartStore(
     useCallback(
       (state) => state.items.some(
@@ -52,80 +51,59 @@ function AppCardComponent({ package: pkg, onSelect, isDeployed = false }: AppCar
     )
   );
 
-  const handleEditConfig = (e: React.MouseEvent) => {
+  const handleEditConfig = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.stopPropagation();
     onSelect?.(pkg);
   };
 
-  const handleQuickAdd = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    if (isDeployed || inCart) return;
-
-    setIsLoading(true);
-
-    try {
-      // Fetch installers for the package
-      const response = await fetch(
-        `/api/winget/manifest?id=${encodeURIComponent(pkg.id)}&arch=x64`
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch installers');
-      }
-
-      const data = await response.json();
-      const installer = data.recommendedInstaller;
-
-      if (installer) {
-        // Pass wingetId and version for registry marker detection (most reliable for EXE installers)
-        const detectionRules = generateDetectionRules(installer, pkg.name, pkg.id, pkg.version);
-        const processesToClose = getDefaultProcessesToClose(pkg.name, installer.type);
-
-        addItem({
-          wingetId: pkg.id,
-          displayName: pkg.name,
-          publisher: pkg.publisher,
-          description: pkg.description,
-          version: pkg.version,
-          architecture: installer.architecture,
-          installScope: installer.scope || 'machine',
-          installerType: installer.type,
-          installerUrl: installer.url,
-          installerSha256: installer.sha256,
-          installCommand: generateInstallCommand(installer, installer.scope || 'machine'),
-          uninstallCommand: generateUninstallCommand(installer, pkg.name),
-          detectionRules,
-          psadtConfig: {
-            ...DEFAULT_PSADT_CONFIG,
-            processesToClose,
-            detectionRules,
-          },
-        });
-      } else {
-        toast({
-          title: 'No compatible installer found',
-          description: `Could not find a suitable installer for ${pkg.name}`,
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      toast({
-        title: 'Failed to add app',
-        description: 'Could not fetch package information. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
+  const handleClick = () => {
+    if (isBulkSelectMode) {
+      onBulkToggle?.(pkg);
+    } else {
+      onSelect?.(pkg);
     }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleClick();
+    }
+  };
+
+  const handleQuickAdd = async (e: React.MouseEvent | React.KeyboardEvent) => {
+    if (isDeployed || inCart) return;
+    await quickAdd(e);
   };
 
   return (
     <div
-      onClick={() => onSelect?.(pkg)}
-      className="group rounded-2xl border border-overlay/10 bg-bg-elevated p-5 cursor-pointer contain-layout transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover hover:border-accent-cyan/30"
+      role="button"
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      aria-label={`${pkg.name} by ${pkg.publisher}, version ${pkg.version}${isDeployed ? ', deployed' : inCart ? ', selected' : ''}`}
+      className={`group relative rounded-2xl border bg-bg-elevated p-5 cursor-pointer contain-layout transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base ${
+        isBulkSelected
+          ? 'border-accent-cyan/50 bg-accent-cyan/5'
+          : 'border-overlay/10 hover:border-accent-cyan/30'
+      }`}
     >
+      {/* Bulk select checkbox */}
+      {isBulkSelectMode && (
+        <div className="absolute top-3 left-3 z-10">
+          <div
+            className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+              isBulkSelected
+                ? 'bg-accent-cyan border-accent-cyan'
+                : 'border-overlay/30 bg-bg-surface'
+            }`}
+          >
+            {isBulkSelected && <Check className="w-3 h-3 text-white" />}
+          </div>
+        </div>
+      )}
+
       <div className="flex items-start gap-4">
         <div className="relative flex-shrink-0">
           <AppIcon
@@ -180,65 +158,69 @@ function AppCardComponent({ package: pkg, onSelect, isDeployed = false }: AppCar
         </div>
       </div>
 
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-overlay/10">
-        <div className="flex items-center gap-2">
-          {pkg.homepage && (
-            <a
-              href={pkg.homepage}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="text-text-muted hover:text-accent-cyan transition-colors p-1"
-              title="Open homepage"
+      {!isBulkSelectMode && (
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-overlay/10">
+          <div className="flex items-center gap-2">
+            {pkg.homepage && (
+              <a
+                href={pkg.homepage}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-text-muted hover:text-accent-cyan transition-colors p-1"
+                aria-label={`Open ${pkg.name} homepage`}
+              >
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            )}
+          </div>
+
+          {isDeployed ? (
+            <Button
+              size="sm"
+              onClick={handleEditConfig}
+              className="bg-accent-cyan/10 text-accent-cyan hover:bg-accent-cyan/20 border border-accent-cyan/25"
             >
-              <ExternalLink className="w-4 h-4" />
-            </a>
+              <Settings className="w-4 h-4 mr-1.5" />
+              Edit Config
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              onClick={handleQuickAdd}
+              disabled={isLoading || inCart}
+              aria-label={inCart ? `${pkg.name} already selected` : `Quick add ${pkg.name}`}
+              className={
+                inCart
+                  ? 'bg-status-success/10 text-status-success hover:bg-status-success/10 cursor-default border border-status-success/20'
+                  : 'bg-accent-cyan hover:bg-accent-cyan-dim text-white border-0'
+              }
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : inCart ? (
+                <>
+                  <Check className="w-4 h-4 mr-1.5" />
+                  Selected
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4 mr-1.5" />
+                  Select
+                </>
+              )}
+            </Button>
           )}
         </div>
-
-        {isDeployed ? (
-          <Button
-            size="sm"
-            onClick={handleEditConfig}
-            className="bg-accent-cyan/10 text-accent-cyan hover:bg-accent-cyan/20 border border-accent-cyan/25"
-          >
-            <Settings className="w-4 h-4 mr-1.5" />
-            Edit Config
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            onClick={handleQuickAdd}
-            disabled={isLoading || inCart}
-            className={
-              inCart
-                ? 'bg-status-success/10 text-status-success hover:bg-status-success/10 cursor-default border border-status-success/20'
-                : 'bg-accent-cyan hover:bg-accent-cyan-dim text-white border-0'
-            }
-          >
-            {isLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : inCart ? (
-              <>
-                <Check className="w-4 h-4 mr-1.5" />
-                Selected
-              </>
-            ) : (
-              <>
-                <Plus className="w-4 h-4 mr-1.5" />
-                Select
-              </>
-            )}
-          </Button>
-        )}
-      </div>
+      )}
     </div>
   );
 }
 
-// Memoize the component - only re-render when package.id changes
 export const AppCard = memo(AppCardComponent, (prevProps, nextProps) => {
   return prevProps.package.id === nextProps.package.id &&
          prevProps.package.version === nextProps.package.version &&
-         prevProps.isDeployed === nextProps.isDeployed;
+         prevProps.isDeployed === nextProps.isDeployed &&
+         prevProps.isBulkSelectMode === nextProps.isBulkSelectMode &&
+         prevProps.isBulkSelected === nextProps.isBulkSelected;
 });

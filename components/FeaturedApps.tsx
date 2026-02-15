@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, memo, useCallback } from 'react';
+import { memo, useCallback } from 'react';
 import { Loader2, Plus, Check, Star, ExternalLink, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AppIcon } from '@/components/AppIcon';
 import { CategoryBadge } from '@/components/CategoryFilter';
 import type { NormalizedPackage } from '@/types/winget';
 import { useCartStore } from '@/stores/cart-store';
-import { generateDetectionRules, generateInstallCommand, generateUninstallCommand } from '@/lib/detection-rules';
-import { DEFAULT_PSADT_CONFIG, getDefaultProcessesToClose } from '@/types/psadt';
+import { useQuickAdd } from '@/hooks/useQuickAdd';
 
 interface FeaturedAppsProps {
   packages: NormalizedPackage[];
@@ -64,8 +63,7 @@ interface FeaturedCardProps {
 }
 
 function FeaturedMainCardComponent({ package: pkg, onSelect, isDeployed = false }: FeaturedCardProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const addItem = useCartStore((state) => state.addItem);
+  const { quickAdd, isLoading } = useQuickAdd(pkg);
 
   const inCart = useCartStore(
     useCallback(
@@ -76,61 +74,31 @@ function FeaturedMainCardComponent({ package: pkg, onSelect, isDeployed = false 
     )
   );
 
-  const handleEditConfig = (e: React.MouseEvent) => {
+  const handleEditConfig = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.stopPropagation();
     onSelect?.(pkg);
   };
 
-  const handleQuickAdd = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleQuickAdd = async (e: React.MouseEvent | React.KeyboardEvent) => {
     if (isDeployed || inCart) return;
+    await quickAdd(e);
+  };
 
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `/api/winget/manifest?id=${encodeURIComponent(pkg.id)}&arch=x64`
-      );
-      if (!response.ok) throw new Error('Failed to fetch installers');
-
-      const data = await response.json();
-      const installer = data.recommendedInstaller;
-
-      if (installer) {
-        const detectionRules = generateDetectionRules(installer, pkg.name, pkg.id, pkg.version);
-        const processesToClose = getDefaultProcessesToClose(pkg.name, installer.type);
-
-        addItem({
-          wingetId: pkg.id,
-          displayName: pkg.name,
-          publisher: pkg.publisher,
-          description: pkg.description,
-          version: pkg.version,
-          architecture: installer.architecture,
-          installScope: installer.scope || 'machine',
-          installerType: installer.type,
-          installerUrl: installer.url,
-          installerSha256: installer.sha256,
-          installCommand: generateInstallCommand(installer, installer.scope || 'machine'),
-          uninstallCommand: generateUninstallCommand(installer, pkg.name),
-          detectionRules,
-          psadtConfig: {
-            ...DEFAULT_PSADT_CONFIG,
-            processesToClose,
-            detectionRules,
-          },
-        });
-      }
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-    } finally {
-      setIsLoading(false);
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onSelect?.(pkg);
     }
   };
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={() => onSelect?.(pkg)}
-      className="group relative rounded-2xl border border-overlay/10 bg-bg-elevated overflow-hidden cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover hover:border-accent-cyan/25 h-full min-h-[280px]"
+      onKeyDown={handleKeyDown}
+      aria-label={`Featured: ${pkg.name} by ${pkg.publisher}, version ${pkg.version}${isDeployed ? ', deployed' : inCart ? ', selected' : ''}`}
+      className="group relative rounded-2xl border border-overlay/10 bg-bg-elevated overflow-hidden cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover hover:border-accent-cyan/25 h-full min-h-[280px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base"
     >
       <div className="absolute inset-0 bg-gradient-radial-cyan opacity-45" />
       <div className="absolute inset-0 bg-gradient-to-br from-accent-cyan/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -196,6 +164,7 @@ function FeaturedMainCardComponent({ package: pkg, onSelect, isDeployed = false 
               size="lg"
               onClick={handleQuickAdd}
               disabled={isLoading || inCart}
+              aria-label={inCart ? `${pkg.name} already selected` : `Quick add ${pkg.name}`}
               className={
                 inCart
                   ? 'bg-status-success/10 text-status-success hover:bg-status-success/10 cursor-default border border-status-success/20'
@@ -224,6 +193,7 @@ function FeaturedMainCardComponent({ package: pkg, onSelect, isDeployed = false 
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
               className="text-text-muted hover:text-accent-cyan transition-colors p-2"
+              aria-label={`Open ${pkg.name} homepage`}
             >
               <ExternalLink className="w-5 h-5" />
             </a>
@@ -241,8 +211,7 @@ const FeaturedMainCard = memo(FeaturedMainCardComponent, (prev, next) =>
 );
 
 function FeaturedSecondaryCardComponent({ package: pkg, onSelect, isDeployed = false }: FeaturedCardProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const addItem = useCartStore((state) => state.addItem);
+  const { quickAdd, isLoading } = useQuickAdd(pkg);
 
   const inCart = useCartStore(
     useCallback(
@@ -253,61 +222,31 @@ function FeaturedSecondaryCardComponent({ package: pkg, onSelect, isDeployed = f
     )
   );
 
-  const handleEditConfig = (e: React.MouseEvent) => {
+  const handleEditConfig = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.stopPropagation();
     onSelect?.(pkg);
   };
 
-  const handleQuickAdd = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleQuickAdd = async (e: React.MouseEvent | React.KeyboardEvent) => {
     if (isDeployed || inCart) return;
+    await quickAdd(e);
+  };
 
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `/api/winget/manifest?id=${encodeURIComponent(pkg.id)}&arch=x64`
-      );
-      if (!response.ok) throw new Error('Failed to fetch installers');
-
-      const data = await response.json();
-      const installer = data.recommendedInstaller;
-
-      if (installer) {
-        const detectionRules = generateDetectionRules(installer, pkg.name, pkg.id, pkg.version);
-        const processesToClose = getDefaultProcessesToClose(pkg.name, installer.type);
-
-        addItem({
-          wingetId: pkg.id,
-          displayName: pkg.name,
-          publisher: pkg.publisher,
-          description: pkg.description,
-          version: pkg.version,
-          architecture: installer.architecture,
-          installScope: installer.scope || 'machine',
-          installerType: installer.type,
-          installerUrl: installer.url,
-          installerSha256: installer.sha256,
-          installCommand: generateInstallCommand(installer, installer.scope || 'machine'),
-          uninstallCommand: generateUninstallCommand(installer, pkg.name),
-          detectionRules,
-          psadtConfig: {
-            ...DEFAULT_PSADT_CONFIG,
-            processesToClose,
-            detectionRules,
-          },
-        });
-      }
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-    } finally {
-      setIsLoading(false);
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onSelect?.(pkg);
     }
   };
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={() => onSelect?.(pkg)}
-      className="group rounded-xl border border-overlay/10 bg-bg-elevated p-4 cursor-pointer transition-all duration-200 hover:shadow-card hover:border-accent-cyan/25 hover:-translate-y-0.5 h-full flex flex-col"
+      onKeyDown={handleKeyDown}
+      aria-label={`${pkg.name} by ${pkg.publisher}, version ${pkg.version}${isDeployed ? ', deployed' : inCart ? ', selected' : ''}`}
+      className="group rounded-xl border border-overlay/10 bg-bg-elevated p-4 cursor-pointer transition-all duration-200 hover:shadow-card hover:border-accent-cyan/25 hover:-translate-y-0.5 h-full flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base"
     >
       <div className="flex items-start gap-3 flex-1">
         <AppIcon
@@ -337,8 +276,7 @@ function FeaturedSecondaryCardComponent({ package: pkg, onSelect, isDeployed = f
           <Button
             size="sm"
             onClick={handleEditConfig}
-            title="Edit Config"
-            aria-label="Edit Config"
+            aria-label={`Edit ${pkg.name} config`}
             className="h-7 px-2 bg-accent-cyan/10 text-accent-cyan hover:bg-accent-cyan/20 border border-accent-cyan/25"
           >
             <Settings className="w-3.5 h-3.5" />
@@ -348,6 +286,7 @@ function FeaturedSecondaryCardComponent({ package: pkg, onSelect, isDeployed = f
             size="sm"
             onClick={handleQuickAdd}
             disabled={isLoading || inCart}
+            aria-label={inCart ? `${pkg.name} already selected` : `Quick add ${pkg.name}`}
             className={`h-7 px-2 ${
               inCart
                 ? 'bg-status-success/10 text-status-success hover:bg-status-success/10 cursor-default border border-status-success/20'

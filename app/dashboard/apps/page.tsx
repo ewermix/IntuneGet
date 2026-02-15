@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   Package,
   Loader2,
@@ -17,7 +18,10 @@ import {
   ChevronDown,
   ChevronRight,
   X,
+  ListChecks,
+  Check,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { AppSearch } from '@/components/AppSearch';
 import { AppCard } from '@/components/AppCard';
 import { AppListItem } from '@/components/AppListItem';
@@ -34,6 +38,8 @@ import {
 } from '@/hooks/use-packages';
 import { useDeployedPackages } from '@/hooks/use-deployed-packages';
 import { useDeployedConfig } from '@/hooks/use-deployed-config';
+import { useBulkAdd } from '@/hooks/use-bulk-add';
+import { useCartStore } from '@/stores/cart-store';
 import type { NormalizedPackage } from '@/types/winget';
 import { getCategoryLabel } from '@/lib/category-utils';
 import { useUserSettings } from '@/components/providers/UserSettingsProvider';
@@ -63,19 +69,36 @@ const SORT_OPTIONS = [
 ] as const;
 
 export default function AppCatalogPage() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const searchParams = useSearchParams();
+
+  // Initialize state from URL params
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [selectedPackage, setSelectedPackage] = useState<NormalizedPackage | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<'popular' | 'name' | 'newest'>('popular');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(searchParams.get('category') || null);
+  const validSorts = ['popular', 'name', 'newest'] as const;
+  const sortParam = searchParams.get('sort');
+  const [sortBy, setSortBy] = useState<'popular' | 'name' | 'newest'>(
+    validSorts.includes(sortParam as typeof validSorts[number]) ? (sortParam as 'popular' | 'name' | 'newest') : 'popular'
+  );
   const { settings: userSettings, setViewMode: persistViewMode } = useUserSettings();
   const [viewMode, setViewModeLocal] = useState<'grid' | 'list'>(userSettings.viewMode);
   const [mounted, setMounted] = useState(false);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [isSortSectionOpen, setIsSortSectionOpen] = useState(true);
   const [isCategoriesSectionOpen, setIsCategoriesSectionOpen] = useState(true);
+
+  // Bulk selection state
+  const [isBulkSelectMode, setIsBulkSelectMode] = useState(false);
+  const [selectedPackageIds, setSelectedPackageIds] = useState<Set<string>>(new Set());
+  const [isBulkAdding, setIsBulkAdding] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState<{ completed: number; total: number } | null>(null);
+  const { bulkAdd } = useBulkAdd();
+
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const resultsSectionRef = useRef<HTMLElement>(null);
   const resultsContentRef = useRef<HTMLDivElement>(null);
+  const mobileFilterRef = useRef<HTMLDivElement>(null);
+  const mobileFilterTriggerRef = useRef<HTMLButtonElement>(null);
   const previousBrowseControlsRef = useRef({
     sortBy: 'popular' as 'popular' | 'name' | 'newest',
     selectedCategory: null as string | null,
@@ -89,6 +112,89 @@ export default function AppCatalogPage() {
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // URL persistence: sync state changes to URL params
+  useEffect(() => {
+    if (!mounted) return;
+    const params = new URLSearchParams();
+    if (searchQuery) params.set('q', searchQuery);
+    if (selectedCategory) params.set('category', selectedCategory);
+    if (sortBy !== 'popular') params.set('sort', sortBy);
+    const paramString = params.toString();
+    const newUrl = paramString ? `?${paramString}` : window.location.pathname;
+    window.history.replaceState(null, '', newUrl);
+  }, [mounted, searchQuery, selectedCategory, sortBy]);
+
+  // Mobile filter: focus trap + escape handler
+  useEffect(() => {
+    if (!isMobileFiltersOpen) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsMobileFiltersOpen(false);
+        mobileFilterTriggerRef.current?.focus();
+      }
+    };
+
+    const handleFocusTrap = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const panel = mobileFilterRef.current;
+      if (!panel) return;
+
+      const focusable = panel.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    document.addEventListener('keydown', handleFocusTrap);
+
+    // Focus the first focusable element in the panel
+    requestAnimationFrame(() => {
+      const panel = mobileFilterRef.current;
+      if (panel) {
+        const first = panel.querySelector<HTMLElement>('button, [href], input');
+        first?.focus();
+      }
+    });
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('keydown', handleFocusTrap);
+    };
+  }, [isMobileFiltersOpen]);
+
+  // Bulk selection handlers
+  const toggleBulkSelectMode = useCallback(() => {
+    setIsBulkSelectMode((prev) => {
+      if (prev) setSelectedPackageIds(new Set());
+      return !prev;
+    });
+  }, []);
+
+  const handleBulkToggle = useCallback((pkg: NormalizedPackage) => {
+    setSelectedPackageIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(pkg.id)) {
+        next.delete(pkg.id);
+      } else {
+        next.add(pkg.id);
+      }
+      return next;
+    });
   }, []);
 
   const { data: categoriesData } = useCategories();
@@ -192,6 +298,51 @@ export default function AppCatalogPage() {
     categoriesData?.totalApps,
     allPackages.length,
   ]);
+
+  // Bulk selection callbacks (depend on derived data above)
+  const handleSelectAllVisible = useCallback(() => {
+    const visiblePackages = showSearchResults ? searchPackages : allPackages;
+    setSelectedPackageIds(new Set(visiblePackages.map((p) => p.id)));
+  }, [showSearchResults, searchPackages, allPackages]);
+
+  const handleClearBulkSelection = useCallback(() => {
+    setSelectedPackageIds(new Set());
+  }, []);
+
+  const handleBulkQuickAdd = useCallback(async () => {
+    const visiblePackages = showSearchResults ? searchPackages : allPackages;
+    const cartItems = useCartStore.getState().items;
+    const cartIds = new Set(cartItems.map((item) => `${item.wingetId}@${item.version}`));
+    const selected = visiblePackages
+      .filter((p) => selectedPackageIds.has(p.id))
+      .filter((p) => !cartIds.has(`${p.id}@${p.version}`));
+    if (selected.length === 0) {
+      toast.info('All selected apps are already in the cart');
+      return;
+    }
+
+    setIsBulkAdding(true);
+    setBulkProgress({ completed: 0, total: selected.length });
+
+    const result = await bulkAdd(selected, (progress) => {
+      setBulkProgress({ completed: progress.completed, total: progress.total });
+    });
+
+    setIsBulkAdding(false);
+    setBulkProgress(null);
+
+    if (result.failed.length === 0) {
+      toast.success(`Added ${result.succeeded.length} app${result.succeeded.length !== 1 ? 's' : ''} to selection`);
+    } else {
+      toast.warning(
+        `Added ${result.succeeded.length} of ${selected.length} apps`,
+        { description: `${result.failed.length} failed: ${result.failed.map((f) => f.name).join(', ')}` }
+      );
+    }
+
+    setIsBulkSelectMode(false);
+    setSelectedPackageIds(new Set());
+  }, [showSearchResults, searchPackages, allPackages, selectedPackageIds, bulkAdd]);
 
   const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
     const [target] = entries;
@@ -388,6 +539,9 @@ export default function AppCatalogPage() {
                 package={pkg}
                 onSelect={handleSelectPackage}
                 isDeployed={deployedSet.has(pkg.id)}
+                isBulkSelectMode={isBulkSelectMode}
+                isBulkSelected={selectedPackageIds.has(pkg.id)}
+                onBulkToggle={handleBulkToggle}
               />
             </div>
           ))}
@@ -407,6 +561,9 @@ export default function AppCatalogPage() {
               package={pkg}
               onSelect={handleSelectPackage}
               isDeployed={deployedSet.has(pkg.id)}
+              isBulkSelectMode={isBulkSelectMode}
+              isBulkSelected={selectedPackageIds.has(pkg.id)}
+              onBulkToggle={handleBulkToggle}
             />
           </div>
         ))}
@@ -454,32 +611,51 @@ export default function AppCatalogPage() {
 
               <div className="flex items-center gap-2 self-end lg:self-auto">
                 <button
+                  ref={mobileFilterTriggerRef}
                   onClick={() => setIsMobileFiltersOpen(true)}
                   className="lg:hidden inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-overlay/10 bg-bg-surface text-sm text-text-secondary hover:text-text-primary hover:bg-overlay/5 transition-colors"
                 >
                   <SlidersHorizontal className="w-4 h-4" />
                   Filters
                 </button>
-                <div className="inline-flex items-center rounded-lg border border-overlay/10 bg-bg-surface p-0.5">
+
+                {/* Bulk select toggle */}
+                <button
+                  onClick={toggleBulkSelectMode}
+                  aria-pressed={isBulkSelectMode}
+                  aria-label={isBulkSelectMode ? 'Exit selection mode' : 'Enter selection mode'}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm transition-colors ${
+                    isBulkSelectMode
+                      ? 'border-accent-cyan/30 bg-accent-cyan/10 text-accent-cyan'
+                      : 'border-overlay/10 bg-bg-surface text-text-secondary hover:text-text-primary hover:bg-overlay/5'
+                  }`}
+                >
+                  <ListChecks className="w-4 h-4" />
+                  <span className="hidden sm:inline">{isBulkSelectMode ? 'Cancel' : 'Select'}</span>
+                </button>
+
+                <div className="inline-flex items-center rounded-lg border border-overlay/10 bg-bg-surface p-0.5" role="group" aria-label="View mode">
                   <button
                     onClick={() => setViewMode('grid')}
+                    aria-pressed={viewMode === 'grid'}
+                    aria-label="Grid view"
                     className={`p-1.5 rounded-md transition-colors ${
                       viewMode === 'grid'
                         ? 'bg-bg-elevated text-text-primary shadow-soft'
                         : 'text-text-secondary hover:text-text-primary hover:bg-overlay/5'
                     }`}
-                    title="Grid view"
                   >
                     <GridIcon className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
+                    aria-pressed={viewMode === 'list'}
+                    aria-label="List view"
                     className={`p-1.5 rounded-md transition-colors ${
                       viewMode === 'list'
                         ? 'bg-bg-elevated text-text-primary shadow-soft'
                         : 'text-text-secondary hover:text-text-primary hover:bg-overlay/5'
                     }`}
-                    title="List view"
                   >
                     <List className="w-4 h-4" />
                   </button>
@@ -577,6 +753,20 @@ export default function AppCatalogPage() {
 
             <div className="space-y-10">
               <section ref={resultsSectionRef} className="space-y-4">
+                {/* Category breadcrumb */}
+                {showCategoryResults && (
+                  <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm">
+                    <button
+                      onClick={() => setSelectedCategory(null)}
+                      className="text-text-secondary hover:text-accent-cyan transition-colors"
+                    >
+                      App Catalog
+                    </button>
+                    <ChevronRight className="w-3.5 h-3.5 text-text-muted" />
+                    <span className="text-text-primary font-medium">{activeCategoryLabel}</span>
+                  </nav>
+                )}
+
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     {showSearchResults ? (
@@ -615,7 +805,7 @@ export default function AppCatalogPage() {
                     <div ref={resultsContentRef} className="scroll-mt-44">
                       {renderPackages(allPackages, showCategoryResults ? 'category' : 'browse')}
                     </div>
-                    <div ref={loadMoreRef} className="h-20 flex items-center justify-center mt-4">
+                    <div ref={loadMoreRef} className="h-20 flex items-center justify-center mt-4" role="status" aria-live="polite">
                       {isFetchingNextPage && (
                         <div className="flex items-center gap-3 text-text-secondary">
                           <Loader2 className="w-5 h-5 animate-spin text-accent-cyan" />
@@ -623,7 +813,7 @@ export default function AppCatalogPage() {
                         </div>
                       )}
                       {!hasNextPage && allPackages.length > 0 && (
-                        <p className="text-text-muted text-sm">You've seen all the apps</p>
+                        <p className="text-text-muted text-sm">You&apos;ve seen all the apps</p>
                       )}
                     </div>
                   </>
@@ -666,19 +856,25 @@ export default function AppCatalogPage() {
           </div>
 
           {isMobileFiltersOpen && (
-            <div className="fixed inset-0 z-50 lg:hidden">
+            <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-labelledby="mobile-filters-title">
               <button
                 aria-label="Close filters"
                 className="absolute inset-0 bg-black/45 backdrop-blur-sm"
-                onClick={() => setIsMobileFiltersOpen(false)}
+                onClick={() => {
+                  setIsMobileFiltersOpen(false);
+                  mobileFilterTriggerRef.current?.focus();
+                }}
               />
-              <div className="absolute left-0 top-0 bottom-0 w-[86%] max-w-sm bg-bg-base border-r border-overlay/10 shadow-2xl flex flex-col">
+              <div ref={mobileFilterRef} className="absolute left-0 top-0 bottom-0 w-[86%] max-w-sm bg-bg-base border-r border-overlay/10 shadow-2xl flex flex-col">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-overlay/10">
-                  <h3 className="text-sm font-semibold uppercase tracking-wide text-text-primary">Filters</h3>
+                  <h3 id="mobile-filters-title" className="text-sm font-semibold uppercase tracking-wide text-text-primary">Filters</h3>
                   <button
-                    onClick={() => setIsMobileFiltersOpen(false)}
+                    onClick={() => {
+                      setIsMobileFiltersOpen(false);
+                      mobileFilterTriggerRef.current?.focus();
+                    }}
+                    aria-label="Close filters"
                     className="p-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-overlay/5"
-                    title="Close filters"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -704,8 +900,8 @@ export default function AppCatalogPage() {
       )}
 
       {selectedPackage && (isLoadingInstallers || (isSelectedDeployed && isLoadingDeployedConfig)) && (
-        <div className="fixed inset-0 z-50 overflow-hidden">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={handleCloseConfig} />
+        <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true" aria-label="Loading package details">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={handleCloseConfig} aria-hidden="true" />
           <div className="absolute right-0 top-0 bottom-0 w-full max-w-2xl bg-bg-surface border-l border-overlay/5 shadow-2xl flex items-center justify-center animate-slide-in-right">
             <div className="text-center">
               <div className="relative">
@@ -719,8 +915,8 @@ export default function AppCatalogPage() {
       )}
 
       {selectedPackage && !isLoadingInstallers && selectedInstallers.length === 0 && (
-        <div className="fixed inset-0 z-50 overflow-hidden">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={handleCloseConfig} />
+        <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true" aria-label="No installers found">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={handleCloseConfig} aria-hidden="true" />
           <div className="absolute right-0 top-0 bottom-0 w-full max-w-2xl bg-bg-surface border-l border-overlay/5 shadow-2xl flex items-center justify-center animate-slide-in-right">
             <div className="text-center px-6">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-status-error/10 flex items-center justify-center">
@@ -738,6 +934,46 @@ export default function AppCatalogPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Floating bulk action bar */}
+      {isBulkSelectMode && selectedPackageIds.size > 0 && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-5 py-3 rounded-2xl bg-bg-elevated/95 backdrop-blur-md border border-overlay/10 shadow-2xl">
+          <span className="text-sm font-medium text-text-primary whitespace-nowrap">
+            {selectedPackageIds.size} selected
+          </span>
+          <div className="w-px h-5 bg-overlay/10" />
+          <button
+            onClick={handleSelectAllVisible}
+            className="text-sm text-text-secondary hover:text-accent-cyan transition-colors whitespace-nowrap"
+          >
+            Select All
+          </button>
+          <button
+            onClick={handleClearBulkSelection}
+            className="text-sm text-text-secondary hover:text-text-primary transition-colors whitespace-nowrap"
+          >
+            Clear
+          </button>
+          <div className="w-px h-5 bg-overlay/10" />
+          <button
+            onClick={handleBulkQuickAdd}
+            disabled={isBulkAdding}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-accent-cyan hover:bg-accent-cyan-dim text-white text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
+          >
+            {isBulkAdding && bulkProgress ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Adding {bulkProgress.completed}/{bulkProgress.total}...
+              </>
+            ) : (
+              <>
+                <Check className="w-4 h-4" />
+                Quick Add All
+              </>
+            )}
+          </button>
         </div>
       )}
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useId } from 'react';
 import {
   X,
   Settings,
@@ -20,6 +20,8 @@ import {
   Clock,
   FolderTree,
   Palette,
+  Zap,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -101,8 +103,13 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
   );
 
   // UI state
-  const [expandedSection, setExpandedSection] = useState<ConfigSection | null>('behavior');
+  const [expandedSection, setExpandedSection] = useState<ConfigSection | null>('detection');
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [configMode, setConfigMode] = useState<'quick' | 'advanced'>('quick');
+
+  const quickSections: ConfigSection[] = ['detection', 'assignment', 'category'];
+  const isQuickSection = (section: ConfigSection) => quickSections.includes(section);
+  const visibleSections = configMode === 'quick' ? quickSections : null; // null = show all
 
   // Cart store
   const addItem = useCartStore((state) => state.addItem);
@@ -146,6 +153,15 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
   const inCart = selectedInstaller
     ? isInCart(pkg.id, selectedVersion, selectedInstaller.architecture)
     : false;
+
+  // Escape key handler
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
 
   // Auto-select scope based on manifest's Scope field when installer changes
   // Skip the initial mount when pre-filled from deployed config (user's previous choice takes priority)
@@ -196,7 +212,7 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
         categories: categories.length > 0 ? categories : undefined,
         ...(isDeployed ? { forceCreate: true } : {}),
       });
-      onClose();
+      // Keep panel open -- user closes manually
     } finally {
       setIsAddingToCart(false);
     }
@@ -255,9 +271,9 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
+    <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="package-config-title">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
 
       {/* Modal */}
       <div className="absolute right-0 top-0 bottom-0 w-full max-w-2xl bg-bg-surface border-l border-overlay/10 shadow-2xl overflow-hidden flex flex-col">
@@ -270,15 +286,15 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                 packageName={pkg.name}
                 iconPath={pkg.iconPath}
                 size="lg"
-                className="border-blue-500/30"
+                className="border-accent-cyan/30"
               />
               <div>
-                <h2 className="text-xl font-bold text-text-primary">{pkg.name}</h2>
+                <h2 id="package-config-title" className="text-xl font-bold text-text-primary">{pkg.name}</h2>
                 <p className="text-text-muted text-sm">{pkg.publisher}</p>
                 <p className="text-text-muted text-xs font-mono mt-1">{pkg.id}</p>
               </div>
             </div>
-            <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors">
+            <button onClick={onClose} aria-label="Close configuration" className="text-text-muted hover:text-text-primary transition-colors">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -333,7 +349,7 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                           }}
                           className={cn(
                             'w-full px-4 py-2 text-left text-sm hover:bg-overlay/15 transition-colors',
-                            version === selectedVersion ? 'text-blue-400 bg-blue-500/10' : 'text-text-primary'
+                            version === selectedVersion ? 'text-accent-cyan bg-accent-cyan/10' : 'text-text-primary'
                           )}
                         >
                           v{version}
@@ -358,7 +374,7 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                         className={cn(
                           'flex-1 px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors',
                           selectedArch === arch
-                            ? 'bg-blue-600 border-blue-500 text-white'
+                            ? 'bg-accent-cyan border-accent-cyan text-white'
                             : available
                             ? 'bg-bg-elevated border-overlay/15 text-text-primary hover:border-overlay/20'
                             : 'bg-bg-elevated/50 border-overlay/[0.07] text-text-muted cursor-not-allowed'
@@ -389,7 +405,7 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                       className={cn(
                         'flex-1 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors',
                         selectedScope === scope
-                          ? 'bg-blue-600 border-blue-500 text-white'
+                          ? 'bg-accent-cyan border-accent-cyan text-white'
                           : 'bg-bg-elevated border-overlay/15 text-text-primary hover:border-overlay/20'
                       )}
                     >
@@ -401,13 +417,41 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
             </div>
 
             <div className="border-t border-overlay/10 pt-6">
-              <h3 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
-                <Settings className="w-5 h-5 text-blue-400" />
-                Deployment Configuration
-              </h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
+                  <Settings className="w-5 h-5 text-accent-cyan" />
+                  Deployment Configuration
+                </h3>
+                <div className="inline-flex items-center rounded-lg border border-overlay/10 bg-bg-elevated p-0.5">
+                  <button
+                    onClick={() => setConfigMode('quick')}
+                    className={cn(
+                      'px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5',
+                      configMode === 'quick'
+                        ? 'bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/25'
+                        : 'text-text-secondary hover:text-text-primary'
+                    )}
+                  >
+                    <Zap className="w-3.5 h-3.5" />
+                    Quick
+                  </button>
+                  <button
+                    onClick={() => setConfigMode('advanced')}
+                    className={cn(
+                      'px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5',
+                      configMode === 'advanced'
+                        ? 'bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/25'
+                        : 'text-text-secondary hover:text-text-primary'
+                    )}
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5" />
+                    Advanced
+                  </button>
+                </div>
+              </div>
 
-              {/* Installation Behavior */}
-              <ConfigSection
+              {/* Installation Behavior (advanced only) */}
+              {(visibleSections === null || visibleSections.includes('behavior')) && <ConfigSection
                 title="Installation Behavior"
                 icon={<Settings className="w-4 h-4" />}
                 expanded={expandedSection === 'behavior'}
@@ -422,7 +466,7 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                       </label>
                       <button
                         onClick={addProcess}
-                        className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
+                        className="text-accent-cyan hover:text-accent-cyan-dim text-sm flex items-center gap-1"
                       >
                         <Plus className="w-4 h-4" />
                         Add
@@ -562,10 +606,10 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                     </select>
                   </div>
                 </div>
-              </ConfigSection>
+              </ConfigSection>}
 
-              {/* Deferral Settings */}
-              <ConfigSection
+              {/* Deferral Settings (advanced only) */}
+              {(visibleSections === null || visibleSections.includes('deferral')) && <ConfigSection
                 title="Deferral Settings"
                 icon={<Clock className="w-4 h-4" />}
                 expanded={expandedSection === 'deferral'}
@@ -650,10 +694,10 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                     </div>
                   )}
                 </div>
-              </ConfigSection>
+              </ConfigSection>}
 
-              {/* Progress & Notifications */}
-              <ConfigSection
+              {/* Progress & Notifications (advanced only) */}
+              {(visibleSections === null || visibleSections.includes('progress')) && <ConfigSection
                 title="Progress & Notifications"
                 icon={<Bell className="w-4 h-4" />}
                 expanded={expandedSection === 'progress'}
@@ -725,7 +769,7 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                             balloonTips: [...(config.balloonTips || []), newTip]
                           });
                         }}
-                        className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
+                        className="text-accent-cyan hover:text-accent-cyan-dim text-sm flex items-center gap-1"
                       >
                         <Plus className="w-4 h-4" />
                         Add
@@ -805,10 +849,10 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                     )}
                   </div>
                 </div>
-              </ConfigSection>
+              </ConfigSection>}
 
-              {/* Custom Prompts */}
-              <ConfigSection
+              {/* Custom Prompts (advanced only) */}
+              {(visibleSections === null || visibleSections.includes('prompts')) && <ConfigSection
                 title="Custom Prompts"
                 icon={<MessageSquare className="w-4 h-4" />}
                 expanded={expandedSection === 'prompts'}
@@ -833,7 +877,7 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                           customPrompts: [...(config.customPrompts || []), newPrompt]
                         });
                       }}
-                      className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
+                      className="text-accent-cyan hover:text-accent-cyan-dim text-sm flex items-center gap-1"
                     >
                       <Plus className="w-4 h-4" />
                       Add Prompt
@@ -1012,10 +1056,10 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                     </div>
                   )}
                 </div>
-              </ConfigSection>
+              </ConfigSection>}
 
-              {/* Restart Prompt */}
-              <ConfigSection
+              {/* Restart Prompt (advanced only) */}
+              {(visibleSections === null || visibleSections.includes('restart')) && <ConfigSection
                 title="Restart Prompt"
                 icon={<RefreshCw className="w-4 h-4" />}
                 expanded={expandedSection === 'restart'}
@@ -1080,10 +1124,10 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                     </div>
                   )}
                 </div>
-              </ConfigSection>
+              </ConfigSection>}
 
-              {/* Disk Space Check */}
-              <ConfigSection
+              {/* Disk Space Check (advanced only) */}
+              {(visibleSections === null || visibleSections.includes('diskspace')) && <ConfigSection
                 title="Disk Space Check"
                 icon={<HardDrive className="w-4 h-4" />}
                 expanded={expandedSection === 'diskspace'}
@@ -1118,10 +1162,10 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                     </div>
                   )}
                 </div>
-              </ConfigSection>
+              </ConfigSection>}
 
-              {/* Detection Rules */}
-              <ConfigSection
+              {/* Detection Rules (quick + advanced) */}
+              {(visibleSections === null || visibleSections.includes('detection')) && <ConfigSection
                 title="Detection Rules"
                 icon={<FileCode className="w-4 h-4" />}
                 expanded={expandedSection === 'detection'}
@@ -1134,13 +1178,11 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                     config.detectionRules.map((rule, index) => (
                       <div key={index} className="bg-bg-elevated/50 rounded-lg p-3">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="px-2 py-0.5 bg-blue-500/10 text-blue-400 text-xs font-medium rounded uppercase">
+                          <span className="px-2 py-0.5 bg-accent-cyan/10 text-accent-cyan text-xs font-medium rounded uppercase">
                             {rule.type}
                           </span>
                         </div>
-                        <pre className="text-text-muted text-xs font-mono whitespace-pre-wrap break-all">
-                          {JSON.stringify(rule, null, 2)}
-                        </pre>
+                        <DetectionRuleDisplay rule={rule} />
                       </div>
                     ))
                   )}
@@ -1148,10 +1190,10 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                     Detection rules are auto-generated based on installer type. They determine how Intune verifies the app is installed.
                   </p>
                 </div>
-              </ConfigSection>
+              </ConfigSection>}
 
-              {/* Assignment Configuration */}
-              <ConfigSection
+              {/* Assignment Configuration (quick + advanced) */}
+              {(visibleSections === null || visibleSections.includes('assignment')) && <ConfigSection
                 title="Assignment Configuration"
                 icon={<Target className="w-4 h-4" />}
                 expanded={expandedSection === 'assignment'}
@@ -1161,10 +1203,10 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                   assignments={assignments}
                   onChange={setAssignments}
                 />
-              </ConfigSection>
+              </ConfigSection>}
 
-              {/* Category Configuration */}
-              <ConfigSection
+              {/* Category Configuration (quick + advanced) */}
+              {(visibleSections === null || visibleSections.includes('category')) && <ConfigSection
                 title="Category Configuration"
                 icon={<FolderTree className="w-4 h-4" />}
                 expanded={expandedSection === 'category'}
@@ -1174,10 +1216,20 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                   categories={categories}
                   onChange={setCategories}
                 />
-              </ConfigSection>
+              </ConfigSection>}
 
-              {/* Branding */}
-              <ConfigSection
+              {/* Teaser for quick mode */}
+              {configMode === 'quick' && (
+                <button
+                  onClick={() => setConfigMode('advanced')}
+                  className="w-full py-3 px-4 rounded-lg border border-dashed border-overlay/15 text-sm text-text-secondary hover:text-text-primary hover:border-overlay/25 transition-colors text-center"
+                >
+                  8 more configuration sections available
+                </button>
+              )}
+
+              {/* Branding (advanced only) */}
+              {(visibleSections === null || visibleSections.includes('branding')) && <ConfigSection
                 title="Branding"
                 icon={<Palette className="w-4 h-4" />}
                 expanded={expandedSection === 'branding'}
@@ -1278,10 +1330,10 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                     />
                   </div>
                 </div>
-              </ConfigSection>
+              </ConfigSection>}
 
-              {/* Advanced */}
-              <ConfigSection
+              {/* Advanced (advanced only) */}
+              {(visibleSections === null || visibleSections.includes('advanced')) && <ConfigSection
                 title="Advanced Options"
                 icon={<Terminal className="w-4 h-4" />}
                 expanded={expandedSection === 'advanced'}
@@ -1317,7 +1369,7 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                     />
                   </div>
                 </div>
-              </ConfigSection>
+              </ConfigSection>}
 
             </div>
           </div>
@@ -1399,7 +1451,7 @@ export function PackageConfig({ package: pkg, installers, onClose, isDeployed = 
                   ? 'bg-green-600/10 text-green-400 hover:bg-green-600/10 cursor-default'
                   : isDeployed
                   ? 'bg-accent-cyan hover:bg-accent-cyan-dim text-white'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'bg-accent-cyan hover:bg-accent-cyan-dim text-white'
               )}
             >
               {isAddingToCart ? (
@@ -1442,11 +1494,18 @@ interface ConfigSectionProps {
 }
 
 function ConfigSection({ title, icon, expanded, onToggle, children }: ConfigSectionProps) {
+  const sectionId = useId();
+  const contentId = `${sectionId}-content`;
+  const headerId = `${sectionId}-header`;
+
   return (
     <div className="border border-overlay/10 rounded-lg overflow-hidden mb-3">
       <button
+        id={headerId}
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-4 py-3 bg-bg-elevated/50 hover:bg-overlay/10 transition-colors"
+        aria-expanded={expanded}
+        aria-controls={contentId}
+        className="w-full flex items-center justify-between px-4 py-3 bg-bg-elevated/50 hover:bg-overlay/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-cyan"
       >
         <div className="flex items-center gap-2 text-text-primary">
           {icon}
@@ -1454,7 +1513,11 @@ function ConfigSection({ title, icon, expanded, onToggle, children }: ConfigSect
         </div>
         <ChevronRight className={cn('w-4 h-4 text-text-muted transition-transform', expanded && 'rotate-90')} />
       </button>
-      {expanded && <div className="p-4 bg-bg-surface/50">{children}</div>}
+      {expanded && (
+        <div id={contentId} role="region" aria-labelledby={headerId} className="p-4 bg-bg-surface/50">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
@@ -1467,15 +1530,22 @@ interface ToggleOptionProps {
 }
 
 function ToggleOption({ label, description, checked, onChange }: ToggleOptionProps) {
+  const toggleId = useId();
+
   return (
-    <label className="flex items-start gap-3 cursor-pointer">
+    <div className="flex items-start gap-3">
       <div className="pt-0.5">
-        <div
-          className={cn(
-            'w-10 h-6 rounded-full transition-colors relative',
-            checked ? 'bg-blue-600' : 'bg-overlay/15'
-          )}
+        <button
+          type="button"
+          role="switch"
+          aria-checked={checked}
+          aria-labelledby={label ? `${toggleId}-label` : undefined}
+          aria-describedby={description ? `${toggleId}-desc` : undefined}
           onClick={() => onChange(!checked)}
+          className={cn(
+            'w-10 h-6 rounded-full transition-colors relative cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-bg-surface',
+            checked ? 'bg-accent-cyan' : 'bg-overlay/15'
+          )}
         >
           <div
             className={cn(
@@ -1483,12 +1553,99 @@ function ToggleOption({ label, description, checked, onChange }: ToggleOptionPro
               checked ? 'translate-x-5' : 'translate-x-1'
             )}
           />
-        </div>
+        </button>
       </div>
-      <div>
-        <span className="text-text-primary text-sm font-medium">{label}</span>
-        <p className="text-text-muted text-xs">{description}</p>
+      <div className="cursor-pointer" onClick={() => onChange(!checked)}>
+        {label && <span id={`${toggleId}-label`} className="text-text-primary text-sm font-medium">{label}</span>}
+        {description && <p id={`${toggleId}-desc`} className="text-text-muted text-xs">{description}</p>}
       </div>
-    </label>
+    </div>
+  );
+}
+
+function DetectionRuleDisplay({ rule }: { rule: DetectionRule }) {
+  if (rule.type === 'registry') {
+    const r = rule as DetectionRule & { keyPath?: string; valueName?: string; detectionValue?: string; operator?: string };
+    return (
+      <div className="space-y-1 text-xs">
+        {r.keyPath && (
+          <div className="flex gap-2">
+            <span className="text-text-muted font-medium min-w-[4rem]">Path</span>
+            <span className="text-text-primary font-mono break-all">{r.keyPath}</span>
+          </div>
+        )}
+        {r.valueName && (
+          <div className="flex gap-2">
+            <span className="text-text-muted font-medium min-w-[4rem]">Value</span>
+            <span className="text-text-primary font-mono">{r.valueName}</span>
+          </div>
+        )}
+        {r.operator && (
+          <div className="flex gap-2">
+            <span className="text-text-muted font-medium min-w-[4rem]">Operator</span>
+            <span className="text-text-primary">{r.operator}</span>
+          </div>
+        )}
+        {r.detectionValue && (
+          <div className="flex gap-2">
+            <span className="text-text-muted font-medium min-w-[4rem]">Expected</span>
+            <span className="text-text-primary font-mono">{r.detectionValue}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (rule.type === 'file') {
+    const f = rule as DetectionRule & { path?: string; fileOrFolderName?: string; detectionValue?: string; operator?: string };
+    return (
+      <div className="space-y-1 text-xs">
+        {f.path && (
+          <div className="flex gap-2">
+            <span className="text-text-muted font-medium min-w-[4rem]">Path</span>
+            <span className="text-text-primary font-mono break-all">{f.path}</span>
+          </div>
+        )}
+        {f.fileOrFolderName && (
+          <div className="flex gap-2">
+            <span className="text-text-muted font-medium min-w-[4rem]">File</span>
+            <span className="text-text-primary font-mono">{f.fileOrFolderName}</span>
+          </div>
+        )}
+        {f.operator && f.detectionValue && (
+          <div className="flex gap-2">
+            <span className="text-text-muted font-medium min-w-[4rem]">Version</span>
+            <span className="text-text-primary">{f.operator} {f.detectionValue}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (rule.type === 'msi') {
+    const m = rule as DetectionRule & { productCode?: string; productVersionOperator?: string; productVersion?: string };
+    return (
+      <div className="space-y-1 text-xs">
+        {m.productCode && (
+          <div className="flex gap-2">
+            <span className="text-text-muted font-medium min-w-[5.5rem]">Product Code</span>
+            <span className="text-text-primary font-mono break-all">{m.productCode}</span>
+          </div>
+        )}
+        {m.productVersionOperator && m.productVersion && (
+          <div className="flex gap-2">
+            <span className="text-text-muted font-medium min-w-[5.5rem]">Version</span>
+            <span className="text-text-primary">{m.productVersionOperator} {m.productVersion}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Fallback for unknown types
+  return (
+    <pre className="text-text-muted text-xs font-mono whitespace-pre-wrap break-all">
+      {JSON.stringify(rule, null, 2)}
+    </pre>
   );
 }
