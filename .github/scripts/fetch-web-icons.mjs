@@ -141,20 +141,42 @@ async function tryFavicon(homepage) {
 }
 
 /**
+ * Fetch apps that need icons with pagination (Supabase caps at 1000 per query).
+ */
+async function fetchAppsNeedingIcons(limit) {
+  const PAGE_SIZE = 1000;
+  const apps = [];
+  let offset = 0;
+
+  while (apps.length < limit) {
+    const batchSize = Math.min(PAGE_SIZE, limit - apps.length);
+    const { data, error } = await supabase
+      .from('curated_apps')
+      .select('winget_id, name, publisher, homepage')
+      .or('has_icon.is.null,has_icon.eq.false')
+      .range(offset, offset + batchSize - 1);
+
+    if (error) {
+      console.error('Failed to query apps:', error.message);
+      process.exit(1);
+    }
+
+    if (data.length === 0) break;
+    apps.push(...data);
+    offset += data.length;
+
+    // If we got fewer than requested, there are no more rows
+    if (data.length < batchSize) break;
+  }
+
+  return apps;
+}
+
+/**
  * Main: query apps that need icons, try each tier, save results.
  */
 async function main() {
-  // Fetch apps that need icons
-  const { data: apps, error } = await supabase
-    .from('curated_apps')
-    .select('winget_id, name, publisher, homepage')
-    .or('has_icon.is.null,has_icon.eq.false')
-    .limit(MAX_APPS);
-
-  if (error) {
-    console.error('Failed to query apps:', error.message);
-    process.exit(1);
-  }
+  const apps = await fetchAppsNeedingIcons(MAX_APPS);
 
   console.log(`Found ${apps.length} apps without icons`);
 
