@@ -26,6 +26,40 @@ interface Release {
 
 const releases: Release[] = [
   {
+    version: "0.6.2",
+    date: "2026-02-16",
+    title: "Package Testing Pipeline & Dashboard UX Overhaul",
+    type: "minor",
+    highlights: [
+      "Package Testing Pipeline: every PSADT package now goes through a full install/uninstall test cycle on a Windows runner before being uploaded to Intune",
+      "Real-time test progress with a 3-step sub-stepper UI (Structure Validation, Install, Uninstall) that updates live during the test phase",
+      "Pre-installed app detection: automatically skips install/uninstall testing for apps already present on the runner to avoid conflicts and timeouts",
+      "MSIX/AppX packages are gracefully skipped on Windows Server runners where they are not supported",
+      "Structured error display for test failures with per-step results, exit codes, and duration breakdowns",
+      "App Catalog, Updates, Inventory, Unmanaged Apps, and SCCM Migration pages completely redesigned with improved UX and interactions",
+      "Cookie consent banner for privacy compliance with customizable preferences",
+      "Handle updates for apps not originally deployed through IntuneGet",
+      "Bulk Update improvements: bulk API for Update All, scoped rate limit cooldown, and progress dialog",
+      "Parallel chunked uploads in GitHub Actions workflow (25MB x 4 concurrent) for faster deployment",
+      "Over 7,000 app icons added via automated web icon extraction pipeline",
+      "Contributor License Agreement (CLA) workflow for community contributions",
+      "RealmJoin sponsor banner on the landing page hero section",
+    ],
+  },
+  {
+    version: "0.6.1",
+    date: "2026-02-14",
+    title: "Bug Fixes & Upload History Management",
+    type: "patch",
+    highlights: [
+      "Auto-cleanup cron job for stuck deployment jobs (marks jobs stale after 30 minutes)",
+      "MSP section now discoverable for all users with redirect to setup page",
+      "Fixed team invite email mismatch using Microsoft Graph API email resolution",
+      "Fixed duplicate entries on Discovered Apps page from Graph API pagination overlap",
+      "Upload history management: Clear History button, individual job dismiss, and auto-cleanup of old jobs",
+    ],
+  },
+  {
     version: "0.6.0",
     date: "2026-02-13",
     title: "Update Only Assignments for Discovered Apps",
