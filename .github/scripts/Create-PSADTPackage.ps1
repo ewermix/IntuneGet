@@ -378,7 +378,6 @@ $useRegistryUninstall = $false
 $useMsixUninstall = $false
 $usePortableUninstall = $false
 $registryUninstallDisplayName = ''
-$registryUninstallSilentSwitch = '/S'
 $msixPackageName = ''
 
 if ($uninstallCmd -match '^REGISTRY_UNINSTALL:(.+):(.+)$') {
@@ -401,7 +400,6 @@ if ($uninstallCmd -match '^REGISTRY_UNINSTALL:(.+):(.+)$') {
     }
     $registryUninstallDisplayName = $registryUninstallDisplayName.Trim()
 
-    $registryUninstallSilentSwitch = $Matches[2]
     Write-Host "Using registry-based uninstall for: $registryUninstallDisplayName"
 } elseif ($uninstallCmd -match '^MSIX_UNINSTALL:(.+)$') {
     $useMsixUninstall = $true
@@ -966,42 +964,13 @@ if ($preUninstallPromptCalls) {
 if ($useRegistryUninstall) {
     $lines += @(
         ''
-        '    # Use PSADT v4 native functions to find and uninstall application'
+        '    # Use PSADT v4 Uninstall-ADTApplication to find and uninstall'
+        '    # This handles the registry lookup, MSI vs EXE detection, and silent'
+        '    # switches automatically using the app''s registered QuietUninstallString'
         "    `$appName = '$registryUninstallDisplayName'"
-        "    `$silentArgs = '$registryUninstallSilentSwitch'"
         ''
-        '    Write-ADTLogEntry -Message "Searching for installed application: $appName" -Severity ''Info'' -Source ''Uninstall-ADTDeployment'''
-        ''
-        '    # Use Get-ADTApplication to find the installed app (handles all registry paths automatically)'
-        '    $installedApp = Get-ADTApplication -Name $appName -NameMatch ''Contains'''
-        ''
-        '    # If not found with contains, try regex for more flexible matching'
-        '    if (-not $installedApp) {'
-        '        # Build regex pattern that handles common suffixes'
-        '        $regexPattern = [regex]::Escape($appName) -replace ''\\s+'', ''\s+'''
-        '        $installedApp = Get-ADTApplication -Name $regexPattern -NameMatch ''RegEx'''
-        '    }'
-        ''
-        '    if ($installedApp) {'
-        '        # If multiple matches, prefer shorter DisplayName (more likely to be main app)'
-        '        if ($installedApp -is [array]) {'
-        '            $installedApp = $installedApp | Sort-Object { $_.DisplayName.Length } | Select-Object -First 1'
-        '        }'
-        '        Write-ADTLogEntry -Message "Found installed application: $($installedApp.DisplayName)" -Severity ''Info'' -Source ''Uninstall-ADTDeployment'''
-        ''
-        '        # Check if this is an MSI-based installation'
-        '        if ($installedApp.ProductCode) {'
-        '            Write-ADTLogEntry -Message "Detected MSI product code: $($installedApp.ProductCode) - using Start-ADTMsiProcess" -Severity ''Info'' -Source ''Uninstall-ADTDeployment'''
-        '            Start-ADTMsiProcess -Action ''Uninstall'' -ProductCode $installedApp.ProductCode -IgnoreExitCodes @(0, 3010, 1605, 1614)'
-        '        } else {'
-        '            # EXE-based uninstaller - use Uninstall-ADTApplication for automatic handling'
-        '            Write-ADTLogEntry -Message "Using Uninstall-ADTApplication for EXE-based uninstaller" -Severity ''Info'' -Source ''Uninstall-ADTDeployment'''
-        '            Uninstall-ADTApplication -Name $installedApp.DisplayName -NameMatch ''Exact'' -ApplicationType ''EXE'' -ArgumentList $silentArgs -IgnoreExitCodes @(0, 3010, 1641, 1605)'
-        '        }'
-        '    } else {'
-        '        Write-ADTLogEntry -Message "No installed application found for: $appName" -Severity ''Warning'' -Source ''Uninstall-ADTDeployment'''
-        '        throw "Could not find installed application: $appName"'
-        '    }'
+        '    Write-ADTLogEntry -Message "Uninstalling application: $appName" -Severity ''Info'' -Source ''Uninstall-ADTDeployment'''
+        '    Uninstall-ADTApplication -Name $appName -SuccessExitCodes @(0, 1641, 3010, 1605, 1614)'
     )
 } elseif ($useMsixUninstall) {
     $lines += @(
