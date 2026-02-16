@@ -872,9 +872,35 @@ function UploadJobCard({
             />
           )}
 
-          {/* Retry button for failed jobs */}
-          {job.status === 'failed' && (
-            <div className="mt-3 flex items-center gap-3">
+          {/* Test failure: prominent action panel */}
+          {job.status === 'failed' && job.error_stage === 'test' && (
+            <div className="mt-4 p-5 rounded-xl border border-status-warning/20 bg-gradient-to-r from-status-warning/[0.08] to-status-warning/[0.03]">
+              <p className="text-text-primary font-medium text-sm">Test environment mismatch?</p>
+              <p className="text-text-secondary text-sm mt-1">
+                Our CI runner uses Windows Server, which may not support desktop-only apps. If this app targets Windows 10/11 endpoints, it will likely work fine.
+              </p>
+              <Button
+                variant="outline"
+                className="mt-3 w-full bg-status-warning/15 hover:bg-status-warning/20 border border-status-warning/30 text-status-warning font-medium"
+                onClick={() => onSkipTestRedeploy(job)}
+                disabled={isRedeploying}
+              >
+                {isRedeploying ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <SkipForward className="w-4 h-4 mr-2" />}
+                Deploy Without Testing
+              </Button>
+              <button
+                className="mt-2 w-full text-center text-xs text-text-muted hover:text-text-secondary transition-colors"
+                onClick={() => onForceRedeploy(job)}
+                disabled={isRedeploying}
+              >
+                or retry the deployment
+              </button>
+            </div>
+          )}
+
+          {/* Retry button for non-test failures */}
+          {job.status === 'failed' && job.error_stage !== 'test' && (
+            <div className="mt-3">
               <Button
                 size="sm"
                 variant="outline"
@@ -885,18 +911,6 @@ function UploadJobCard({
                 {isRedeploying ? <Loader2 className="w-3 h-3 animate-spin mr-1.5" /> : <RefreshCw className="w-3 h-3 mr-1.5" />}
                 Retry Deployment
               </Button>
-              {job.error_stage === 'test' && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-status-warning/30 text-status-warning bg-status-warning/5 hover:bg-status-warning/10"
-                  onClick={() => onSkipTestRedeploy(job)}
-                  disabled={isRedeploying}
-                >
-                  {isRedeploying ? <Loader2 className="w-3 h-3 animate-spin mr-1.5" /> : <SkipForward className="w-3 h-3 mr-1.5" />}
-                  Deploy Without Testing
-                </Button>
-              )}
             </div>
           )}
 
