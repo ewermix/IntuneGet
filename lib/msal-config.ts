@@ -8,7 +8,7 @@ import { getPublicClientId } from "@/lib/runtime-config";
 export const msalConfig: Configuration = {
   auth: {
     clientId: getPublicClientId(),
-    authority: "https://login.microsoftonline.com/common",
+    authority: "https://login.microsoftonline.com/organizations",
     redirectUri:
       typeof window !== "undefined" ? window.location.origin : "",
   },
