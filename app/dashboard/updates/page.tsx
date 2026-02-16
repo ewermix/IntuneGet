@@ -15,6 +15,7 @@ import {
   Filter,
   Loader2,
   ArrowRight,
+  Info,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -68,6 +69,8 @@ export default function UpdatesPage() {
   const [activeTab, setActiveTab] = useState<'available' | 'history'>('available');
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
+  const [newAppDialogOpen, setNewAppDialogOpen] = useState(false);
+  const [pendingNewAppUpdate, setPendingNewAppUpdate] = useState<AvailableUpdate | null>(null);
   const [bulkProgress, setBulkProgress] = useState<{
     phase: 'confirm' | 'updating' | 'done';
     completed: number;
@@ -203,7 +206,7 @@ export default function UpdatesPage() {
   })();
 
   // Handlers
-  const handleTriggerUpdate = useCallback(async (update: AvailableUpdate) => {
+  const executeTriggerUpdate = useCallback(async (update: AvailableUpdate) => {
     setUpdatingIds((prev) => new Set(prev).add(update.id));
     try {
       await triggerUpdate({
@@ -219,6 +222,23 @@ export default function UpdatesPage() {
       });
     }
   }, [triggerUpdate, router]);
+
+  const handleTriggerUpdate = useCallback(async (update: AvailableUpdate) => {
+    if (!update.has_prior_deployment) {
+      setPendingNewAppUpdate(update);
+      setNewAppDialogOpen(true);
+      return;
+    }
+    await executeTriggerUpdate(update);
+  }, [executeTriggerUpdate]);
+
+  const handleConfirmNewApp = useCallback(async () => {
+    setNewAppDialogOpen(false);
+    if (pendingNewAppUpdate) {
+      await executeTriggerUpdate(pendingNewAppUpdate);
+      setPendingNewAppUpdate(null);
+    }
+  }, [pendingNewAppUpdate, executeTriggerUpdate]);
 
   const handlePolicyChange = useCallback(async (
     update: AvailableUpdate,
@@ -378,6 +398,16 @@ export default function UpdatesPage() {
                                   Includes major version updates -- review carefully
                                 </span>
                               )}
+                              {(() => {
+                                const newAppsCount = eligibleForBulkUpdate.filter(u => !u.has_prior_deployment).length;
+                                if (newAppsCount === 0) return null;
+                                return (
+                                  <span className="flex items-center gap-2 px-3 py-2 mb-2 bg-violet-500/10 border border-violet-500/20 rounded-lg text-sm text-violet-500">
+                                    <Info className="w-4 h-4 flex-shrink-0" />
+                                    {newAppsCount} app{newAppsCount !== 1 ? 's' : ''} will have new app objects created in Intune (not previously deployed through IntuneGet)
+                                  </span>
+                                );
+                              })()}
                               <span className="block max-h-40 overflow-y-auto space-y-1">
                                 {eligibleForBulkUpdate.map(u => {
                                   const type = classifyUpdateType(u.current_version, u.latest_version);
@@ -392,6 +422,11 @@ export default function UpdatesPage() {
                                         {type}
                                       </span>
                                       {u.display_name} ({u.current_version} &rarr; {u.latest_version})
+                                      {!u.has_prior_deployment && (
+                                        <span className="text-[10px] font-bold uppercase tracking-wide px-1 py-0.5 rounded border text-violet-500 bg-violet-500/10 border-violet-500/20">
+                                          NEW
+                                        </span>
+                                      )}
                                     </span>
                                   );
                                 })}
@@ -513,6 +548,58 @@ export default function UpdatesPage() {
           </div>
         }
       />
+
+      {/* New App Info Dialog */}
+      <Dialog open={newAppDialogOpen} onOpenChange={setNewAppDialogOpen}>
+        <DialogContent className="bg-bg-surface border-overlay/10">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Info className="w-5 h-5 text-violet-500" />
+              Create new app in Intune
+            </DialogTitle>
+            <DialogDescription asChild>
+              <div className="space-y-3 pt-1">
+                <p>
+                  <span className="font-medium text-text-primary">{pendingNewAppUpdate?.display_name}</span> was not
+                  originally deployed through IntuneGet.
+                </p>
+                <ul className="space-y-1.5 text-sm">
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1 w-1 h-1 rounded-full bg-violet-500 flex-shrink-0" />
+                    A new app object will be created in Intune
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1 w-1 h-1 rounded-full bg-violet-500 flex-shrink-0" />
+                    The existing app in Intune will not be modified
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1 w-1 h-1 rounded-full bg-violet-500 flex-shrink-0" />
+                    You will need to assign groups after deployment
+                  </li>
+                </ul>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setNewAppDialogOpen(false);
+                setPendingNewAppUpdate(null);
+              }}
+              className="border-overlay/10 text-text-secondary hover:bg-overlay/5"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => void handleConfirmNewApp()}
+              className="bg-violet-600 hover:bg-violet-700 text-white font-medium"
+            >
+              Create New App
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Critical Updates Banner */}
       {criticalCount > 0 && (

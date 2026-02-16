@@ -17,6 +17,7 @@ import {
 import { getAppConfig } from '@/lib/config';
 import { getFeatureFlags } from '@/lib/features';
 import { extractSilentSwitches } from '@/lib/msp/silent-switches';
+import { generateDetectionRules, generateInstallCommand, generateUninstallCommand } from '@/lib/detection-rules';
 import { buildIntuneAppDescription } from '@/lib/intune-description';
 import type { WorkflowInputs } from '@/lib/github-actions';
 import type {
@@ -27,6 +28,7 @@ import type {
 } from '@/types/update-policies';
 import type { IntuneAppCategorySelection, PackageAssignment } from '@/types/upload';
 import type { DetectionRule } from '@/types/intune';
+import type { NormalizedInstaller } from '@/types/winget';
 import type { Json } from '@/types/database';
 
 interface PackageConfigWithAssignments {
@@ -295,66 +297,80 @@ export async function POST(request: NextRequest) {
             .limit(1)
             .single();
 
-          if (!uploadHistory?.packaging_job_id) {
-            response.failed++;
-            response.results.push({
-              winget_id: req.winget_id,
-              tenant_id: req.tenant_id,
-              success: false,
-              error: 'No prior deployment found - please deploy manually first and enable auto-update',
-            });
-            continue;
+          let deploymentConfig: DeploymentConfig;
+          let originalUploadHistoryId: string | null = null;
+
+          if (uploadHistory?.packaging_job_id) {
+            // Has prior deployment: extract config from packaging job
+            const { data: packagingJob } = await supabase
+              .from('packaging_jobs')
+              .select('*')
+              .eq('id', uploadHistory.packaging_job_id)
+              .single();
+
+            if (!packagingJob) {
+              response.failed++;
+              response.results.push({
+                winget_id: req.winget_id,
+                tenant_id: req.tenant_id,
+                success: false,
+                error: 'Could not retrieve deployment configuration',
+              });
+              continue;
+            }
+
+            const packageConfig = packagingJob.package_config;
+            const parsedAssignments = parsePackageAssignments(packageConfig);
+            const parsedCategories = parsePackageCategories(packageConfig);
+            const assignmentMigration = parseAssignmentMigration(packageConfig);
+
+            deploymentConfig = {
+              displayName: packagingJob.display_name,
+              publisher: packagingJob.publisher || 'Unknown Publisher',
+              architecture: packagingJob.architecture || 'x64',
+              installerType: packagingJob.installer_type,
+              installCommand: packagingJob.install_command || '',
+              uninstallCommand: packagingJob.uninstall_command || '',
+              installScope: packagingJob.install_scope || 'system',
+              detectionRules: parseDetectionRules(packagingJob.detection_rules),
+              assignments: parsedAssignments,
+              categories: parsedCategories,
+              forceCreateNewApp: true,
+              assignmentMigration,
+            };
+            originalUploadHistoryId = uploadHistory.id;
+          } else {
+            // No prior deployment: build config from curated catalog data
+            const defaultConfig = await buildDefaultDeploymentConfig(
+              supabase,
+              req.winget_id,
+              updateResult.latest_version
+            );
+
+            if (!defaultConfig) {
+              response.failed++;
+              response.results.push({
+                winget_id: req.winget_id,
+                tenant_id: req.tenant_id,
+                success: false,
+                error: 'Could not determine deployment configuration for this app',
+              });
+              continue;
+            }
+
+            deploymentConfig = defaultConfig;
           }
 
-          // Get the packaging job to extract deployment config
-          const { data: packagingJob } = await supabase
-            .from('packaging_jobs')
-            .select('*')
-            .eq('id', uploadHistory.packaging_job_id)
-            .single();
-
-          if (!packagingJob) {
-            response.failed++;
-            response.results.push({
-              winget_id: req.winget_id,
-              tenant_id: req.tenant_id,
-              success: false,
-              error: 'Could not retrieve deployment configuration',
-            });
-            continue;
-          }
-
-          // Create deployment config from packaging job
-          const packageConfig = packagingJob.package_config;
-          const parsedAssignments = parsePackageAssignments(packageConfig);
-          const parsedCategories = parsePackageCategories(packageConfig);
-          const assignmentMigration = parseAssignmentMigration(packageConfig);
-
-          const deploymentConfig: DeploymentConfig = {
-            displayName: packagingJob.display_name,
-            publisher: packagingJob.publisher || 'Unknown Publisher',
-            architecture: packagingJob.architecture || 'x64',
-            installerType: packagingJob.installer_type,
-            installCommand: packagingJob.install_command || '',
-            uninstallCommand: packagingJob.uninstall_command || '',
-            installScope: packagingJob.install_scope || 'system',
-            detectionRules: parseDetectionRules(packagingJob.detection_rules),
-            assignments: parsedAssignments,
-            categories: parsedCategories,
-            forceCreateNewApp: true,
-            assignmentMigration,
-          };
-
-          // Create a temporary policy for this manual trigger
+          // Create a policy for this manual trigger
           const { data: newPolicy, error: policyError } = await supabase
             .from('app_update_policies')
             .insert({
               user_id: user.userId,
               tenant_id: req.tenant_id,
               winget_id: req.winget_id,
-              policy_type: 'notify', // Default to notify, user can change to auto_update later
+              policy_type: 'notify',
               deployment_config: deploymentConfig as unknown as Json,
-              original_upload_history_id: uploadHistory.id,
+              original_upload_history_id: originalUploadHistoryId,
               is_enabled: true,
             })
             .select()
@@ -416,7 +432,7 @@ export async function POST(request: NextRequest) {
         const triggerResult = await autoUpdateTrigger.triggerAutoUpdate(
           policy as AppUpdatePolicy,
           installerInfo,
-          { skipRateLimits: true }
+          { skipRateLimits: true, skipPriorDeploymentCheck: true }
         );
 
         if (triggerResult.success && triggerResult.packagingJobId) {
@@ -527,4 +543,94 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * Build a deployment config from curated catalog data for apps
+ * that were never deployed through IntuneGet.
+ */
+async function buildDefaultDeploymentConfig(
+  supabase: ReturnType<typeof createServerClient>,
+  wingetId: string,
+  latestVersion: string
+): Promise<DeploymentConfig | null> {
+  // Get curated app info
+  const { data: curatedApp } = await supabase
+    .from('curated_apps')
+    .select('name, publisher')
+    .eq('winget_id', wingetId)
+    .single();
+
+  if (!curatedApp) {
+    return null;
+  }
+
+  // Get version history for installer metadata
+  const { data: versionInfo } = await supabase
+    .from('version_history')
+    .select('installer_url, installer_sha256, installer_type, installers')
+    .eq('winget_id', wingetId)
+    .eq('version', latestVersion)
+    .single();
+
+  if (!versionInfo?.installer_url) {
+    return null;
+  }
+
+  // Resolve architecture-specific installer (prefer x64)
+  let installerUrl = versionInfo.installer_url;
+  let installerSha256 = versionInfo.installer_sha256 || '';
+  let installerType = versionInfo.installer_type || 'exe';
+  let architecture = 'x64';
+
+  if (versionInfo.installers && Array.isArray(versionInfo.installers)) {
+    type InstallerEntry = { Architecture?: string; InstallerUrl?: string; InstallerSha256?: string; InstallerType?: string };
+    const installers = versionInfo.installers as InstallerEntry[];
+    const x64Installer = installers.find(
+      (i) => i.Architecture === 'x64'
+    );
+    if (x64Installer) {
+      installerUrl = x64Installer.InstallerUrl || installerUrl;
+      installerSha256 = x64Installer.InstallerSha256 || installerSha256;
+      installerType = x64Installer.InstallerType || installerType;
+    } else {
+      // Use first available installer's architecture
+      const first = installers[0];
+      if (first?.Architecture) {
+        architecture = first.Architecture.toLowerCase();
+      }
+    }
+  }
+
+  // Build a NormalizedInstaller for detection rule generation
+  const normalizedInstaller: NormalizedInstaller = {
+    architecture: architecture as NormalizedInstaller['architecture'],
+    url: installerUrl,
+    sha256: installerSha256,
+    type: installerType as NormalizedInstaller['type'],
+    scope: 'machine',
+  };
+
+  const installCommand = generateInstallCommand(normalizedInstaller, 'machine');
+  const uninstallCommand = generateUninstallCommand(normalizedInstaller, curatedApp.name);
+  const detectionRules = generateDetectionRules(
+    normalizedInstaller,
+    curatedApp.name,
+    wingetId,
+    latestVersion
+  );
+
+  return {
+    displayName: curatedApp.name,
+    publisher: curatedApp.publisher || 'Unknown Publisher',
+    architecture,
+    installerType,
+    installCommand,
+    uninstallCommand,
+    installScope: 'system',
+    detectionRules,
+    assignments: [],
+    categories: [],
+    forceCreateNewApp: true,
+  };
 }

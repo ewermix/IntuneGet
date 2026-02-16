@@ -156,6 +156,8 @@ export interface AvailableUpdate {
   detected_at: string;
   notified_at: string | null;
   dismissed_at: string | null;
+  // Whether this app was previously deployed through IntuneGet
+  has_prior_deployment: boolean;
   // Policy data (if exists)
   policy?: {
     id: string;

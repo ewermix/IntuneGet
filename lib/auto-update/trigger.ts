@@ -111,7 +111,7 @@ export class AutoUpdateTrigger {
   async triggerAutoUpdate(
     policy: AppUpdatePolicy,
     updateInfo: UpdateInfo,
-    options?: { skipRateLimits?: boolean }
+    options?: { skipRateLimits?: boolean; skipPriorDeploymentCheck?: boolean }
   ): Promise<TriggerResult> {
     try {
       // Safety check 1: Verify policy allows auto-update
@@ -132,7 +132,7 @@ export class AutoUpdateTrigger {
       }
 
       // Safety check 3: Verify prior deployment exists (if required)
-      if (this.safetyConfig.requirePriorDeployment && !policy.original_upload_history_id) {
+      if (this.safetyConfig.requirePriorDeployment && !options?.skipPriorDeploymentCheck && !policy.original_upload_history_id) {
         return {
           success: false,
           error: 'Auto-update requires a prior manual deployment',

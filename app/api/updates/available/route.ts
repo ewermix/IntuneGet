@@ -83,6 +83,20 @@ export async function GET(request: NextRequest) {
 
     const { data: policies } = await policiesQuery;
 
+    // Query upload_history to determine which apps were deployed through IntuneGet
+    const { data: deployedApps } = await supabase
+      .from('upload_history')
+      .select('winget_id, intune_tenant_id')
+      .eq('user_id', user.userId)
+      .in('winget_id', wingetIds);
+
+    const deployedSet = new Set<string>();
+    if (deployedApps) {
+      for (const d of deployedApps) {
+        deployedSet.add(`${d.winget_id}:${d.intune_tenant_id}`);
+      }
+    }
+
     // Create policy lookup
     const policyMap = new Map<string, AvailableUpdate['policy']>();
     if (policies) {
@@ -106,6 +120,7 @@ export async function GET(request: NextRequest) {
         const policyKey = `${update.winget_id}:${update.tenant_id}`;
         return {
           ...update,
+          has_prior_deployment: deployedSet.has(policyKey),
           policy: policyMap.get(policyKey) || null,
         };
       })

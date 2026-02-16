@@ -12,6 +12,7 @@ import {
   Pin,
   ChevronRight,
   Zap,
+  Plus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AppIcon } from '@/components/AppIcon';
@@ -113,7 +114,9 @@ export function UpdateCard({
         'glass-light rounded-xl border transition-all duration-200 relative group overflow-hidden',
         update.is_critical
           ? 'border-l-[3px] border-l-status-warning border-t-status-warning/15 border-r-status-warning/15 border-b-status-warning/15'
-          : 'border-black/[0.08] hover:border-accent-cyan/20 hover:shadow-soft-md'
+          : !update.has_prior_deployment
+            ? 'border-l-[3px] border-l-violet-500 border-t-violet-500/15 border-r-violet-500/15 border-b-violet-500/15'
+            : 'border-black/[0.08] hover:border-accent-cyan/20 hover:shadow-soft-md'
       )}
     >
       {/* Subtle gradient overlay on hover */}
@@ -121,7 +124,9 @@ export function UpdateCard({
         'absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none',
         update.is_critical
           ? 'bg-gradient-to-br from-status-warning/[0.03] via-transparent to-transparent'
-          : 'bg-gradient-to-br from-accent-cyan/[0.03] via-transparent to-transparent'
+          : !update.has_prior_deployment
+            ? 'bg-gradient-to-br from-violet-500/[0.03] via-transparent to-transparent'
+            : 'bg-gradient-to-br from-accent-cyan/[0.03] via-transparent to-transparent'
       )} />
 
       {/* Main content */}
@@ -204,6 +209,12 @@ export function UpdateCard({
 
         {/* Status metadata line */}
         <div className="flex items-center gap-2.5 mb-3.5 flex-wrap">
+          {!update.has_prior_deployment && (
+            <span className="flex items-center gap-1 text-[11px] font-medium text-violet-500">
+              <Plus className="w-3 h-3" />
+              New to IntuneGet
+            </span>
+          )}
           {isAutoUpdateEnabled && (
             <span className="flex items-center gap-1 text-[11px] font-medium text-status-success">
               <Zap className="w-3 h-3" />
