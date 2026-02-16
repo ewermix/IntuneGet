@@ -24,6 +24,7 @@ export const maxDuration = 60;
 interface PackageRequestBody {
   items: CartItem[];
   forceCreate?: boolean;
+  skipTest?: boolean;
 }
 
 interface PackagingJobRecord {
@@ -149,7 +150,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body: PackageRequestBody = await request.json();
-    const { items, forceCreate } = body;
+    const { items, forceCreate, skipTest } = body;
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -297,6 +298,7 @@ export async function POST(request: NextRequest) {
           categories: item.categories ? JSON.stringify(item.categories) : undefined,
           installScope: item.installScope,
           forceCreate: item.forceCreate || forceCreate,
+          skipTest: skipTest,
         };
 
         const triggerResult = await triggerPackagingWorkflow(

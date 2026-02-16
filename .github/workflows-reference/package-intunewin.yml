@@ -30,6 +30,7 @@ jobs:
       ASSIGNMENTS: ${{ github.event.client_payload.config.assignments }}
       INSTALL_SCOPE: ${{ github.event.client_payload.config.installScope }}
       FORCE_CREATE: ${{ github.event.client_payload.config.forceCreate }}
+      SKIP_TEST: ${{ github.event.client_payload.config.skipTest }}
 
     steps:
       - name: Checkout public repository for scripts
@@ -273,6 +274,7 @@ jobs:
           }
 
       - name: Test package installation
+        if: env.SKIP_TEST != 'true'
         env:
           CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
         run: |
@@ -335,7 +337,7 @@ jobs:
           }
 
       - name: Upload test debug logs
-        if: failure()
+        if: failure() && env.SKIP_TEST != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: test-debug-logs

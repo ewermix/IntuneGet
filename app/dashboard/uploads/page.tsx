@@ -22,6 +22,7 @@ import {
   UserCircle,
   Trash2,
   FlaskConical,
+  SkipForward,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -293,6 +294,42 @@ export default function UploadsPage() {
     }
   };
 
+  const handleSkipTestRedeploy = async (job: PackagingJob) => {
+    const accessToken = await getAccessToken();
+    if (!accessToken) return;
+
+    setRedeployingJobId(job.id);
+    try {
+      const response = await fetch('/api/package', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          items: [job.package_config],
+          skipTest: true,
+        }),
+      });
+
+      if (!response.ok) {
+        const contentType = response.headers.get('content-type');
+        if (contentType?.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to redeploy');
+        }
+        throw new Error(`Failed to redeploy (${response.status})`);
+      }
+
+      await fetchJobs();
+    } catch (err) {
+      console.error('Failed to deploy without testing:', err);
+      setError(err instanceof Error ? err.message : 'Failed to deploy without testing');
+    } finally {
+      setRedeployingJobId(null);
+    }
+  };
+
   const filteredJobs = jobs.filter((job) => {
     switch (filter) {
       case 'active':
@@ -526,6 +563,7 @@ export default function UploadsPage() {
                 onCancel={handleCancelJob}
                 isCancelling={cancellingJobId === job.id}
                 onForceRedeploy={handleForceRedeploy}
+                onSkipTestRedeploy={handleSkipTestRedeploy}
                 isRedeploying={redeployingJobId === job.id}
               />
             ))}
@@ -543,6 +581,7 @@ function UploadJobCard({
   onCancel,
   isCancelling,
   onForceRedeploy,
+  onSkipTestRedeploy,
   isRedeploying,
 }: {
   job: PackagingJob;
@@ -551,6 +590,7 @@ function UploadJobCard({
   onCancel: (jobId: string, dismiss?: boolean) => void;
   isCancelling?: boolean;
   onForceRedeploy: (job: PackagingJob) => void;
+  onSkipTestRedeploy: (job: PackagingJob) => void;
   isRedeploying?: boolean;
 }) {
   const prefersReducedMotion = useReducedMotion();
@@ -845,6 +885,18 @@ function UploadJobCard({
                 {isRedeploying ? <Loader2 className="w-3 h-3 animate-spin mr-1.5" /> : <RefreshCw className="w-3 h-3 mr-1.5" />}
                 Retry Deployment
               </Button>
+              {job.error_stage === 'test' && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-status-warning/30 text-status-warning bg-status-warning/5 hover:bg-status-warning/10"
+                  onClick={() => onSkipTestRedeploy(job)}
+                  disabled={isRedeploying}
+                >
+                  {isRedeploying ? <Loader2 className="w-3 h-3 animate-spin mr-1.5" /> : <SkipForward className="w-3 h-3 mr-1.5" />}
+                  Deploy Without Testing
+                </Button>
+              )}
             </div>
           )}
 

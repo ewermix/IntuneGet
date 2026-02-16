@@ -26,6 +26,7 @@ export interface WorkflowInputs {
   categories?: string; // JSON-serialized IntuneAppCategorySelection[]
   installScope?: 'machine' | 'user'; // Install scope for per-user vs per-machine
   forceCreate?: boolean; // Skip duplicate check and force create new app
+  skipTest?: boolean; // Skip test step (deploy without testing)
 }
 
 export interface GitHubActionsConfig {
@@ -139,6 +140,7 @@ export async function triggerPackagingWorkflow(
           categories: inputs.categories || '[]',
           installScope: inputs.installScope || 'machine',
           forceCreate: inputs.forceCreate ? 'true' : 'false',
+          skipTest: inputs.skipTest ? 'true' : 'false',
         },
       },
     }),
