@@ -36,9 +36,6 @@ interface ErrorDetails {
       passed: boolean;
       exitCode?: number | null;
       duration_ms: number;
-      rulesChecked?: number;
-      rulesPassed?: number;
-      rulesCleared?: number;
       skipped?: boolean;
       reason?: string;
       rebootRequired?: boolean;
@@ -125,8 +122,6 @@ const errorCodeMessages: Record<string, string> = {
   INSTALL_MUTEX: 'Another installation was already in progress on the runner.',
   UNINSTALL_FAILED: 'The uninstaller returned a non-zero exit code.',
   STRUCTURE_VALIDATION_FAILED: 'The package structure is invalid (missing required files).',
-  DETECTION_FAILED_AFTER_INSTALL: 'The detection rule did not pass after installation completed successfully.',
-  DETECTION_STILL_PRESENT_AFTER_UNINSTALL: 'The detection rule still passes after uninstallation, suggesting incomplete removal.',
 };
 
 export function ErrorDisplay({
@@ -239,9 +234,7 @@ export function ErrorDisplay({
             const stepLabels: Record<string, string> = {
               structureValidation: 'Structure Validation',
               install: 'Install',
-              detectionAfterInstall: 'Detection (post-install)',
               uninstall: 'Uninstall',
-              detectionAfterUninstall: 'Detection (post-uninstall)',
             };
             const label = stepLabels[stepName] || stepName;
             return (

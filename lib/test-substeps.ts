@@ -1,7 +1,7 @@
 /**
  * Test Sub-Steps Configuration
- * Defines the 5 sub-steps of the package test phase and provides
- * parsing utilities for the [test:N/5] convention in status_message.
+ * Defines the 3 sub-steps of the package test phase and provides
+ * parsing utilities for the [test:N/3] convention in status_message.
  */
 
 export interface TestSubStep {
@@ -16,22 +16,20 @@ export type SubStepStatus = 'completed' | 'active' | 'pending' | 'failed';
 export const TEST_SUBSTEPS: TestSubStep[] = [
   { id: 'structure', index: 1, label: 'Structure', description: 'Validating package structure' },
   { id: 'install', index: 2, label: 'Install', description: 'Running silent install' },
-  { id: 'detect', index: 3, label: 'Detect', description: 'Verifying detection rules' },
-  { id: 'uninstall', index: 4, label: 'Uninstall', description: 'Running silent uninstall' },
-  { id: 'verify', index: 5, label: 'Verify', description: 'Verifying clean removal' },
+  { id: 'uninstall', index: 3, label: 'Uninstall', description: 'Running silent uninstall' },
 ];
 
 /**
  * Parse the active test step number from a status message.
- * Expects format: "[test:N/5] ..." where N is 1-5.
+ * Expects format: "[test:N/3] ..." where N is 1-3.
  * Returns the step number or null if not found.
  */
 export function parseTestStep(statusMessage: string | null | undefined): number | null {
   if (!statusMessage) return null;
-  const match = statusMessage.match(/^\[test:(\d+)\/5\]/);
+  const match = statusMessage.match(/^\[test:(\d+)\/3\]/);
   if (!match) return null;
   const step = parseInt(match[1], 10);
-  if (step < 1 || step > 5) return null;
+  if (step < 1 || step > 3) return null;
   return step;
 }
 
