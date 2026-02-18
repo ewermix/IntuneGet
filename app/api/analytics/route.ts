@@ -191,7 +191,7 @@ export async function GET(request: NextRequest) {
       completedJobs,
       failedJobs,
       pendingJobs: allJobs.filter((j) =>
-        ['queued', 'packaging', 'testing', 'uploading'].includes(j.status)
+        ['queued', 'packaging', 'uploading'].includes(j.status)
       ).length,
       successRate,
     };

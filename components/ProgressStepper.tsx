@@ -113,7 +113,7 @@ export function ProgressStepper({
         </div>
 
         {/* Row 2: Labels grid */}
-        <div className="grid grid-cols-7">
+        <div className="grid grid-cols-6">
           {PROGRESS_STAGES.map((stage) => {
             const isCompleted = completedStages.includes(stage.id as never);
             const isCurrent = currentStage?.id === stage.id;
@@ -158,8 +158,8 @@ export function ProgressStepper({
                   Completed
                 </span>
               : isJobFailed
-                ? (statusMessage?.replace(/^\[test:\d+\/\d+\]\s*/, '') || 'Failed')
-                : (statusMessage?.replace(/^\[test:\d+\/\d+\]\s*/, '') || currentStage?.description || 'Processing...')}
+                ? (statusMessage || 'Failed')
+                : (statusMessage || currentStage?.description || 'Processing...')}
           </span>
         </div>
         <div className="flex items-center gap-2 text-text-muted">

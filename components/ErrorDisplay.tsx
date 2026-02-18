@@ -9,7 +9,6 @@ import {
   Key,
   CheckCircle,
   Server,
-  FlaskConical,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -30,19 +29,6 @@ interface ErrorDetails {
   commitState?: string;
   operation?: string;
   output?: string;
-  testResults?: {
-    passed: boolean;
-    steps: Record<string, {
-      passed: boolean;
-      exitCode?: number | null;
-      duration_ms: number;
-      skipped?: boolean;
-      reason?: string;
-      rebootRequired?: boolean;
-    }>;
-    failureReason?: string | null;
-    totalDuration_ms: number;
-  };
 }
 
 interface ErrorDisplayProps {
@@ -56,7 +42,6 @@ interface ErrorDisplayProps {
 const stageConfig: Record<string, { icon: typeof Download; label: string }> = {
   download: { icon: Download, label: 'Download' },
   package: { icon: Package, label: 'Packaging' },
-  test: { icon: FlaskConical, label: 'Test' },
   upload: { icon: Upload, label: 'Upload' },
   authenticate: { icon: Key, label: 'Authentication' },
   finalize: { icon: CheckCircle, label: 'Finalize' },
@@ -114,14 +99,6 @@ const errorCodeMessages: Record<string, string> = {
   AZURE_UPLOAD_FAILED: 'Failed to upload package to Azure Storage',
   INTUNE_COMMIT_FAILED: 'Failed to commit the uploaded file to Intune',
   UNEXPECTED_ERROR: 'An unexpected error occurred during the pipeline',
-  PACKAGE_TEST_FAILED: 'The package failed its install/uninstall test cycle. Check the test results below for which step failed.',
-  PACKAGE_TEST_ERROR: 'An unexpected error occurred while testing the package.',
-  INSTALL_TIMEOUT: 'The installer did not complete within the timeout period.',
-  UNINSTALL_TIMEOUT: 'The uninstaller did not complete within the timeout period.',
-  INSTALL_FAILED: 'The installer returned a non-zero exit code.',
-  INSTALL_MUTEX: 'Another installation was already in progress on the runner.',
-  UNINSTALL_FAILED: 'The uninstaller returned a non-zero exit code.',
-  STRUCTURE_VALIDATION_FAILED: 'The package structure is invalid (missing required files).',
 };
 
 export function ErrorDisplay({
@@ -223,42 +200,6 @@ export function ErrorDisplay({
       {(details?.uploadState || details?.commitState) && (
         <div className="text-xs text-zinc-400">
           State: {details.uploadState || details.commitState}
-        </div>
-      )}
-
-      {/* Test results detail panel */}
-      {details?.testResults && (
-        <div className="text-xs bg-black/40 p-4 rounded-lg border border-white/10 space-y-0">
-          <p className="text-zinc-100 font-medium mb-3">Test Results</p>
-          {Object.entries(details.testResults.steps).map(([stepName, step]) => {
-            const stepLabels: Record<string, string> = {
-              structureValidation: 'Structure Validation',
-              install: 'Install',
-              uninstall: 'Uninstall',
-            };
-            const label = stepLabels[stepName] || stepName;
-            return (
-              <div key={stepName} className="flex items-center justify-between py-1.5 border-b border-white/[0.05]">
-                <div className="flex items-center gap-2">
-                  <span className={cn(
-                    'w-2 h-2 rounded-full',
-                    step.skipped ? 'bg-zinc-500' : step.passed ? 'bg-green-400' : 'bg-red-400'
-                  )} />
-                  <span className="text-zinc-200">{label}</span>
-                </div>
-                <div className="flex items-center gap-3 text-zinc-300">
-                  {step.exitCode !== undefined && step.exitCode !== null && (
-                    <span>exit: {step.exitCode}</span>
-                  )}
-                  {step.skipped && <span>skipped</span>}
-                  <span>{step.duration_ms}ms</span>
-                </div>
-              </div>
-            );
-          })}
-          <div className="pt-2.5 mt-1 text-zinc-300 font-medium">
-            Total: {details.testResults.totalDuration_ms}ms
-          </div>
         </div>
       )}
 

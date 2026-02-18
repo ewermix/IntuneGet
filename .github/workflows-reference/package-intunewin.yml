@@ -4,6 +4,9 @@ on:
   repository_dispatch:
     types: [package-app]
 
+permissions:
+  contents: read
+
 jobs:
   package-and-deploy:
     runs-on: windows-latest
@@ -16,28 +19,44 @@ jobs:
       CALLBACK_URL: ${{ github.event.client_payload.job.callbackUrl }}
       WINGET_ID: ${{ github.event.client_payload.app.wingetId }}
       DISPLAY_NAME: ${{ github.event.client_payload.app.displayName }}
+      DESCRIPTION: ${{ github.event.client_payload.app.description }}
       PUBLISHER: ${{ github.event.client_payload.app.publisher }}
       VERSION: ${{ github.event.client_payload.app.version }}
       ARCHITECTURE: ${{ github.event.client_payload.app.architecture }}
       INSTALLER_URL: ${{ github.event.client_payload.installer.url }}
       INSTALLER_SHA256: ${{ github.event.client_payload.installer.sha256 }}
+      HASH_VALIDATION_MODE: ${{ github.event.client_payload.installer.hashValidationMode }}
       INSTALLER_TYPE: ${{ github.event.client_payload.installer.type }}
       SILENT_SWITCHES: ${{ github.event.client_payload.installer.silentSwitches }}
       UNINSTALL_COMMAND: ${{ github.event.client_payload.installer.uninstallCommand }}
       PSADT_CONFIG: ${{ github.event.client_payload.config.psadtConfig }}
       DETECTION_RULES: ${{ github.event.client_payload.config.detectionRules }}
-      REQUIREMENT_RULES: ${{ github.event.client_payload.config.requirementRules }}
       ASSIGNMENTS: ${{ github.event.client_payload.config.assignments }}
+      CATEGORIES: ${{ github.event.client_payload.config.categories }}
       INSTALL_SCOPE: ${{ github.event.client_payload.config.installScope }}
-      FORCE_CREATE: ${{ github.event.client_payload.config.forceCreate }}
-      SKIP_TEST: ${{ github.event.client_payload.config.skipTest }}
+      INTUNEWINAPPUTIL_URL: https://github.com/microsoft/Microsoft-Win32-Content-Prep-Tool/raw/master/IntuneWinAppUtil.exe
+      INTUNEWINAPPUTIL_SHA256: C1BA45B5CB939E84AF064BB7FF4B38FB3DFE33C8DC1078FD9B157672EAE671F6
+      PSADT_TEMPLATE_URL: https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/releases/download/4.1.8/PSAppDeployToolkit_Template_v4.zip
+      PSADT_TEMPLATE_SHA256: 50CB8D32973FC7648060A48CAD63912ECB5CACA5A70754F37E83AA06BD380283
 
     steps:
+      - name: Checkout private repository
+        uses: actions/checkout@v4
+
       - name: Checkout public repository for scripts
         uses: actions/checkout@v4
         with:
           repository: ugurkocde/IntuneGet
           path: intuneget
+
+      - name: Capture IntuneGet ref
+        run: |
+          $resolvedRef = (git -C "$env:GITHUB_WORKSPACE\intuneget" rev-parse HEAD).Trim()
+          if ([string]::IsNullOrWhiteSpace($resolvedRef)) {
+            throw "Could not resolve checked-out IntuneGet ref"
+          }
+          Write-Host "Resolved IntuneGet ref: $resolvedRef"
+          echo "INTUNEGET_RESOLVED_REF=$resolvedRef" >> $env:GITHUB_ENV
 
       - name: Setup callback helper function
         run: |
@@ -95,6 +114,132 @@ jobs:
 
           # Save the function to a file that can be dot-sourced in subsequent steps
           Set-Content -Path "$env:GITHUB_WORKSPACE\Send-Callback.ps1" -Value $callbackFunction
+
+          # Define error callback helper function with structured error fields
+          $errorCallbackFunction = @'
+          function Send-ErrorCallback {
+            param(
+              [Parameter(Mandatory=$true)]
+              [ValidateSet('download', 'package', 'upload', 'authenticate', 'finalize', 'unknown')]
+              [string]$Stage,
+              [Parameter(Mandatory=$true)]
+              [ValidateSet('network', 'validation', 'permission', 'installer', 'intune_api', 'system')]
+              [string]$Category,
+              [Parameter(Mandatory=$true)]
+              [string]$Code,
+              [Parameter(Mandatory=$true)]
+              [string]$Message,
+              [hashtable]$Details = @{}
+            )
+
+            . "$env:GITHUB_WORKSPACE\Send-Callback.ps1"
+
+            $body = @{
+              jobId = $env:JOB_ID
+              status = "failed"
+              message = $Message
+              progress = 0
+              errorStage = $Stage
+              errorCategory = $Category
+              errorCode = $Code
+              errorDetails = $Details
+              runId = $env:GITHUB_RUN_ID
+              runUrl = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
+            }
+
+            Send-Callback -Body $body -CallbackUrl $env:CALLBACK_URL -CallbackSecret $env:CALLBACK_SECRET -MaxRetries 5 | Out-Null
+            $env:ERROR_SENT = "true"
+            echo "ERROR_SENT=true" >> $env:GITHUB_ENV
+            Write-Host "Error callback sent: $Code - $Message"
+          }
+          '@
+
+          Set-Content -Path "$env:GITHUB_WORKSPACE\Send-ErrorCallback.ps1" -Value $errorCallbackFunction
+
+          # Define a reusable download helper with retries and timeouts
+          $downloadHelperFunction = @'
+          function Invoke-DownloadWithRetry {
+            param(
+              [Parameter(Mandatory=$true)]
+              [string]$Uri,
+              [Parameter(Mandatory=$true)]
+              [string]$OutFile,
+              [hashtable]$Headers = @{},
+              [int]$MaxRetries = 3,
+              [int]$InitialDelaySeconds = 2,
+              [int]$TimeoutSec = 300
+            )
+
+            $attempt = 0
+            while ($attempt -lt $MaxRetries) {
+              $attempt++
+              try {
+                Remove-Item -LiteralPath $OutFile -Force -ErrorAction SilentlyContinue
+                Invoke-WebRequest -Uri $Uri -OutFile $OutFile -Headers $Headers -UseBasicParsing -MaximumRedirection 10 -TimeoutSec $TimeoutSec -ErrorAction Stop
+                if (-not (Test-Path -LiteralPath $OutFile)) {
+                  throw "Downloaded file not found after request: $OutFile"
+                }
+                return
+              } catch {
+                if ($attempt -ge $MaxRetries) {
+                  throw
+                }
+                $delay = $InitialDelaySeconds * [Math]::Pow(2, $attempt - 1)
+                Write-Host "Download attempt $attempt/$MaxRetries failed for $Uri"
+                Write-Host "Retrying in $delay seconds..."
+                Start-Sleep -Seconds $delay
+              }
+            }
+          }
+          '@
+
+          Set-Content -Path "$env:GITHUB_WORKSPACE\Invoke-DownloadWithRetry.ps1" -Value $downloadHelperFunction
+          $filenameResolverFunction = @'
+          function Resolve-InstallerFileName {
+            param(
+              [Parameter(Mandatory=$true)]
+              [string]$Url,
+              [string]$InstallerType,
+              [string]$SourceForgePath
+            )
+
+            $normalizedType = "$InstallerType".Trim().ToLowerInvariant()
+            $expectedExtension = switch ($normalizedType) {
+              "msi" { ".msi" }
+              "wix" { ".msi" }
+              "msix" { ".msix" }
+              "appx" { ".appx" }
+              "zip" { ".zip" }
+              "exe" { ".exe" }
+              "inno" { ".exe" }
+              "nullsoft" { ".exe" }
+              "burn" { ".exe" }
+              "portable" { ".exe" }
+              default { ".exe" }
+            }
+
+            $fileName = [System.IO.Path]::GetFileName([System.Uri]::new($Url).LocalPath)
+            if ([string]::IsNullOrWhiteSpace($fileName) -or $fileName -eq "download") {
+              if (-not [string]::IsNullOrWhiteSpace($SourceForgePath)) {
+                $fileName = [System.IO.Path]::GetFileName($SourceForgePath)
+              }
+            }
+
+            if ([string]::IsNullOrWhiteSpace($fileName) -or $fileName -eq "download") {
+              $fileName = "installer"
+            }
+
+            $knownExtensions = @('.exe', '.msi', '.msix', '.appx', '.zip', '.msp', '.msixbundle', '.appxbundle')
+            $currentExtension = [System.IO.Path]::GetExtension($fileName).ToLowerInvariant()
+            if ([string]::IsNullOrWhiteSpace($currentExtension) -or $currentExtension -notin $knownExtensions) {
+              $fileName = "$fileName$expectedExtension"
+            }
+
+            return $fileName
+          }
+          '@
+
+          Set-Content -Path "$env:GITHUB_WORKSPACE\Resolve-InstallerFileName.ps1" -Value $filenameResolverFunction
           Write-Host "Callback helper function created"
 
       - name: Check disk space
@@ -105,6 +250,46 @@ jobs:
           if ($freeGB -lt 10) {
             throw "Insufficient disk space: $freeGB GB available, need 10GB minimum"
           }
+
+      - name: Validate installer filename resolver
+        run: |
+          . "$env:GITHUB_WORKSPACE\Resolve-InstallerFileName.ps1"
+
+          $testCases = @(
+            @{
+              Url = "https://dl.pstmn.io/download/version/11.82.1/windows_64"
+              InstallerType = "exe"
+              SourceForgePath = $null
+              Expected = "windows_64.exe"
+            },
+            @{
+              Url = "https://example.com/installer.msi"
+              InstallerType = "msi"
+              SourceForgePath = $null
+              Expected = "installer.msi"
+            },
+            @{
+              Url = "https://sourceforge.net/projects/x/files/app/download"
+              InstallerType = "exe"
+              SourceForgePath = "app-1.0"
+              Expected = "app-1.0.exe"
+            },
+            @{
+              Url = "https://example.com/file"
+              InstallerType = "zip"
+              SourceForgePath = $null
+              Expected = "file.zip"
+            }
+          )
+
+          foreach ($case in $testCases) {
+            $actual = Resolve-InstallerFileName -Url $case.Url -InstallerType $case.InstallerType -SourceForgePath $case.SourceForgePath
+            if ($actual -ne $case.Expected) {
+              throw "Filename resolver test failed for URL '$($case.Url)'. Expected '$($case.Expected)', got '$actual'."
+            }
+          }
+
+          Write-Host "Installer filename resolver validation passed."
 
       - name: Send initial status callback
         env:
@@ -132,6 +317,11 @@ jobs:
           CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
         run: |
           . "$env:GITHUB_WORKSPACE\Send-Callback.ps1"
+          . "$env:GITHUB_WORKSPACE\Send-ErrorCallback.ps1"
+          . "$env:GITHUB_WORKSPACE\Invoke-DownloadWithRetry.ps1"
+          . "$env:GITHUB_WORKSPACE\Resolve-InstallerFileName.ps1"
+
+          try {
           Send-Callback -Body @{
             jobId = $env:JOB_ID
             status = "packaging"
@@ -141,15 +331,73 @@ jobs:
 
           $toolsDir = ".\tools"
           New-Item -ItemType Directory -Path $toolsDir -Force
-          Invoke-WebRequest -Uri "https://github.com/microsoft/Microsoft-Win32-Content-Prep-Tool/raw/master/IntuneWinAppUtil.exe" -OutFile "$toolsDir\IntuneWinAppUtil.exe"
-          Invoke-WebRequest -Uri "https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/releases/download/4.1.8/PSAppDeployToolkit_Template_v4.zip" -OutFile "psadt.zip"
+
+          $downloadHeaders = @{
+            "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+          }
+
+          $intuneWinAppUtilPath = Join-Path $toolsDir "IntuneWinAppUtil.exe"
+          $psadtZipPath = Join-Path $env:GITHUB_WORKSPACE "psadt.zip"
+
+          Invoke-DownloadWithRetry -Uri $env:INTUNEWINAPPUTIL_URL -OutFile $intuneWinAppUtilPath -Headers $downloadHeaders -MaxRetries 3 -TimeoutSec 300
+          Invoke-DownloadWithRetry -Uri $env:PSADT_TEMPLATE_URL -OutFile $psadtZipPath -Headers $downloadHeaders -MaxRetries 3 -TimeoutSec 300
+
+          $expectedIntuneWinHash = "$env:INTUNEWINAPPUTIL_SHA256".Trim().ToUpperInvariant()
+          $actualIntuneWinHash = (Get-FileHash -LiteralPath $intuneWinAppUtilPath -Algorithm SHA256 -ErrorAction Stop).Hash.ToUpperInvariant()
+          if ($actualIntuneWinHash -ne $expectedIntuneWinHash) {
+            Send-ErrorCallback -Stage 'download' -Category 'validation' -Code 'TOOL_HASH_MISMATCH' `
+              -Message "IntuneWinAppUtil hash mismatch - tool integrity validation failed" `
+              -Details @{
+                dependency = "IntuneWinAppUtil.exe"
+                url = $env:INTUNEWINAPPUTIL_URL
+                expectedHash = $expectedIntuneWinHash
+                actualHash = $actualIntuneWinHash
+              }
+            throw "Tool hash mismatch for IntuneWinAppUtil.exe"
+          }
+
+          $expectedPsadtHash = "$env:PSADT_TEMPLATE_SHA256".Trim().ToUpperInvariant()
+          $actualPsadtHash = (Get-FileHash -LiteralPath $psadtZipPath -Algorithm SHA256 -ErrorAction Stop).Hash.ToUpperInvariant()
+          if ($actualPsadtHash -ne $expectedPsadtHash) {
+            Send-ErrorCallback -Stage 'download' -Category 'validation' -Code 'TOOL_HASH_MISMATCH' `
+              -Message "PSADT template hash mismatch - tool integrity validation failed" `
+              -Details @{
+                dependency = "PSAppDeployToolkit_Template_v4.zip"
+                url = $env:PSADT_TEMPLATE_URL
+                expectedHash = $expectedPsadtHash
+                actualHash = $actualPsadtHash
+              }
+            throw "Tool hash mismatch for PSAppDeployToolkit_Template_v4.zip"
+          }
+
+          Write-Host "Verified IntuneWinAppUtil SHA256: $actualIntuneWinHash"
+          Write-Host "Verified PSADT template SHA256: $actualPsadtHash"
+
+          echo "INTUNEWINAPPUTIL_SHA256_ACTUAL=$actualIntuneWinHash" >> $env:GITHUB_ENV
+          echo "PSADT_TEMPLATE_SHA256_ACTUAL=$actualPsadtHash" >> $env:GITHUB_ENV
+
           Expand-Archive -Path "psadt.zip" -DestinationPath ".\psadt"
+
+          } catch {
+            $errorMsg = $_.Exception.Message
+            if ($env:ERROR_SENT -ne "true") {
+              Send-ErrorCallback -Stage 'download' -Category 'network' -Code 'DOWNLOAD_TOOLS_FAILED' `
+                -Message "Failed to download and validate packaging tools: $errorMsg" `
+                -Details @{ error = $errorMsg }
+            }
+            throw
+          }
 
       - name: Download and verify installer
         env:
           CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
         run: |
           . "$env:GITHUB_WORKSPACE\Send-Callback.ps1"
+          . "$env:GITHUB_WORKSPACE\Send-ErrorCallback.ps1"
+          . "$env:GITHUB_WORKSPACE\Invoke-DownloadWithRetry.ps1"
+          . "$env:GITHUB_WORKSPACE\Resolve-InstallerFileName.ps1"
+
+          try {
           Send-Callback -Body @{
             jobId = $env:JOB_ID
             status = "packaging"
@@ -157,26 +405,331 @@ jobs:
             progress = 20
           } -CallbackUrl $env:CALLBACK_URL -CallbackSecret $env:CALLBACK_SECRET | Out-Null
 
+          # Domains known to use rolling/latest URLs where hash verification should be skipped
+          # These domains always serve the latest version, so the winget manifest hash may not match
+          $rollingUrlDomains = @(
+            "downloads.npass.app",       # NordPass - always serves latest
+            "download01.logi.com",       # Logitech Options - rolling URL
+            "stable.dl2.discordapp.net", # Discord - always latest stable
+            "dl.discordapp.net",         # Discord alternate CDN
+            "download.sysinternals.com"  # Sysinternals suite - rolling download URL
+          )
+
           $installerDir = ".\installer"
           New-Item -ItemType Directory -Path $installerDir -Force
 
+          $hashValidationMode = "$env:HASH_VALIDATION_MODE".Trim().ToLowerInvariant()
+          if ([string]::IsNullOrWhiteSpace($hashValidationMode)) {
+            $hashValidationMode = "smart"
+          }
+          if (@("strict", "smart", "off") -notcontains $hashValidationMode) {
+            Write-Host "Unknown HASH_VALIDATION_MODE '$hashValidationMode'. Falling back to 'smart'."
+            $hashValidationMode = "smart"
+          }
+          Write-Host "Hash validation mode: $hashValidationMode"
+
           $url = $env:INSTALLER_URL
-          $fileName = [System.IO.Path]::GetFileName([System.Uri]::new($url).LocalPath)
-          if ([string]::IsNullOrEmpty($fileName)) { $fileName = "installer.$env:INSTALLER_TYPE" }
-
-          Invoke-WebRequest -Uri $url -OutFile "$installerDir\$fileName" -UseBasicParsing -AllowInsecureRedirect
-
-          $expectedHash = $env:INSTALLER_SHA256
-          if ($expectedHash -and $expectedHash -ne "") {
-            $actualHash = (Get-FileHash "$installerDir\$fileName" -Algorithm SHA256).Hash
-            if ($actualHash -ne $expectedHash) {
-              throw "SHA256 mismatch! Expected: $expectedHash, Got: $actualHash"
-            }
-            Write-Host "SHA256 verified successfully"
+          $isSourceForge = $false
+          $sfProject = $null
+          $sfPath = $null
+          $downloadHeaders = @{
+            "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
           }
 
-          echo "INSTALLER_PATH=$installerDir\$fileName" >> $env:GITHUB_ENV
+          # Detect SourceForge URLs and extract project/path for mirror URLs
+          # Standard URL: https://sourceforge.net/projects/<project>/files/<path>/download
+          if ($url -match 'sourceforge\.net/projects/([^/]+)/files/(.+)/download$') {
+            $isSourceForge = $true
+            $sfProject = $Matches[1]
+            $sfPath = $Matches[2]
+            Write-Host "Detected SourceForge URL for project: $sfProject"
+          }
+
+          $fileName = Resolve-InstallerFileName -Url $url -InstallerType $env:INSTALLER_TYPE -SourceForgePath $sfPath
+
+          $outFile = "$installerDir\$fileName"
+
+          if ($isSourceForge) {
+            # SourceForge uses Cloudflare protection - use curl which handles redirects better
+            # curl follows the JS redirect chain and can download the actual file
+            Write-Host "Using curl for SourceForge download..."
+
+            # Try with curl using the original URL (curl handles SF redirects)
+            $curlArgs = @(
+              '-L',                    # Follow redirects
+              '-f',                    # Fail on HTTP errors
+              '-s',                    # Silent mode
+              '-S',                    # Show errors
+              '--retry', '3',          # Retry 3 times
+              '--retry-delay', '5',    # Wait 5 seconds between retries
+              '--max-time', '300',     # 5 minute timeout
+              '-A', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              '-o', $outFile,
+              $url
+            )
+
+            Write-Host "Downloading from: $url"
+            $curlResult = & curl @curlArgs 2>&1
+            $curlExitCode = $LASTEXITCODE
+
+            if ($curlExitCode -ne 0) {
+              Write-Host "curl failed with exit code $curlExitCode"
+              Write-Host "curl output: $curlResult"
+              $curlErrorOutput = $curlResult
+
+              # Fallback: try direct mirror URLs with curl
+              $mirrors = @(
+                "master.dl.sourceforge.net",
+                "versaweb.dl.sourceforge.net",
+                "psychz.dl.sourceforge.net",
+                "freefr.dl.sourceforge.net",
+                "kumisystems.dl.sourceforge.net"
+              )
+
+              $downloadSuccess = $false
+              foreach ($mirror in $mirrors) {
+                $mirrorUrl = "https://$mirror/project/$sfProject/$sfPath"
+                Write-Host "Trying mirror with curl: $mirror"
+
+                $curlMirrorArgs = @(
+                  '-L', '-f', '-s', '-S',
+                  '--retry', '2',
+                  '--max-time', '180',
+                  '-A', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                  '-o', $outFile,
+                  $mirrorUrl
+                )
+
+                & curl @curlMirrorArgs 2>&1
+                if ($LASTEXITCODE -eq 0 -and (Test-Path $outFile)) {
+                  $fileSize = (Get-Item $outFile).Length
+                  if ($fileSize -gt 1000) {
+                    Write-Host "Successfully downloaded from mirror: $mirror ($fileSize bytes)"
+                    $downloadSuccess = $true
+                    break
+                  }
+                }
+                Write-Host "Mirror $mirror failed"
+                Remove-Item $outFile -Force -ErrorAction SilentlyContinue
+              }
+
+              if (-not $downloadSuccess) {
+                Send-ErrorCallback -Stage 'download' -Category 'network' -Code 'DOWNLOAD_SOURCEFORGE_FAILED' `
+                  -Message "SourceForge download failed - all mirror servers exhausted" `
+                  -Details @{
+                    url = $url
+                    mirrorsAttempted = $mirrors
+                    curlExitCode = $curlExitCode
+                    curlOutput = "$curlErrorOutput"
+                  }
+                throw "SourceForge download failed. All methods exhausted."
+              }
+            } else {
+              Write-Host "Download completed successfully"
+            }
+
+            # Verify we got a binary file, not HTML
+            if (Test-Path $outFile) {
+              $fileSize = (Get-Item $outFile).Length
+              Write-Host "Downloaded file size: $fileSize bytes"
+              if ($fileSize -lt 1000) {
+                $content = Get-Content $outFile -Raw -ErrorAction SilentlyContinue
+                Send-ErrorCallback -Stage 'download' -Category 'network' -Code 'DOWNLOAD_INVALID_RESPONSE' `
+                  -Message "Download failed - received invalid response (size: $fileSize bytes)" `
+                  -Details @{ url = $url; size = $fileSize }
+                throw "Download failed - received invalid response (size: $fileSize bytes)"
+              }
+              $fileStart = Get-Content $outFile -AsByteStream -TotalCount 100 -ErrorAction SilentlyContinue
+              $fileText = [System.Text.Encoding]::ASCII.GetString($fileStart)
+              if ($fileText -match '<html|<!DOCTYPE|cloudflare|just.a" moment') {
+                $domain = ([System.Uri]$url).Host
+                Send-ErrorCallback -Stage 'download' -Category 'network' -Code 'DOWNLOAD_CLOUDFLARE' `
+                  -Message "Download failed - blocked by Cloudflare protection" `
+                  -Details @{ url = $url; domain = $domain }
+                throw "Download failed - received HTML/Cloudflare challenge instead of binary"
+              }
+            }
+          } else {
+            # Non-SourceForge URL - use PowerShell
+            Write-Host "Downloading from: $url"
+            Write-Host "Output file: $outFile"
+            Invoke-DownloadWithRetry -Uri $url -OutFile $outFile -Headers $downloadHeaders -MaxRetries 3 -TimeoutSec 300
+          }
+
+          # Verify file was downloaded successfully
+          $installerRelPath = Join-Path $installerDir $fileName
+          if (-not (Test-Path -LiteralPath $installerRelPath)) {
+            throw "Download failed - file not found at: $installerRelPath"
+          }
+          $downloadedFile = Get-Item -LiteralPath $installerRelPath
+          # Use absolute path to handle special characters and cross-step references
+          $installerFullPath = $downloadedFile.FullName
+          $downloadedSize = $downloadedFile.Length
+          Write-Host "Downloaded file: $($downloadedFile.Name) ($downloadedSize bytes)"
+          Write-Host "Full path: $installerFullPath"
+          if ($downloadedSize -lt 1000) {
+            Send-ErrorCallback -Stage 'download' -Category 'validation' -Code 'DOWNLOAD_FILE_TOO_SMALL' `
+              -Message "Download failed - file too small: $downloadedSize bytes" `
+              -Details @{ url = $url; size = $downloadedSize; expected = 1000 }
+            throw "Download failed - file too small: $downloadedSize bytes"
+          }
+
+          # Check if URL is from a known rolling URL domain
+          $urlHost = ([System.Uri]$url).Host
+          $isRollingDomain = $false
+          foreach ($domain in $rollingUrlDomains) {
+            if ($urlHost -ieq $domain -or $urlHost -like "*.$domain") {
+              $isRollingDomain = $true
+              break
+            }
+          }
+
+          $lowerUrl = $url.ToLowerInvariant()
+          $lowerFileName = $fileName.ToLowerInvariant()
+          $normalizedVersion = "$env:VERSION".Trim().ToLowerInvariant()
+          $containsVersion = $false
+          if (-not [string]::IsNullOrWhiteSpace($normalizedVersion)) {
+            $containsVersion = $lowerUrl.Contains($normalizedVersion) -or $lowerFileName.Contains($normalizedVersion)
+          }
+          $rollingUrlTokens = @("/latest", "/download", "/stable", "/current", "?latest", "?download", "?channel=stable")
+          $hasRollingToken = $false
+          foreach ($token in $rollingUrlTokens) {
+            if ($lowerUrl.Contains($token)) {
+              $hasRollingToken = $true
+              break
+            }
+          }
+          $urlEndsWithDownload = $lowerUrl -match '/download([/?]|$)'
+          $isGenericFileName = $lowerFileName -match '^(setup|installer|install|download|latest|stable|current)(\.[a-z0-9]+)?$'
+          $isLikelyRollingUrl = $isRollingDomain -or $hasRollingToken -or $urlEndsWithDownload -or ($isGenericFileName -and -not $containsVersion)
+
+          $expectedHash = "$env:INSTALLER_SHA256".Trim().ToUpperInvariant()
+          if ($hashValidationMode -eq "off") {
+            Write-Host "SHA256 verification is disabled by HASH_VALIDATION_MODE=off"
+          } elseif ($expectedHash -and $expectedHash -ne "") {
+            if ($expectedHash -notmatch '^[A-F0-9]{64}$') {
+              Send-ErrorCallback -Stage 'download' -Category 'validation' -Code 'INVALID_EXPECTED_HASH' `
+                -Message "Invalid expected SHA256 hash format in payload" `
+                -Details @{ expectedHash = $expectedHash; url = $url }
+              throw "Invalid expected SHA256 format: $expectedHash"
+            }
+
+            # Use -LiteralPath to handle filenames with special characters like brackets
+            $actualHash = (Get-FileHash -LiteralPath $installerFullPath -Algorithm SHA256 -ErrorAction Stop).Hash.ToUpperInvariant()
+
+            if ($actualHash -ne $expectedHash -and -not $isSourceForge) {
+              Write-Host "Hash mismatch on first attempt. Retrying download once in 20 seconds..."
+              Start-Sleep -Seconds 20
+
+              $retryFile = Join-Path $installerDir ("retry-" + $fileName)
+              Remove-Item -LiteralPath $retryFile -Force -ErrorAction SilentlyContinue
+              Invoke-DownloadWithRetry -Uri $url -OutFile $retryFile -Headers $downloadHeaders -MaxRetries 2 -InitialDelaySeconds 3 -TimeoutSec 300
+
+              $retryFileInfo = Get-Item -LiteralPath $retryFile
+              if ($retryFileInfo.Length -lt 1000) {
+                throw "Retry download failed - file too small: $($retryFileInfo.Length) bytes"
+              }
+
+              $retryHash = (Get-FileHash -LiteralPath $retryFile -Algorithm SHA256 -ErrorAction Stop).Hash.ToUpperInvariant()
+              Write-Host "Retry hash: $retryHash"
+
+              # Keep the retried file since it is the most recent download from the source.
+              Move-Item -LiteralPath $retryFile -Destination $installerFullPath -Force
+              $downloadedFile = Get-Item -LiteralPath $installerFullPath
+              $downloadedSize = $downloadedFile.Length
+              $actualHash = $retryHash
+            }
+
+            if ($actualHash -ne $expectedHash) {
+              $allowMismatch = $false
+              $mismatchReason = "strict mode"
+
+              if ($hashValidationMode -eq "smart") {
+                $allowMismatch = $true
+                if ($isLikelyRollingUrl) {
+                  if ($isRollingDomain) {
+                    $mismatchReason = "known rolling URL domain"
+                  } else {
+                    $mismatchReason = "rolling URL heuristic"
+                  }
+                } else {
+                  $mismatchReason = "smart mode - hash mismatch allowed with warning"
+                }
+              }
+
+              if ($allowMismatch) {
+                Write-Host "========================================"
+                Write-Host "WARNING: SHA256 hash mismatch (allowed in smart mode)"
+                Write-Host "  Domain:   $urlHost"
+                Write-Host "  Reason:   $mismatchReason"
+                Write-Host "  Expected: $expectedHash"
+                Write-Host "  Got:      $actualHash"
+                Write-Host "========================================"
+
+                Send-Callback -Body @{
+                  jobId = $env:JOB_ID
+                  status = "packaging"
+                  message = "Installer hash changed upstream; continuing in smart mode"
+                  progress = 25
+                  warningCode = "HASH_MISMATCH_ALLOWED"
+                  warningDetails = @{
+                    expectedHash = $expectedHash
+                    actualHash = $actualHash
+                    url = $url
+                    mode = $hashValidationMode
+                    reason = $mismatchReason
+                  }
+                } -CallbackUrl $env:CALLBACK_URL -CallbackSecret $env:CALLBACK_SECRET | Out-Null
+              } else {
+                Write-Host "========================================"
+                Write-Host "ERROR: SHA256 hash mismatch!"
+                Write-Host "  Expected: $expectedHash"
+                Write-Host "  Got:      $actualHash"
+                Write-Host "  Mode:     $hashValidationMode"
+                Write-Host ""
+                Write-Host "This usually means the installer file has been updated on the server."
+                Write-Host "The winget manifest may need to be updated with the new hash."
+                Write-Host "========================================"
+                Send-ErrorCallback -Stage 'download' -Category 'validation' -Code 'HASH_MISMATCH' `
+                  -Message "SHA256 hash mismatch - the installer has been updated since the manifest was created" `
+                  -Details @{ expectedHash = $expectedHash; actualHash = $actualHash; url = $url; mode = $hashValidationMode }
+                throw "SHA256 mismatch! Expected: $expectedHash, Got: $actualHash"
+              }
+            } else {
+              Write-Host "SHA256 verified successfully"
+            }
+          } else {
+            Write-Host "No expected SHA256 provided in payload - skipping hash verification"
+          }
+
+          echo "INSTALLER_PATH=$installerFullPath" >> $env:GITHUB_ENV
           echo "INSTALLER_FILENAME=$fileName" >> $env:GITHUB_ENV
+
+          } catch {
+            $errorMsg = $_.Exception.Message
+            # Only send error callback if not already sent by specific handlers above
+            if ($env:ERROR_SENT -ne "true") {
+              # Try to categorize the error
+              if ($errorMsg -match '404|Not Found') {
+                Send-ErrorCallback -Stage 'download' -Category 'network' -Code 'DOWNLOAD_NOT_FOUND' `
+                  -Message "Installer URL returned 404 - file not found" `
+                  -Details @{ url = $env:INSTALLER_URL; error = $errorMsg }
+              } elseif ($errorMsg -match 'timeout|timed out') {
+                Send-ErrorCallback -Stage 'download' -Category 'network' -Code 'DOWNLOAD_TIMEOUT' `
+                  -Message "Download timed out - server may be slow or unavailable" `
+                  -Details @{ url = $env:INSTALLER_URL; error = $errorMsg }
+              } elseif ($errorMsg -match '429|rate.?limit|too many requests') {
+                Send-ErrorCallback -Stage 'download' -Category 'network' -Code 'DOWNLOAD_RATE_LIMITED' `
+                  -Message "Rate limited by download server - try again later" `
+                  -Details @{ url = $env:INSTALLER_URL; error = $errorMsg }
+              } else {
+                Send-ErrorCallback -Stage 'download' -Category 'network' -Code 'DOWNLOAD_FAILED' `
+                  -Message "Failed to download installer: $errorMsg" `
+                  -Details @{ url = $env:INSTALLER_URL; error = $errorMsg }
+              }
+            }
+            throw
+          }
 
       - name: Create PSADT package
         env:
@@ -200,6 +753,9 @@ jobs:
           CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
         run: |
           . "$env:GITHUB_WORKSPACE\Send-Callback.ps1"
+          . "$env:GITHUB_WORKSPACE\Send-ErrorCallback.ps1"
+
+          try {
           Send-Callback -Body @{
             jobId = $env:JOB_ID
             status = "packaging"
@@ -211,9 +767,13 @@ jobs:
           New-Item -ItemType Directory -Path $outputDir -Force
 
           & .\tools\IntuneWinAppUtil.exe -c ".\package" -s "Invoke-AppDeployToolkit.exe" -o $outputDir -q
+          $intuneAppUtilExitCode = $LASTEXITCODE
 
           $intunewinFile = Get-ChildItem $outputDir -Filter "*.intunewin" | Select-Object -First 1
           if (-not $intunewinFile) {
+            Send-ErrorCallback -Stage 'package' -Category 'installer' -Code 'PACKAGE_CREATION_FAILED' `
+              -Message "Failed to create IntuneWin package" `
+              -Details @{ path = ".\package"; exitCode = $intuneAppUtilExitCode }
             throw "IntuneWin package was not created"
           }
 
@@ -232,6 +792,16 @@ jobs:
           echo "INTUNEWIN_SIZE=$($intunewinFile.Length)" >> $env:GITHUB_ENV
           echo "PACKAGE_FILENAME=$packageFileName" >> $env:GITHUB_ENV
           Write-Host "Created package: $($intunewinFile.Name) ($([math]::Round($intunewinFile.Length/1MB, 2)) MB)"
+
+          } catch {
+            $errorMsg = $_.Exception.Message
+            if ($env:ERROR_SENT -ne "true") {
+              Send-ErrorCallback -Stage 'package' -Category 'installer' -Code 'PACKAGE_CREATION_FAILED' `
+                -Message "Failed to create IntuneWin package: $errorMsg" `
+                -Details @{ error = $errorMsg }
+            }
+            throw
+          }
 
       - name: Extract encryption info and encrypted content file
         run: |
@@ -273,104 +843,21 @@ jobs:
             }
           }
 
-      - name: Test package installation
-        if: env.SKIP_TEST != 'true'
-        env:
-          CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
-        run: |
-          . "$env:GITHUB_WORKSPACE\Send-Callback.ps1"
-
-          try {
-            $env:INPUT_PACKAGE_DIR = ".\package"
-            $env:INPUT_WINGET_ID = $env:WINGET_ID
-            $env:INPUT_VERSION = $env:VERSION
-            $env:INPUT_INSTALL_SCOPE = $env:INSTALL_SCOPE
-            $env:INPUT_INSTALLER_TYPE = $env:INSTALLER_TYPE
-            $env:INPUT_TIMEOUT_SECONDS = "300"
-
-            & "$env:GITHUB_WORKSPACE\.github\scripts\Test-PSADTPackage.ps1"
-
-            $results = Get-Content ".\test-results.json" | ConvertFrom-Json
-            if (-not $results.passed) {
-              $failMsg = "Package test failed: $($results.failureReason)"
-              Send-Callback -Body @{
-                jobId = $env:JOB_ID
-                status = "failed"
-                message = $failMsg
-                progress = 0
-                errorStage = "test"
-                errorCategory = "validation"
-                errorCode = $results.failureReason
-                errorDetails = @{
-                  testResults = $results
-                  displayName = $env:DISPLAY_NAME
-                  version = $env:VERSION
-                }
-              } -CallbackUrl $env:CALLBACK_URL -CallbackSecret $env:CALLBACK_SECRET | Out-Null
-              $env:ERROR_SENT = "true"
-              throw $failMsg
-            }
-
-            Send-Callback -Body @{
-              jobId    = $env:JOB_ID
-              status   = "testing"
-              message  = "Package test passed"
-              progress = 62
-            } -CallbackUrl $env:CALLBACK_URL -CallbackSecret $env:CALLBACK_SECRET | Out-Null
-
-            Write-Host "Package test passed in $($results.totalDuration_ms)ms"
-
-          } catch {
-            if ($env:ERROR_SENT -ne "true") {
-              Send-Callback -Body @{
-                jobId = $env:JOB_ID
-                status = "failed"
-                message = "Package test error: $($_.Exception.Message)"
-                progress = 0
-                errorStage = "test"
-                errorCategory = "validation"
-                errorCode = "PACKAGE_TEST_ERROR"
-                errorDetails = @{ error = $_.Exception.Message }
-              } -CallbackUrl $env:CALLBACK_URL -CallbackSecret $env:CALLBACK_SECRET | Out-Null
-            }
-            throw
-          }
-
-      - name: Collect system logs for upload
-        if: failure() && env.SKIP_TEST != 'true'
-        shell: pwsh
-        run: |
-          $logDir = ".\collected-logs"
-          New-Item -ItemType Directory -Path $logDir -Force | Out-Null
-          Copy-Item -Path "C:\Windows\Logs\Software\*.log" -Destination $logDir -ErrorAction SilentlyContinue
-          Copy-Item -Path "C:\ProgramData\IntuneGet\Logs\*.log" -Destination $logDir -ErrorAction SilentlyContinue
-
-      - name: Upload test debug logs
-        if: failure() && env.SKIP_TEST != 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-debug-logs
-          path: |
-            test-debug.log
-            test-results.json
-            collected-logs/
-          retention-days: 7
-          if-no-files-found: ignore
-
       - name: Clean up temp files
         run: |
           Remove-Item -Path ".\installer" -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item -Path ".\psadt" -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item -Path ".\package" -Recurse -Force -ErrorAction SilentlyContinue
-          Remove-Item -Path ".\test-results.json" -Force -ErrorAction SilentlyContinue
-          Remove-Item -Path ".\test-debug.log" -Force -ErrorAction SilentlyContinue
-          Remove-Item -Path ".\collected-logs" -Recurse -Force -ErrorAction SilentlyContinue
 
       - name: Authenticate to Microsoft Graph
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
         run: |
+          . "$env:GITHUB_WORKSPACE\Send-ErrorCallback.ps1"
+
+          try {
           $tenantId = $env:TENANT_ID
           Write-Host "::add-mask::$tenantId"
           $body = @{
@@ -386,23 +873,45 @@ jobs:
           Write-Host "::add-mask::$token"
           echo "GRAPH_TOKEN=$token" >> $env:GITHUB_ENV
 
-      - name: Check for duplicate app in Intune
-        env:
-          CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
-          INPUT_DISPLAY_NAME: ${{ github.event.client_payload.app.displayName }}
-          INPUT_WINGET_ID: ${{ github.event.client_payload.app.wingetId }}
-          INPUT_FORCE_CREATE: ${{ github.event.client_payload.config.forceCreate }}
-          INPUT_JOB_ID: ${{ github.event.client_payload.job.jobId }}
-          INPUT_CALLBACK_URL: ${{ github.event.client_payload.job.callbackUrl }}
-        run: |
-          & "$env:GITHUB_WORKSPACE\intuneget\.github\scripts\Check-DuplicateApp.ps1"
+          } catch {
+            $errorMsg = $_.Exception.Message
+            $errorResponse = $_.ErrorDetails.Message
+
+            # Parse error response if available
+            $errorCode = 'AUTH_FAILED'
+            $errorMessage = "Failed to acquire authentication token"
+
+            if ($errorResponse) {
+              try {
+                $parsedError = $errorResponse | ConvertFrom-Json
+                if ($parsedError.error -eq 'invalid_client') {
+                  $errorCode = 'AUTH_INVALID_CREDENTIALS'
+                  $errorMessage = "Invalid service principal credentials"
+                } elseif ($parsedError.error_description -match 'AADSTS65001|consent') {
+                  $errorCode = 'AUTH_NO_CONSENT'
+                  $errorMessage = "Admin consent has not been granted for the required permissions"
+                } elseif ($parsedError.error_description) {
+                  $errorMessage = $parsedError.error_description
+                }
+              } catch {
+                # Ignore JSON parse errors
+              }
+            }
+
+            Send-ErrorCallback -Stage 'authenticate' -Category 'permission' -Code $errorCode `
+              -Message $errorMessage `
+              -Details @{ tenantId = $env:TENANT_ID; errorMessage = $errorMsg; errorResponse = $errorResponse }
+            throw
+          }
 
       - name: Upload to Intune
-        if: env.DUPLICATE_FOUND != 'true'
         env:
           CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
         run: |
           . "$env:GITHUB_WORKSPACE\Send-Callback.ps1"
+          . "$env:GITHUB_WORKSPACE\Send-ErrorCallback.ps1"
+
+          try {
           Send-Callback -Body @{
             jobId = $env:JOB_ID
             status = "uploading"
@@ -600,20 +1109,6 @@ jobs:
             )
           }
 
-          # Parse and merge requirement rules (already in Graph API format with ruleType: 'requirement')
-          $requirementRulesJson = $env:REQUIREMENT_RULES
-          if ($requirementRulesJson -and $requirementRulesJson -ne '[]') {
-            try {
-              $reqRules = $requirementRulesJson | ConvertFrom-Json -AsHashtable
-              foreach ($reqRule in $reqRules) {
-                $graphRules += $reqRule
-              }
-              Write-Host "Added $($reqRules.Count) requirement rule(s) for Update Only mode"
-            } catch {
-              Write-Host "Warning: Could not parse requirement rules: $_"
-            }
-          }
-
           Write-Host "Detection rules configured: $($graphRules.Count) rule(s)"
 
           # Load app icon if available
@@ -631,12 +1126,25 @@ jobs:
             Write-Host "No icon found at $iconPath, deploying without icon"
           }
 
+          $sourceMarker = "Source: IntuneGet.com"
+          $baseDescription = if ([string]::IsNullOrWhiteSpace($env:DESCRIPTION)) {
+            "Deployed via IntuneGet from Winget: $env:WINGET_ID"
+          } else {
+            $env:DESCRIPTION
+          }
+          if ($baseDescription -match [regex]::Escape($sourceMarker)) {
+            $descriptionWithSource = $baseDescription
+          } else {
+            $descriptionWithSource = "$baseDescription`n$sourceMarker"
+          }
+
           # 1. Create the Win32 app in Intune
           $appBodyHash = @{
             "@odata.type" = "#microsoft.graph.win32LobApp"
             displayName = $env:DISPLAY_NAME
+            displayVersion = $env:VERSION
             publisher = $env:PUBLISHER
-            description = "Deployed via IntuneGet from Winget: $env:WINGET_ID"
+            description = $descriptionWithSource
             largeIcon = $largeIcon
             fileName = "$env:PACKAGE_FILENAME"
             installCommandLine = "Invoke-AppDeployToolkit.exe"
@@ -671,44 +1179,76 @@ jobs:
           Write-Host "Created Intune app: $appId"
           echo "INTUNE_APP_ID=$appId" >> $env:GITHUB_ENV
 
-          # 2. Create content version
-          $contentVersion = Invoke-RestMethod -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$appId/microsoft.graph.win32LobApp/contentVersions" -Method POST -Headers $headers -Body "{}"
-          $contentVersionId = $contentVersion.id
-
-          # 3. Create file entry - use the extracted encrypted file size
+          # 2-4. Create content version, file entry, and wait for Azure Storage URI
+          # Wrapped in a retry loop: when URI request fails under concurrent load,
+          # we create a brand new content version + file entry on the next attempt.
           $encryptedFileSize = [long]$env:ENCRYPTED_FILE_SIZE
           $unencryptedSize = [long]$env:UNENCRYPTED_SIZE
           $encInfo = $env:ENCRYPTION_INFO | ConvertFrom-Json
 
-          Write-Host "Creating file entry: size=$unencryptedSize, sizeEncrypted=$encryptedFileSize"
+          $maxContentRetries = 3
+          $contentRetry = 0
+          $uriReady = $false
 
-          $fileBody = @{
-            "@odata.type" = "#microsoft.graph.mobileAppContentFile"
-            name = "$env:PACKAGE_FILENAME"
-            size = $unencryptedSize
-            sizeEncrypted = $encryptedFileSize
-            manifest = $null
-            isDependency = $false
-          } | ConvertTo-Json
+          while (-not $uriReady -and $contentRetry -lt $maxContentRetries) {
+            $contentRetry++
+            Write-Host "Content version attempt $contentRetry/$maxContentRetries"
 
-          $file = Invoke-RestMethod -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$appId/microsoft.graph.win32LobApp/contentVersions/$contentVersionId/files" -Method POST -Headers $headers -Body $fileBody
-          $fileId = $file.id
+            # 2. Create content version
+            $contentVersion = Invoke-RestMethod -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$appId/microsoft.graph.win32LobApp/contentVersions" -Method POST -Headers $headers -Body "{}"
+            $contentVersionId = $contentVersion.id
+            Write-Host "Created content version: $contentVersionId"
 
-          # 4. Wait for Azure Storage URI
-          $maxWait = 60
-          $waited = 0
-          do {
-            Start-Sleep -Seconds 2
-            $waited += 2
-            $fileStatus = Invoke-RestMethod -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$appId/microsoft.graph.win32LobApp/contentVersions/$contentVersionId/files/$fileId" -Headers $headers
-          } while ($fileStatus.uploadState -eq "azureStorageUriRequestPending" -and $waited -lt $maxWait)
+            # 3. Create file entry
+            Write-Host "Creating file entry: size=$unencryptedSize, sizeEncrypted=$encryptedFileSize"
 
-          if ($fileStatus.uploadState -ne "azureStorageUriRequestSuccess") {
-            throw "Failed to get Azure Storage URI. State: $($fileStatus.uploadState)"
+            $fileBody = @{
+              "@odata.type" = "#microsoft.graph.mobileAppContentFile"
+              name = "$env:PACKAGE_FILENAME"
+              size = $unencryptedSize
+              sizeEncrypted = $encryptedFileSize
+              manifest = $null
+              isDependency = $false
+            } | ConvertTo-Json
+
+            $file = Invoke-RestMethod -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$appId/microsoft.graph.win32LobApp/contentVersions/$contentVersionId/files" -Method POST -Headers $headers -Body $fileBody
+            $fileId = $file.id
+
+            # 4. Wait for Azure Storage URI
+            $maxWait = 60
+            $waited = 0
+            $pollCount = 0
+            do {
+              Start-Sleep -Seconds 3
+              $waited += 3
+              $pollCount++
+              $fileStatus = Invoke-RestMethod -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$appId/microsoft.graph.win32LobApp/contentVersions/$contentVersionId/files/$fileId" -Headers $headers
+              Write-Host "Poll ${pollCount}: uploadState=$($fileStatus.uploadState)"
+            } while ($fileStatus.uploadState -eq "azureStorageUriRequestPending" -and $waited -lt $maxWait)
+
+            if ($fileStatus.uploadState -eq "azureStorageUriRequestSuccess") {
+              $uriReady = $true
+            } else {
+              Write-Host "URI request failed with state: $($fileStatus.uploadState) (attempt $contentRetry/$maxContentRetries)"
+              if ($contentRetry -lt $maxContentRetries) {
+                $backoffSeconds = $contentRetry * 5
+                Write-Host "Retrying with new content version in ${backoffSeconds}s..."
+                Start-Sleep -Seconds $backoffSeconds
+              }
+            }
+          }
+
+          if (-not $uriReady) {
+            Send-ErrorCallback -Stage 'upload' -Category 'intune_api' -Code 'AZURE_STORAGE_URI_FAILED' `
+              -Message "Failed to get Azure Storage URI after $maxContentRetries attempts" `
+              -Details @{ uploadState = $fileStatus.uploadState; appId = $appId; retries = $maxContentRetries }
+            throw "Failed to get Azure Storage URI after $maxContentRetries attempts. State: $($fileStatus.uploadState)"
           }
 
           $azureStorageUri = $fileStatus.azureStorageUri
-          Write-Host "Got Azure Storage URI for upload"
+          $uriHost = ([System.Uri]$azureStorageUri).Host
+          $uriPath = ([System.Uri]$azureStorageUri).AbsolutePath
+          Write-Host "Got Azure Storage URI: ${uriHost}${uriPath} (attempt $contentRetry/$maxContentRetries)"
 
           # Send progress update
           Send-Callback -Body @{
@@ -720,105 +1260,236 @@ jobs:
 
           # 5. Upload encrypted content file in parallel chunks (25MB blocks, 4 concurrent)
           # Uses .NET HttpClient with ByteArrayContent for true async I/O and zero-copy uploads
-          $chunkSize = 25MB
-          $concurrency = 4
-          $uploadFilePath = $env:ENCRYPTED_FILE_PATH
-          $fileSize = (Get-Item $uploadFilePath).Length
-          $totalChunks = [Math]::Ceiling($fileSize / $chunkSize)
-          Write-Host "Uploading file: $uploadFilePath"
-          Write-Host "Upload strategy: $totalChunks chunks x 25MB, ${concurrency}x parallel"
+          $maxUploadRetries = 3
+          $uploadRetry = 0
+          $uploadSuccess = $false
 
-          # Pre-compute all block IDs upfront for the final commit
-          $blockIds = @()
-          for ($i = 0; $i -lt $totalChunks; $i++) {
-            $blockIds += [System.Convert]::ToBase64String(
-              [System.Text.Encoding]::ASCII.GetBytes($i.ToString("0000"))
-            )
-          }
+          while (-not $uploadSuccess -and $uploadRetry -lt $maxUploadRetries) {
+            $uploadRetry++
+            $fileStream = $null
+            $httpClient = $null
+            try {
+              $chunkSize = 25MB
+              $concurrency = 4
+              $uploadFilePath = $env:ENCRYPTED_FILE_PATH
+              $fileSize = (Get-Item $uploadFilePath).Length
+              $totalChunks = [Math]::Ceiling($fileSize / $chunkSize)
+              Write-Host "Uploading file: $uploadFilePath (attempt $uploadRetry/$maxUploadRetries)"
+              Write-Host "Upload strategy: $totalChunks chunks x 25MB, ${concurrency}x parallel"
 
-          # Create HttpClient with connection pooling for parallel uploads
-          $handler = [System.Net.Http.SocketsHttpHandler]::new()
-          $handler.MaxConnectionsPerServer = $concurrency
-          $handler.PooledConnectionLifetime = [TimeSpan]::FromMinutes(10)
-          $httpClient = [System.Net.Http.HttpClient]::new($handler)
-          $httpClient.Timeout = [TimeSpan]::FromMinutes(30)
-
-          # Pre-allocate reusable byte buffers (one per concurrent slot)
-          $buffers = @()
-          for ($i = 0; $i -lt $concurrency; $i++) {
-            $buffers += (, (New-Object byte[] $chunkSize))
-          }
-
-          $fileStream = [System.IO.File]::OpenRead($uploadFilePath)
-          $chunkIndex = 0
-          $batchCount = 0
-
-          while ($chunkIndex -lt $totalChunks) {
-            $batchSize = [Math]::Min($concurrency, $totalChunks - $chunkIndex)
-            $batchCount++
-
-            $tasks = @()
-            $requests = @()
-            for ($slot = 0; $slot -lt $batchSize; $slot++) {
-              $bytesRead = $fileStream.Read($buffers[$slot], 0, $chunkSize)
-
-              $blockId = $blockIds[$chunkIndex + $slot]
-              $blockUri = "$azureStorageUri&comp=block&blockid=$([System.Uri]::EscapeDataString($blockId))"
-
-              $content = [System.Net.Http.ByteArrayContent]::new($buffers[$slot], 0, $bytesRead)
-              $content.Headers.ContentType = [System.Net.Http.Headers.MediaTypeHeaderValue]::new("application/octet-stream")
-
-              $request = [System.Net.Http.HttpRequestMessage]::new([System.Net.Http.HttpMethod]::Put, $blockUri)
-              [void]$request.Headers.TryAddWithoutValidation("x-ms-blob-type", "BlockBlob")
-              $request.Content = $content
-
-              $requests += $request
-              $tasks += $httpClient.SendAsync($request)
-            }
-
-            [System.Threading.Tasks.Task]::WaitAll($tasks)
-
-            for ($slot = 0; $slot -lt $batchSize; $slot++) {
-              $response = $tasks[$slot].Result
-              if ([int]$response.StatusCode -ge 300) {
-                $errBody = $response.Content.ReadAsStringAsync().Result
-                $response.Dispose()
-                $requests[$slot].Dispose()
-                throw "Chunk $($chunkIndex + $slot) failed: HTTP $([int]$response.StatusCode) - $errBody"
+              # Pre-compute all block IDs upfront for the final commit
+              $blockIds = @()
+              for ($i = 0; $i -lt $totalChunks; $i++) {
+                $blockIds += [System.Convert]::ToBase64String(
+                  [System.Text.Encoding]::ASCII.GetBytes($i.ToString("0000"))
+                )
               }
-              $response.Dispose()
-              $requests[$slot].Dispose()
+
+              # Create HttpClient with connection pooling for parallel uploads
+              $handler = [System.Net.Http.SocketsHttpHandler]::new()
+              $handler.MaxConnectionsPerServer = $concurrency
+              $handler.PooledConnectionLifetime = [TimeSpan]::FromMinutes(10)
+              $httpClient = [System.Net.Http.HttpClient]::new($handler)
+              $httpClient.Timeout = [TimeSpan]::FromMinutes(30)
+
+              # Pre-allocate reusable byte buffers (one per concurrent slot)
+              $buffers = @()
+              for ($i = 0; $i -lt $concurrency; $i++) {
+                $buffers += (, (New-Object byte[] $chunkSize))
+              }
+
+              $fileStream = [System.IO.File]::OpenRead($uploadFilePath)
+              $chunkIndex = 0
+              $batchCount = 0
+
+              while ($chunkIndex -lt $totalChunks) {
+                # Determine batch size (up to $concurrency chunks)
+                $batchSize = [Math]::Min($concurrency, $totalChunks - $chunkIndex)
+                $batchCount++
+
+                # Read chunks sequentially into buffers, then upload in parallel
+                $tasks = @()
+                $requests = @()
+                $bytesReadPerSlot = @()
+                for ($slot = 0; $slot -lt $batchSize; $slot++) {
+                  $bytesRead = $fileStream.Read($buffers[$slot], 0, $chunkSize)
+                  $bytesReadPerSlot += $bytesRead
+
+                  $blockId = $blockIds[$chunkIndex + $slot]
+                  $blockUri = "$azureStorageUri&comp=block&blockid=$([System.Uri]::EscapeDataString($blockId))"
+
+                  # ByteArrayContent references the buffer directly (no copy for full chunks)
+                  $content = [System.Net.Http.ByteArrayContent]::new($buffers[$slot], 0, $bytesRead)
+                  $content.Headers.ContentType = [System.Net.Http.Headers.MediaTypeHeaderValue]::new("application/octet-stream")
+
+                  $request = [System.Net.Http.HttpRequestMessage]::new([System.Net.Http.HttpMethod]::Put, $blockUri)
+                  [void]$request.Headers.TryAddWithoutValidation("x-ms-blob-type", "BlockBlob")
+                  $request.Content = $content
+
+                  $requests += $request
+                  $tasks += $httpClient.SendAsync($request)
+                }
+
+                # Wait for all parallel uploads in this batch to complete
+                try {
+                  [System.Threading.Tasks.Task]::WaitAll($tasks)
+                } catch {
+                  # Network-level failure: dispose any completed task responses before rethrowing
+                  for ($r = 0; $r -lt $batchSize; $r++) {
+                    try { if ($tasks[$r].IsCompleted -and -not $tasks[$r].IsFaulted) { $tasks[$r].Result.Dispose() } } catch {}
+                    try { $requests[$r].Dispose() } catch {}
+                  }
+                  throw
+                }
+
+                # Validate responses and handle errors
+                $authFailed = $false
+                for ($slot = 0; $slot -lt $batchSize; $slot++) {
+                  $response = $tasks[$slot].Result
+                  $statusCode = [int]$response.StatusCode
+
+                  if ($statusCode -ge 200 -and $statusCode -lt 300) {
+                    $response.Dispose()
+                    $requests[$slot].Dispose()
+                    continue
+                  }
+
+                  $responseBody = $response.Content.ReadAsStringAsync().Result
+                  $response.Dispose()
+                  $requests[$slot].Dispose()
+
+                  # Auth failure - need SAS URI refresh
+                  if ($statusCode -eq 403 -or $responseBody -match "AuthenticationFailed|SAS identifier") {
+                    $authFailed = $true
+                    Write-Host "Auth failure on chunk $($chunkIndex + $slot): HTTP $statusCode"
+                    # Dispose remaining requests in this batch
+                    for ($r = $slot + 1; $r -lt $batchSize; $r++) {
+                      $tasks[$r].Result.Dispose()
+                      $requests[$r].Dispose()
+                    }
+                    break
+                  }
+
+                  # Retry individual chunk up to 2 times for transient errors
+                  $chunkRetried = $false
+                  for ($retry = 1; $retry -le 2; $retry++) {
+                    Start-Sleep -Seconds (2 * $retry)
+                    $retryBlockId = $blockIds[$chunkIndex + $slot]
+                    $retryUri = "$azureStorageUri&comp=block&blockid=$([System.Uri]::EscapeDataString($retryBlockId))"
+                    $retryContent = [System.Net.Http.ByteArrayContent]::new($buffers[$slot], 0, $bytesReadPerSlot[$slot])
+                    $retryContent.Headers.ContentType = [System.Net.Http.Headers.MediaTypeHeaderValue]::new("application/octet-stream")
+                    $retryReq = [System.Net.Http.HttpRequestMessage]::new([System.Net.Http.HttpMethod]::Put, $retryUri)
+                    [void]$retryReq.Headers.TryAddWithoutValidation("x-ms-blob-type", "BlockBlob")
+                    $retryReq.Content = $retryContent
+                    $retryResp = $httpClient.SendAsync($retryReq).Result
+                    $retryStatus = [int]$retryResp.StatusCode
+                    $retryResp.Dispose()
+                    $retryReq.Dispose()
+                    if ($retryStatus -ge 200 -and $retryStatus -lt 300) {
+                      Write-Host "Chunk $($chunkIndex + $slot) succeeded on retry $retry"
+                      $chunkRetried = $true
+                      break
+                    }
+                  }
+                  if (-not $chunkRetried) {
+                    throw "Chunk $($chunkIndex + $slot) failed after retries: HTTP $statusCode - $responseBody"
+                  }
+                }
+
+                if ($authFailed) {
+                  throw [System.Net.Http.HttpRequestException]::new("AuthenticationFailed: SAS URI expired during upload")
+                }
+
+                # Progress reporting (80-95% range, every 4th batch or final batch)
+                if ($batchCount % 4 -eq 0 -or ($chunkIndex + $batchSize) -ge $totalChunks) {
+                  $uploadedChunks = $chunkIndex + $batchSize
+                  $pct = [Math]::Round(80 + (($uploadedChunks / $totalChunks) * 15), 0)
+                  Write-Host "Upload progress: $uploadedChunks/$totalChunks chunks ($pct%)"
+                  Send-Callback -Body @{
+                    jobId = $env:JOB_ID
+                    status = "uploading"
+                    message = "Uploading... $uploadedChunks/$totalChunks chunks"
+                    progress = $pct
+                  } -CallbackUrl $env:CALLBACK_URL -CallbackSecret $env:CALLBACK_SECRET | Out-Null
+                }
+
+                $chunkIndex += $batchSize
+              }
+
+              $fileStream.Close(); $fileStream = $null
+              Write-Host "Upload complete: $totalChunks chunks uploaded"
+
+              # 6. Commit blocks to Azure Storage (also via HttpClient for consistency)
+              $blockListXml = '<?xml version="1.0" encoding="utf-8"?><BlockList>'
+              foreach ($id in $blockIds) {
+                $blockListXml += "<Latest>$id</Latest>"
+              }
+              $blockListXml += '</BlockList>'
+
+              $commitUri = "$azureStorageUri&comp=blocklist"
+              $commitContent = [System.Net.Http.StringContent]::new($blockListXml, [System.Text.Encoding]::UTF8, "text/plain")
+              $commitResp = $httpClient.PutAsync($commitUri, $commitContent).Result
+              if ([int]$commitResp.StatusCode -ge 300) {
+                $commitErr = $commitResp.Content.ReadAsStringAsync().Result
+                $commitResp.Dispose()
+                throw "Block list commit failed: HTTP $([int]$commitResp.StatusCode) - $commitErr"
+              }
+              $commitResp.Dispose()
+              Write-Host "Block list committed to Azure Storage"
+
+              $httpClient.Dispose(); $httpClient = $null
+              $uploadSuccess = $true
+            } catch {
+              if ($fileStream) { $fileStream.Close(); $fileStream = $null }
+              if ($httpClient) { $httpClient.Dispose(); $httpClient = $null }
+              $errorMsg = $_.Exception.Message
+
+              # Check if this is an Azure Storage authentication error
+              if ($errorMsg -match "AuthenticationFailed|SAS identifier|403|Forbidden") {
+                Write-Host "Azure Storage authentication failed (attempt $uploadRetry/$maxUploadRetries): $errorMsg"
+                if ($uploadRetry -lt $maxUploadRetries) {
+                  $backoffSeconds = 10 * $uploadRetry
+                  Write-Host "Renewing SAS URI on existing content version (backoff ${backoffSeconds}s)..."
+                  Start-Sleep -Seconds $backoffSeconds
+
+                  # Renew the SAS URI on the existing content version / file entry
+                  Write-Host "Calling renewUpload on contentVersion=$contentVersionId file=$fileId"
+                  Invoke-RestMethod -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$appId/microsoft.graph.win32LobApp/contentVersions/$contentVersionId/files/$fileId/renewUpload" -Method POST -Headers $headers
+
+                  $maxWait = 60; $waited = 0; $pollCount = 0
+                  do {
+                    Start-Sleep -Seconds 3; $waited += 3; $pollCount++
+                    $fileStatus = Invoke-RestMethod -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$appId/microsoft.graph.win32LobApp/contentVersions/$contentVersionId/files/$fileId" -Headers $headers
+                    Write-Host "Poll ${pollCount}: uploadState=$($fileStatus.uploadState)"
+                  } while ($fileStatus.uploadState -eq "azureStorageUriRequestPending" -and $waited -lt $maxWait)
+
+                  if ($fileStatus.uploadState -eq "azureStorageUriRequestSuccess") {
+                    $azureStorageUri = $fileStatus.azureStorageUri
+                    Write-Host "Got renewed Azure Storage URI for retry"
+                  } else {
+                    Write-Host "WARNING: Failed to renew URI (state: $($fileStatus.uploadState)), retrying with current URI"
+                  }
+                } else {
+                  # Final retry failed - send error callback
+                  Send-ErrorCallback -Stage 'upload' -Category 'permission' -Code 'AZURE_AUTH_FAILED' `
+                    -Message "Azure Storage authentication failed after $maxUploadRetries retries" `
+                    -Details @{ statusCode = 403; retries = $maxUploadRetries; error = $errorMsg }
+                }
+              } else {
+                # Non-auth error, rethrow immediately
+                throw
+              }
             }
+          }
 
-            if ($batchCount % 4 -eq 0 -or ($chunkIndex + $batchSize) -ge $totalChunks) {
-              $uploadedChunks = $chunkIndex + $batchSize
-              Write-Host "Upload progress: $uploadedChunks/$totalChunks chunks"
+          if (-not $uploadSuccess) {
+            if ($env:ERROR_SENT -ne "true") {
+              Send-ErrorCallback -Stage 'upload' -Category 'intune_api' -Code 'AZURE_UPLOAD_FAILED' `
+                -Message "Azure Storage upload failed after $maxUploadRetries attempts" `
+                -Details @{ retries = $maxUploadRetries }
             }
-
-            $chunkIndex += $batchSize
+            throw "Azure Storage upload failed after $maxUploadRetries attempts"
           }
-
-          $fileStream.Close()
-          Write-Host "Upload complete: $totalChunks chunks uploaded"
-
-          # 6. Commit blocks to Azure Storage
-          $blockListXml = '<?xml version="1.0" encoding="utf-8"?><BlockList>'
-          foreach ($id in $blockIds) {
-            $blockListXml += "<Latest>$id</Latest>"
-          }
-          $blockListXml += '</BlockList>'
-
-          $commitUri = "$azureStorageUri&comp=blocklist"
-          $commitContent = [System.Net.Http.StringContent]::new($blockListXml, [System.Text.Encoding]::UTF8, "text/plain")
-          $commitResp = $httpClient.PutAsync($commitUri, $commitContent).Result
-          if ([int]$commitResp.StatusCode -ge 300) {
-            $commitErr = $commitResp.Content.ReadAsStringAsync().Result
-            $commitResp.Dispose()
-            throw "Block list commit failed: HTTP $([int]$commitResp.StatusCode) - $commitErr"
-          }
-          $commitResp.Dispose()
-          $httpClient.Dispose()
-          Write-Host "Block list committed to Azure Storage"
 
           # 7. Commit file with encryption info
           $commitBody = @{
@@ -833,19 +1504,49 @@ jobs:
             }
           } | ConvertTo-Json -Depth 5
 
-          Invoke-RestMethod -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$appId/microsoft.graph.win32LobApp/contentVersions/$contentVersionId/files/$fileId/commit" -Method POST -Headers $headers -Body $commitBody
+          # 8. Commit file and wait for completion (retry if timed out)
+          $maxCommitAttempts = 3
+          $commitSuccess = $false
+          for ($commitAttempt = 1; $commitAttempt -le $maxCommitAttempts; $commitAttempt++) {
+            Write-Host "Committing file to Intune (attempt $commitAttempt/$maxCommitAttempts)..."
+            Invoke-RestMethod -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$appId/microsoft.graph.win32LobApp/contentVersions/$contentVersionId/files/$fileId/commit" -Method POST -Headers $headers -Body $commitBody
 
-          # 8. Wait for commit to complete
-          $maxWait = 120
-          $waited = 0
-          do {
-            Start-Sleep -Seconds 3
-            $waited += 3
-            $fileStatus = Invoke-RestMethod -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$appId/microsoft.graph.win32LobApp/contentVersions/$contentVersionId/files/$fileId" -Headers $headers
-          } while ($fileStatus.uploadState -eq "commitFilePending" -and $waited -lt $maxWait)
+            $maxWait = 300
+            $waited = 0
+            do {
+              Start-Sleep -Seconds 5
+              $waited += 5
+              try {
+                $fileStatus = Invoke-RestMethod -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$appId/microsoft.graph.win32LobApp/contentVersions/$contentVersionId/files/$fileId" -Headers $headers
+              } catch {
+                if ($_.Exception.Message -match "429|TooManyRequests") {
+                  Write-Host "Rate limited during commit polling, backing off..."
+                  Start-Sleep -Seconds 10
+                  $waited += 10
+                  continue
+                }
+                throw
+              }
+            } while ($fileStatus.uploadState -eq "commitFilePending" -and $waited -lt $maxWait)
 
-          if ($fileStatus.uploadState -ne "commitFileSuccess") {
-            throw "File commit failed. State: $($fileStatus.uploadState)"
+            if ($fileStatus.uploadState -eq "commitFileSuccess") {
+              $commitSuccess = $true
+              break
+            }
+
+            Write-Host "Commit attempt $commitAttempt ended with state: $($fileStatus.uploadState)"
+            if ($commitAttempt -lt $maxCommitAttempts) {
+              $backoff = 15 * $commitAttempt
+              Write-Host "Retrying commit in ${backoff}s..."
+              Start-Sleep -Seconds $backoff
+            }
+          }
+
+          if (-not $commitSuccess) {
+            Send-ErrorCallback -Stage 'upload' -Category 'intune_api' -Code 'INTUNE_COMMIT_FAILED' `
+              -Message "Failed to commit the uploaded file to Intune" `
+              -Details @{ commitState = $fileStatus.uploadState; appId = $appId; attempts = $maxCommitAttempts }
+            throw "File commit failed after $maxCommitAttempts attempts. State: $($fileStatus.uploadState)"
           }
 
           # 9. Update app with committed content version
@@ -865,8 +1566,36 @@ jobs:
           Write-Host "URL: $intuneUrl"
           Write-Host "========================================"
 
+          } catch {
+            $errorMsg = $_.Exception.Message
+            $statusCode = $null
+
+            # Try to extract status code from error
+            if ($_.Exception.Response) {
+              $statusCode = [int]$_.Exception.Response.StatusCode
+            }
+
+            # Only send error callback if not already sent
+            if ($env:ERROR_SENT -ne "true") {
+              if ($statusCode -eq 403 -or $errorMsg -match '403|Forbidden|Authorization_RequestDenied') {
+                Send-ErrorCallback -Stage 'upload' -Category 'permission' -Code 'INTUNE_FORBIDDEN' `
+                  -Message "Access denied (403) - check that DeviceManagementApps.ReadWrite.All permission is granted" `
+                  -Details @{ statusCode = $statusCode; operation = 'createApp'; error = $errorMsg }
+              } elseif ($statusCode -eq 401 -or $errorMsg -match '401|Unauthorized') {
+                Send-ErrorCallback -Stage 'upload' -Category 'permission' -Code 'INTUNE_UNAUTHORIZED' `
+                  -Message "Unauthorized (401) - authentication token may have expired" `
+                  -Details @{ statusCode = $statusCode; error = $errorMsg }
+              } else {
+                Send-ErrorCallback -Stage 'upload' -Category 'intune_api' -Code 'INTUNE_API_ERROR' `
+                  -Message "Intune API error: $errorMsg" `
+                  -Details @{ statusCode = $statusCode; error = $errorMsg }
+              }
+            }
+            throw
+          }
+
       - name: Apply assignments
-        if: success() && env.DUPLICATE_FOUND != 'true'
+        if: success()
         env:
           CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
         run: |
@@ -906,21 +1635,35 @@ jobs:
                   groupId = $assignment.groupId
                 }
               }
+              'exclusionGroup' {
+                @{
+                  '@odata.type' = '#microsoft.graph.exclusionGroupAssignmentTarget'
+                  groupId = $assignment.groupId
+                }
+              }
             }
 
-            # Map 'updateOnly' to 'required' for Graph API (requirement rules handle the gating)
-            $graphIntent = if ($assignment.intent -eq 'updateOnly') { 'required' } else { $assignment.intent }
+            if ($assignment.filterId) {
+              $target['deviceAndAppManagementAssignmentFilterId'] = $assignment.filterId
+              $target['deviceAndAppManagementAssignmentFilterType'] = if ($assignment.filterType) { $assignment.filterType } else { 'include' }
+            }
 
-            $graphAssignments += @{
+            $graphAssignment = @{
               '@odata.type' = '#microsoft.graph.mobileAppAssignment'
-              intent = $graphIntent
+              intent = $assignment.intent
               target = $target
-              settings = @{
+            }
+
+            # Exclusion assignments do not support settings
+            if ($assignment.type -ne 'exclusionGroup') {
+              $graphAssignment['settings'] = @{
                 '@odata.type' = '#microsoft.graph.win32LobAppAssignmentSettings'
                 notifications = 'showAll'
                 deliveryOptimizationPriority = 'notConfigured'
               }
             }
+
+            $graphAssignments += $graphAssignment
           }
 
           $body = @{
@@ -930,8 +1673,50 @@ jobs:
           Invoke-RestMethod -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$env:INTUNE_APP_ID/assign" -Method POST -Headers $headers -Body $body
           Write-Host "Applied $($graphAssignments.Count) assignment(s) to app"
 
+      - name: Apply categories
+        if: success()
+        env:
+          CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
+        run: |
+          $categoriesJson = $env:CATEGORIES
+          if (-not $categoriesJson -or $categoriesJson -eq '[]') {
+            Write-Host "No categories configured, skipping..."
+            exit 0
+          }
+
+          . "$env:GITHUB_WORKSPACE\Send-Callback.ps1"
+          Send-Callback -Body @{
+            jobId = $env:JOB_ID
+            status = "uploading"
+            message = "Applying categories..."
+            progress = 92
+          } -CallbackUrl $env:CALLBACK_URL -CallbackSecret $env:CALLBACK_SECRET | Out-Null
+
+          $headers = @{
+            "Authorization" = "Bearer $env:GRAPH_TOKEN"
+            "Content-Type" = "application/json"
+          }
+
+          $categories = $categoriesJson | ConvertFrom-Json
+          $categoryIds = @($categories | ForEach-Object { $_.id } | Where-Object { $_ } | Sort-Object -Unique)
+
+          if ($categoryIds.Count -eq 0) {
+            Write-Host "No valid category IDs found, skipping..."
+            exit 0
+          }
+
+          foreach ($categoryId in $categoryIds) {
+            $refBody = @{
+              '@odata.id' = "https://graph.microsoft.com/beta/deviceAppManagement/mobileAppCategories/$categoryId"
+            } | ConvertTo-Json -Compress
+
+            Invoke-RestMethod -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$env:INTUNE_APP_ID/categories/`$ref" -Method POST -Headers $headers -Body $refBody
+          }
+
+          Write-Host "Applied $($categoryIds.Count) category(s) to app"
+
       - name: Send success callback
-        if: success() && env.DUPLICATE_FOUND != 'true'
+        if: success()
         env:
           CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
         run: |
@@ -949,6 +1734,9 @@ jobs:
 
           # Write GitHub Job Summary
           $packageSizeMB = [math]::Round([long]$env:INTUNEWIN_SIZE / 1MB, 2)
+          $intuneGetRef = if ($env:INTUNEGET_RESOLVED_REF) { $env:INTUNEGET_RESOLVED_REF } else { 'main' }
+          $intuneWinToolHash = if ($env:INTUNEWINAPPUTIL_SHA256_ACTUAL) { $env:INTUNEWINAPPUTIL_SHA256_ACTUAL } else { "N/A" }
+          $psadtToolHash = if ($env:PSADT_TEMPLATE_SHA256_ACTUAL) { $env:PSADT_TEMPLATE_SHA256_ACTUAL } else { "N/A" }
           $summary = @(
             "## Intune Package Deployed",
             "",
@@ -961,26 +1749,45 @@ jobs:
             "| **Intune App ID** | $env:INTUNE_APP_ID |",
             "| **Package Size** | $packageSizeMB MB |",
             "",
+            "### Dependency Integrity",
+            "",
+            "| Dependency | Pin / Verified SHA256 |",
+            "|----------|------------------------|",
+            "| **IntuneGet Scripts Ref** | $intuneGetRef |",
+            "| **IntuneWinAppUtil.exe** | $intuneWinToolHash |",
+            "| **PSADT Template Zip** | $psadtToolHash |",
+            "",
             "[View in Intune]($env:INTUNE_APP_URL)"
           ) -join "`n"
           $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
 
-      - name: Send failure callback
-        if: failure() && env.DUPLICATE_FOUND != 'true'
+      - name: Send failure callback (fallback)
+        if: failure()
         env:
           CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
         run: |
-          . "$env:GITHUB_WORKSPACE\Send-Callback.ps1"
-          Send-Callback -Body @{
-            jobId = $env:JOB_ID
-            status = "failed"
-            message = "Pipeline failed - check run logs"
-            progress = 0
-            runId = "${{ github.run_id }}"
-            runUrl = "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          } -CallbackUrl $env:CALLBACK_URL -CallbackSecret $env:CALLBACK_SECRET -MaxRetries 5 | Out-Null
+          # Only send fallback error if a specific error callback wasn't already sent
+          if ($env:ERROR_SENT -ne "true") {
+            . "$env:GITHUB_WORKSPACE\Send-Callback.ps1"
+            Send-Callback -Body @{
+              jobId = $env:JOB_ID
+              status = "failed"
+              message = "An unexpected error occurred during packaging"
+              progress = 0
+              errorStage = "unknown"
+              errorCategory = "system"
+              errorCode = "UNEXPECTED_ERROR"
+              runId = "${{ github.run_id }}"
+              runUrl = "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            } -CallbackUrl $env:CALLBACK_URL -CallbackSecret $env:CALLBACK_SECRET -MaxRetries 5 | Out-Null
+          } else {
+            Write-Host "Specific error callback already sent, skipping fallback"
+          }
 
           # Write GitHub Job Summary for failure
+          $intuneGetRef = if ($env:INTUNEGET_RESOLVED_REF) { $env:INTUNEGET_RESOLVED_REF } else { 'main' }
+          $intuneWinToolHash = if ($env:INTUNEWINAPPUTIL_SHA256_ACTUAL) { $env:INTUNEWINAPPUTIL_SHA256_ACTUAL } else { "N/A" }
+          $psadtToolHash = if ($env:PSADT_TEMPLATE_SHA256_ACTUAL) { $env:PSADT_TEMPLATE_SHA256_ACTUAL } else { "N/A" }
           $summary = @(
             "## Intune Package Deployment Failed",
             "",
@@ -991,6 +1798,14 @@ jobs:
             "| **Publisher** | $env:PUBLISHER |",
             "| **Package ID** | $env:WINGET_ID |",
             "| **Status** | Failed |",
+            "",
+            "### Dependency Integrity",
+            "",
+            "| Dependency | Pin / Verified SHA256 |",
+            "|----------|------------------------|",
+            "| **IntuneGet Scripts Ref** | $intuneGetRef |",
+            "| **IntuneWinAppUtil.exe** | $intuneWinToolHash |",
+            "| **PSADT Template Zip** | $psadtToolHash |",
             "",
             "Check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details."
           ) -join "`n"
