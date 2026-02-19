@@ -1081,25 +1081,45 @@ if ($useRegistryUninstall) {
     )
 }
 
-# Add registry marker removal - check both HKLM and HKCU for cleanup
-$lines += @(
-    ''
-    '    # Remove IntuneGet detection marker from registry (check both HKLM and HKCU)'
-    '    try {'
-    "        `$regPathHKLM = 'HKLM:\SOFTWARE\IntuneGet\Apps\$sanitizedWingetId'"
-    "        `$regPathHKCU = 'HKCU:\SOFTWARE\IntuneGet\Apps\$sanitizedWingetId'"
-    '        if (Test-ADTRegistryKey -Key $regPathHKLM) {'
-    '            Remove-ADTRegistryKey -Key $regPathHKLM -Recurse'
-    '            Write-ADTLogEntry -Message "IntuneGet detection marker removed from HKLM" -Severity ''Success'' -Source ''Uninstall-ADTDeployment'''
-    '        }'
-    '        if (Test-ADTRegistryKey -Key $regPathHKCU) {'
-    '            Remove-ADTRegistryKey -Key $regPathHKCU -Recurse'
-    '            Write-ADTLogEntry -Message "IntuneGet detection marker removed from HKCU" -Severity ''Success'' -Source ''Uninstall-ADTDeployment'''
-    '        }'
-    '    } catch {'
-    '        Write-ADTLogEntry -Message "Warning: Could not remove detection marker: $_" -Severity ''Warning'' -Source ''Uninstall-ADTDeployment'''
-    '    }'
-)
+# Add registry marker removal - scope-aware cleanup
+if ($IsUserScope) {
+    # User-scope: enumerate all user hives to remove marker (handles SYSTEM context)
+    $lines += @(
+        ''
+        '    # Remove IntuneGet detection marker from all user registry hives'
+        '    try {'
+        '        Invoke-ADTAllUsersRegistryAction -ScriptBlock {'
+        "            Remove-ADTRegistryKey -Key 'HKCU\SOFTWARE\IntuneGet\Apps\$sanitizedWingetId' -SID `$_.SID -Recurse -ErrorAction SilentlyContinue"
+        '        }'
+        '        Write-ADTLogEntry -Message "IntuneGet detection marker cleanup completed across all user hives" -Severity ''Success'' -Source ''Uninstall-ADTDeployment'''
+        '    } catch {'
+        '        Write-ADTLogEntry -Message "Warning: Could not enumerate user hives for marker cleanup: $_" -Severity ''Warning'' -Source ''Uninstall-ADTDeployment'''
+        '    }'
+        ''
+        '    # Also remove from current HKCU context (fallback for user-context uninstall)'
+        '    try {'
+        "        `$regPathHKCU = 'HKCU\SOFTWARE\IntuneGet\Apps\$sanitizedWingetId'"
+        '        if (Test-ADTRegistryKey -Key $regPathHKCU) {'
+        '            Remove-ADTRegistryKey -Key $regPathHKCU -Recurse'
+        '        }'
+        '    } catch { }'
+    )
+} else {
+    # Machine-scope: marker is only in HKLM
+    $lines += @(
+        ''
+        '    # Remove IntuneGet detection marker from HKLM'
+        '    try {'
+        "        `$regPathHKLM = 'HKLM\SOFTWARE\IntuneGet\Apps\$sanitizedWingetId'"
+        '        if (Test-ADTRegistryKey -Key $regPathHKLM) {'
+        '            Remove-ADTRegistryKey -Key $regPathHKLM -Recurse'
+        '            Write-ADTLogEntry -Message "IntuneGet detection marker removed from HKLM" -Severity ''Success'' -Source ''Uninstall-ADTDeployment'''
+        '        }'
+        '    } catch {'
+        '        Write-ADTLogEntry -Message "Warning: Could not remove detection marker: $_" -Severity ''Warning'' -Source ''Uninstall-ADTDeployment'''
+        '    }'
+    )
+}
 
 # Add post-uninstall prompts
 if ($postUninstallPromptCalls) {
