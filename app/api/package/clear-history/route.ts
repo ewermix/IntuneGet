@@ -5,39 +5,16 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
+import { parseAccessToken } from '@/lib/auth-utils';
 
 const DEFAULT_TERMINAL_STATUSES = ['completed', 'deployed', 'failed', 'cancelled', 'duplicate_skipped'];
 
 export async function POST(request: NextRequest) {
   try {
-    // Get the authorization header (Microsoft access token from MSAL)
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
+    const user = await parseAccessToken(request.headers.get('Authorization'));
+    if (!user) {
       return NextResponse.json(
-        { error: 'Authentication required. Please sign in with Microsoft.' },
-        { status: 401 }
-      );
-    }
-
-    // Decode the token to get user info
-    const accessToken = authHeader.slice(7);
-    let userId: string;
-
-    try {
-      const tokenPayload = JSON.parse(
-        Buffer.from(accessToken.split('.')[1], 'base64').toString()
-      );
-      userId = tokenPayload.oid || tokenPayload.sub;
-
-      if (!userId) {
-        return NextResponse.json(
-          { error: 'Invalid token: missing user identifier' },
-          { status: 401 }
-        );
-      }
-    } catch {
-      return NextResponse.json(
-        { error: 'Invalid token format' },
+        { error: 'Authentication required' },
         { status: 401 }
       );
     }
@@ -63,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     const db = getDatabase();
-    const deletedCount = await db.jobs.deleteByUserIdAndStatuses(userId, statuses);
+    const deletedCount = await db.jobs.deleteByUserIdAndStatuses(user.userId, statuses);
 
     return NextResponse.json({
       success: true,

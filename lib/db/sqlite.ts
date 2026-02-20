@@ -175,7 +175,7 @@ export const sqliteDb: DatabaseAdapter = {
         SELECT * FROM packaging_jobs
         WHERE user_id = ?
         AND (
-          status IN ('queued', 'packaging', 'testing', 'uploading')
+          status IN ('queued', 'packaging', 'uploading')
           OR created_at >= ?
         )
         ORDER BY created_at DESC
@@ -364,7 +364,6 @@ export const sqliteDb: DatabaseAdapter = {
     async getStats(): Promise<{
       queued: number;
       packaging: number;
-      testing: number;
       uploading: number;
       deployed: number;
       failed: number;
@@ -381,7 +380,6 @@ export const sqliteDb: DatabaseAdapter = {
       const stats = {
         queued: 0,
         packaging: 0,
-        testing: 0,
         uploading: 0,
         deployed: 0,
         failed: 0,

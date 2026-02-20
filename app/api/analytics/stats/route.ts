@@ -5,37 +5,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase';
+import { parseAccessToken } from '@/lib/auth-utils';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get the authorization header (Microsoft access token from MSAL)
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
+    const user = await parseAccessToken(request.headers.get('Authorization'));
+    if (!user) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // Decode the token to get user info
-    const accessToken = authHeader.slice(7);
-    let userId: string;
-
-    try {
-      const tokenPayload = JSON.parse(
-        Buffer.from(accessToken.split('.')[1], 'base64').toString()
-      );
-      userId = tokenPayload.oid || tokenPayload.sub;
-
-      if (!userId) {
-        return NextResponse.json(
-          { error: 'Invalid token: missing user identifier' },
-          { status: 401 }
-        );
-      }
-    } catch {
-      return NextResponse.json(
-        { error: 'Invalid token format' },
         { status: 401 }
       );
     }
@@ -70,13 +47,13 @@ export async function GET(request: NextRequest) {
     const { data: jobs, error: jobsError } = await supabase
       .from('packaging_jobs')
       .select('status, completed_at')
-      .eq('user_id', userId);
+      .eq('user_id', user.userId);
 
     // Fetch 5 most recent jobs for activity feed
     const { data: recentJobs, error: recentJobsError } = await supabase
       .from('packaging_jobs')
       .select('id, winget_id, display_name, status, created_at, intune_app_url')
-      .eq('user_id', userId)
+      .eq('user_id', user.userId)
       .order('created_at', { ascending: false })
       .limit(5);
 
@@ -99,7 +76,7 @@ export async function GET(request: NextRequest) {
     let pending = 0;
     let failed = 0;
 
-    const pendingStatuses = ['queued', 'packaging', 'testing', 'uploading'];
+    const pendingStatuses = ['queued', 'packaging', 'uploading'];
 
     for (const job of allJobs) {
       // 'deployed' is the final success status (uploaded to Intune)

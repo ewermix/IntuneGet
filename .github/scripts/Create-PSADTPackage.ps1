@@ -314,6 +314,15 @@ if (Use-PSADTBrandAsset -Source $brandingBannerPath -TargetName $bannerTarget -P
     Update-PowerShellDataSetting -Path $configPath -Section 'Assets' -Setting 'Banner' -ValueLiteral (ConvertTo-PSADTConfigValue $bannerTarget)
 }
 
+# User-scope apps run as the logged-in user who cannot write to C:\Windows\Logs\Software
+# Override the PSADT log directory to ProgramData which is writable by all authenticated users
+if ($IsUserScope) {
+    # Use literal path since .psd1 files load in restricted language mode
+    # where PSADT runtime variables like $envProgramData are not available
+    Update-PowerShellDataSetting -Path $configPath -Section 'Toolkit' -Setting 'LogPath' -ValueLiteral "'C:\ProgramData\IntuneGet\Logs'"
+    Write-Host "User-scope: Log directory overridden to C:\ProgramData\IntuneGet\Logs"
+}
+
 # Auto-detect installer type from file extension (override incorrect manifest data)
 $fileExtension = [System.IO.Path]::GetExtension($installerFileName).ToLower()
 $originalInstallerType = $installerTypeLower
@@ -417,7 +426,7 @@ if ($psadtConfig.processesToClose -and $psadtConfig.processesToClose.Count -gt 0
 }
 $showClosePrompt = if ($psadtConfig.showClosePrompt) { $true } else { $false }
 $closeCountdown = if ($psadtConfig.closeCountdown) { [int]$psadtConfig.closeCountdown } else { 60 }
-$allowDefer = if ($psadtConfig.ContainsKey('allowDefer')) { [bool]$psadtConfig.allowDefer } else { $true }
+$allowDefer = if ($psadtConfig.ContainsKey('allowDefer')) { [bool]$psadtConfig.allowDefer } else { $false }
 $deferTimes = if ($psadtConfig.deferTimes) { [int]$psadtConfig.deferTimes } else { 3 }
 
 # Extended welcome parameters
@@ -464,9 +473,7 @@ if ($processesToClose.Count -gt 0) {
 # Build Show-ADTInstallationWelcome call if enabled
 $welcomeCall = ''
 if ($allowDefer -or ($showClosePrompt -and $processesToClose.Count -gt 0) -or $blockExecution -or $checkDiskSpace) {
-    $welcomeParams = @(
-        "-Title '$welcomeTitle'"
-    )
+    $welcomeParams = @()
 
     if (-not [string]::IsNullOrWhiteSpace($welcomeMessageEscaped)) {
         $welcomeParams += '-CustomText'
@@ -475,16 +482,16 @@ if ($allowDefer -or ($showClosePrompt -and $processesToClose.Count -gt 0) -or $b
     # Handle parameter sets correctly for PSADT v4
     # When both deferrals AND close prompts are enabled, use -AllowDeferCloseProcesses
     if ($processesToClose.Count -gt 0 -and $allowDefer) {
-        $welcomeParams += "-Subtitle 'The following applications must be closed before installation can proceed'"
         $welcomeParams += '-CloseProcesses $script:ProcessesToClose'
         $welcomeParams += '-AllowDeferCloseProcesses'
         $welcomeParams += "-ForceCloseProcessesCountdown $closeCountdown"
         $welcomeParams += "-DeferTimes $deferTimes"
+        if ($blockExecution) { $welcomeParams += '-BlockExecution' }
     } elseif ($processesToClose.Count -gt 0) {
         # Only close prompts, no deferrals
-        $welcomeParams += "-Subtitle 'The following applications must be closed before installation can proceed'"
         $welcomeParams += '-CloseProcesses $script:ProcessesToClose'
         $welcomeParams += "-CloseProcessesCountdown $closeCountdown"
+        if ($blockExecution) { $welcomeParams += '-BlockExecution' }
     } elseif ($allowDefer) {
         # Only deferrals, no close prompts
         $welcomeParams += '-AllowDefer'
@@ -496,7 +503,6 @@ if ($allowDefer -or ($showClosePrompt -and $processesToClose.Count -gt 0) -or $b
     if ($persistPrompt) { $welcomeParams += '-PersistPrompt' }
     if ($minimizeWindows) { $welcomeParams += '-MinimizeWindows' }
     if ($windowLocation -ne 'Default') { $welcomeParams += "-WindowLocation '$windowLocation'" }
-    if ($blockExecution) { $welcomeParams += '-BlockExecution' }
     if ($checkDiskSpace) {
         $welcomeParams += '-CheckDiskSpace'
         if ($requiredDiskSpace) { $welcomeParams += "-RequiredDiskSpace $requiredDiskSpace" }
@@ -773,7 +779,7 @@ $lines = @(
     '    AppScriptVersion = ''1.0.0'''
     '    AppScriptDate = (Get-Date -Format ''yyyy-MM-dd'')'
     '    AppScriptAuthor = ''IntuneGet'''
-    '    RequireAdmin = $true'
+    "    RequireAdmin = `$$(-not $IsUserScope)"
     '    InstallName = '''''
     '    InstallTitle = '''''
     '    DeployAppScriptFriendlyName = $MyInvocation.MyCommand.Name'
@@ -897,36 +903,37 @@ $lines += @(
     '    Close-ADTInstallationProgress'
 )
 
-# Write registry marker - use HKCU for user-scope (non-admin) apps, HKLM for machine-scope
+# Write registry marker - scope-aware
 if ($IsUserScope) {
-    # User-scope: Write to HKCU (user has write access)
+    # User-scope: Write to all user hives via Invoke-ADTAllUsersRegistryAction (handles SYSTEM context)
     $lines += @(
         ''
-        '    # Write IntuneGet detection marker to HKCU (user-scope app)'
+        '    # Write IntuneGet detection marker to all user registry hives'
         '    try {'
-        "        `$regPath = 'HKCU:\SOFTWARE\IntuneGet\Apps\$sanitizedWingetId'"
-        "        Set-ADTRegistryKey -Key `$regPath -Name 'DisplayName' -Value '$displayNameEscaped' -Type String"
-        "        Set-ADTRegistryKey -Key `$regPath -Name 'Version' -Value '$Version' -Type String"
-        "        Set-ADTRegistryKey -Key `$regPath -Name 'Publisher' -Value '$publisherEscaped' -Type String"
-        "        Set-ADTRegistryKey -Key `$regPath -Name 'WingetId' -Value '$WingetId' -Type String"
-        '        Set-ADTRegistryKey -Key $regPath -Name ''InstalledDate'' -Value (Get-Date -Format ''o'') -Type String'
-        '        Write-ADTLogEntry -Message "IntuneGet detection marker written to HKCU registry" -Severity ''Success'' -Source ''Install-ADTDeployment'''
+        '        Invoke-ADTAllUsersRegistryAction -ScriptBlock {'
+        "            Set-ADTRegistryKey -LiteralPath 'HKCU\SOFTWARE\IntuneGet\Apps\$sanitizedWingetId' -Name 'DisplayName' -Value '$displayNameEscaped' -Type String -SID `$_.SID"
+        "            Set-ADTRegistryKey -LiteralPath 'HKCU\SOFTWARE\IntuneGet\Apps\$sanitizedWingetId' -Name 'Version' -Value '$Version' -Type String -SID `$_.SID"
+        "            Set-ADTRegistryKey -LiteralPath 'HKCU\SOFTWARE\IntuneGet\Apps\$sanitizedWingetId' -Name 'Publisher' -Value '$publisherEscaped' -Type String -SID `$_.SID"
+        "            Set-ADTRegistryKey -LiteralPath 'HKCU\SOFTWARE\IntuneGet\Apps\$sanitizedWingetId' -Name 'WingetId' -Value '$WingetId' -Type String -SID `$_.SID"
+        '            Set-ADTRegistryKey -LiteralPath ''HKCU\SOFTWARE\IntuneGet\Apps\' + $sanitizedWingetId + ''' -Name ''InstalledDate'' -Value (Get-Date -Format ''o'') -Type String -SID $_.SID'
+        '        }'
+        '        Write-ADTLogEntry -Message "IntuneGet detection marker written to all user hives" -Severity ''Success'' -Source ''Install-ADTDeployment'''
         '    } catch {'
-        '        Write-ADTLogEntry -Message "Warning: Could not write detection marker: $_" -Severity ''Warning'' -Source ''Install-ADTDeployment'''
+        '        Write-ADTLogEntry -Message "Warning: Could not write detection marker to user hives: $_" -Severity ''Warning'' -Source ''Install-ADTDeployment'''
         '    }'
     )
 } else {
-    # Machine-scope: Write to HKLM (SYSTEM has write access)
+    # Machine-scope: Write to HKLM
     $lines += @(
         ''
         '    # Write IntuneGet detection marker to HKLM (machine-scope app)'
         '    try {'
-        "        `$regPath = 'HKLM:\SOFTWARE\IntuneGet\Apps\$sanitizedWingetId'"
-        "        Set-ADTRegistryKey -Key `$regPath -Name 'DisplayName' -Value '$displayNameEscaped' -Type String"
-        "        Set-ADTRegistryKey -Key `$regPath -Name 'Version' -Value '$Version' -Type String"
-        "        Set-ADTRegistryKey -Key `$regPath -Name 'Publisher' -Value '$publisherEscaped' -Type String"
-        "        Set-ADTRegistryKey -Key `$regPath -Name 'WingetId' -Value '$WingetId' -Type String"
-        '        Set-ADTRegistryKey -Key $regPath -Name ''InstalledDate'' -Value (Get-Date -Format ''o'') -Type String'
+        "        `$regPath = 'HKLM\SOFTWARE\IntuneGet\Apps\$sanitizedWingetId'"
+        "        Set-ADTRegistryKey -LiteralPath `$regPath -Name 'DisplayName' -Value '$displayNameEscaped' -Type String"
+        "        Set-ADTRegistryKey -LiteralPath `$regPath -Name 'Version' -Value '$Version' -Type String"
+        "        Set-ADTRegistryKey -LiteralPath `$regPath -Name 'Publisher' -Value '$publisherEscaped' -Type String"
+        "        Set-ADTRegistryKey -LiteralPath `$regPath -Name 'WingetId' -Value '$WingetId' -Type String"
+        '        Set-ADTRegistryKey -LiteralPath $regPath -Name ''InstalledDate'' -Value (Get-Date -Format ''o'') -Type String'
         '        Write-ADTLogEntry -Message "IntuneGet detection marker written to HKLM registry" -Severity ''Success'' -Source ''Install-ADTDeployment'''
         '    } catch {'
         '        Write-ADTLogEntry -Message "Warning: Could not write detection marker: $_" -Severity ''Warning'' -Source ''Install-ADTDeployment'''
@@ -964,15 +971,37 @@ if ($preUninstallPromptCalls) {
 
 # Generate uninstall command based on whether registry lookup is needed
 if ($useRegistryUninstall) {
+    $wingetIdEscaped = $WingetId -replace "'", "''" -replace '`', '``' -replace '\$', '`$'
     $lines += @(
         ''
         '    # Use PSADT v4 Uninstall-ADTApplication to find and uninstall'
         '    # This handles the registry lookup, MSI vs EXE detection, and silent'
         '    # switches automatically using the app''s registered QuietUninstallString'
         "    `$appName = '$registryUninstallDisplayName'"
+        "    `$wingetId = '$wingetIdEscaped'"
         ''
-        '    Write-ADTLogEntry -Message "Uninstalling application: $appName" -Severity ''Info'' -Source ''Uninstall-ADTDeployment'''
-        '    Uninstall-ADTApplication -Name $appName -SuccessExitCodes @(0, 1605, 1614)'
+        '    Write-ADTLogEntry -Message "Searching for installed application: $appName" -Source ''Uninstall-ADTDeployment'''
+        '    $installedApp = Get-ADTApplication -Name $appName'
+        ''
+        '    if ($installedApp) {'
+        '        Write-ADTLogEntry -Message "Found via registry name, uninstalling..." -Source ''Uninstall-ADTDeployment'''
+        '        Uninstall-ADTApplication -Name $appName -SuccessExitCodes @(0, 1605, 1614) -RebootExitCodes @(1641, 3010)'
+        '    } else {'
+        '        Write-ADTLogEntry -Message "Not found by name ''$appName'', falling back to winget uninstall --id $wingetId" -Severity ''Warning'' -Source ''Uninstall-ADTDeployment'''
+        ''
+        '        # Find winget.exe (may not be in PATH when running as SYSTEM)'
+        '        $wingetExe = Get-Command winget.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source'
+        '        if (-not $wingetExe) {'
+        '            $wingetExe = Get-ChildItem "C:\Program Files\WindowsApps\Microsoft.DesktopAppInstaller_*_*__8wekyb3d8bbwe\winget.exe" -ErrorAction SilentlyContinue |'
+        '                Sort-Object LastWriteTime -Descending | Select-Object -First 1 -ExpandProperty FullName'
+        '        }'
+        ''
+        '        if ($wingetExe) {'
+        '            Start-ADTProcess -FilePath $wingetExe -ArgumentList "uninstall --id $wingetId --silent --accept-source-agreements --disable-interactivity" -WindowStyle Hidden -SuccessExitCodes @(0)'
+        '        } else {'
+        '            throw "Could not find installed application: $appName (winget not available for fallback)"'
+        '        }'
+        '    }'
     )
 } elseif ($useMsixUninstall) {
     $lines += @(
@@ -1027,7 +1056,7 @@ if ($useRegistryUninstall) {
         '    if ($uninstallCmd -match ''\{[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}\}'') {'
         '        $productCode = $Matches[0]'
         '        Write-ADTLogEntry -Message "Detected MSI product code: $productCode - using Start-ADTMsiProcess" -Severity ''Info'' -Source ''Uninstall-ADTDeployment'''
-        '        Start-ADTMsiProcess -Action ''Uninstall'' -ProductCode $productCode -SuccessExitCodes @(0, 1605, 1614)'
+        '        Start-ADTMsiProcess -Action ''Uninstall'' -ProductCode $productCode -SuccessExitCodes @(0, 1605, 1614, 3010, 1641)'
         '    } else {'
         '        # EXE-based uninstaller - parse and execute with timeout'
         '        if ($uninstallCmd -match ''^"([^"]+)"(.*)$'') {'
@@ -1048,30 +1077,50 @@ if ($useRegistryUninstall) {
         '        }'
         ''
         '        Write-ADTLogEntry -Message "Executing EXE uninstall: $uninstallExe $uninstallArgs" -Severity ''Info'' -Source ''Uninstall-ADTDeployment'''
-        '        Start-ADTProcess -FilePath $uninstallExe -ArgumentList $uninstallArgs -WindowStyle Hidden -WaitForMsiExec -Timeout (New-TimeSpan -Minutes 15) -TimeoutAction Stop -SuccessExitCodes @(0, 1605, 1614)'
+        '        Start-ADTProcess -FilePath $uninstallExe -ArgumentList $uninstallArgs -WindowStyle Hidden -WaitForMsiExec -Timeout (New-TimeSpan -Minutes 15) -TimeoutAction Stop -SuccessExitCodes @(0, 1605, 1614, 3010, 1641)'
         '    }'
     )
 }
 
-# Add registry marker removal - check both HKLM and HKCU for cleanup
-$lines += @(
-    ''
-    '    # Remove IntuneGet detection marker from registry (check both HKLM and HKCU)'
-    '    try {'
-    "        `$regPathHKLM = 'HKLM:\SOFTWARE\IntuneGet\Apps\$sanitizedWingetId'"
-    "        `$regPathHKCU = 'HKCU:\SOFTWARE\IntuneGet\Apps\$sanitizedWingetId'"
-    '        if (Test-ADTRegistryKey -Key $regPathHKLM) {'
-    '            Remove-ADTRegistryKey -Key $regPathHKLM -Recurse'
-    '            Write-ADTLogEntry -Message "IntuneGet detection marker removed from HKLM" -Severity ''Success'' -Source ''Uninstall-ADTDeployment'''
-    '        }'
-    '        if (Test-ADTRegistryKey -Key $regPathHKCU) {'
-    '            Remove-ADTRegistryKey -Key $regPathHKCU -Recurse'
-    '            Write-ADTLogEntry -Message "IntuneGet detection marker removed from HKCU" -Severity ''Success'' -Source ''Uninstall-ADTDeployment'''
-    '        }'
-    '    } catch {'
-    '        Write-ADTLogEntry -Message "Warning: Could not remove detection marker: $_" -Severity ''Warning'' -Source ''Uninstall-ADTDeployment'''
-    '    }'
-)
+# Add registry marker removal - scope-aware cleanup
+if ($IsUserScope) {
+    # User-scope: enumerate all user hives to remove marker (handles SYSTEM context)
+    $lines += @(
+        ''
+        '    # Remove IntuneGet detection marker from all user registry hives'
+        '    try {'
+        '        Invoke-ADTAllUsersRegistryAction -ScriptBlock {'
+        "            Remove-ADTRegistryKey -LiteralPath 'HKCU\SOFTWARE\IntuneGet\Apps\$sanitizedWingetId' -SID `$_.SID -Recurse -ErrorAction SilentlyContinue"
+        '        }'
+        '        Write-ADTLogEntry -Message "IntuneGet detection marker cleanup completed across all user hives" -Severity ''Success'' -Source ''Uninstall-ADTDeployment'''
+        '    } catch {'
+        '        Write-ADTLogEntry -Message "Warning: Could not enumerate user hives for marker cleanup: $_" -Severity ''Warning'' -Source ''Uninstall-ADTDeployment'''
+        '    }'
+        ''
+        '    # Also remove from current HKCU context (fallback for user-context uninstall)'
+        '    try {'
+        "        `$regPathHKCU = 'HKCU\SOFTWARE\IntuneGet\Apps\$sanitizedWingetId'"
+        '        if (Test-Path -LiteralPath "Registry::HKEY_CURRENT_USER\SOFTWARE\IntuneGet\Apps\' + $sanitizedWingetId + '" -PathType Container) {'
+        '            Remove-ADTRegistryKey -LiteralPath $regPathHKCU -Recurse'
+        '        }'
+        '    } catch { }'
+    )
+} else {
+    # Machine-scope: marker is only in HKLM
+    $lines += @(
+        ''
+        '    # Remove IntuneGet detection marker from HKLM'
+        '    try {'
+        "        `$regPathHKLM = 'HKLM\SOFTWARE\IntuneGet\Apps\$sanitizedWingetId'"
+        '        if (Test-Path -LiteralPath "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\IntuneGet\Apps\' + $sanitizedWingetId + '" -PathType Container) {'
+        '            Remove-ADTRegistryKey -LiteralPath $regPathHKLM -Recurse'
+        '            Write-ADTLogEntry -Message "IntuneGet detection marker removed from HKLM" -Severity ''Success'' -Source ''Uninstall-ADTDeployment'''
+        '        }'
+        '    } catch {'
+        '        Write-ADTLogEntry -Message "Warning: Could not remove detection marker: $_" -Severity ''Warning'' -Source ''Uninstall-ADTDeployment'''
+        '    }'
+    )
+}
 
 # Add post-uninstall prompts
 if ($postUninstallPromptCalls) {

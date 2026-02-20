@@ -34,17 +34,10 @@ export const PROGRESS_STAGES: ProgressStage[] = [
     maxProgress: 50,
   },
   {
-    id: 'test',
-    label: 'Test',
-    description: 'Testing install/uninstall cycle',
-    minProgress: 50,
-    maxProgress: 62,
-  },
-  {
     id: 'authenticate',
     label: 'Auth',
     description: 'Authenticating with Intune',
-    minProgress: 62,
+    minProgress: 50,
     maxProgress: 70,
   },
   {
@@ -63,7 +56,7 @@ export const PROGRESS_STAGES: ProgressStage[] = [
   },
 ];
 
-export type StageId = 'queued' | 'download' | 'package' | 'test' | 'authenticate' | 'upload' | 'finalize';
+export type StageId = 'queued' | 'download' | 'package' | 'authenticate' | 'upload' | 'finalize';
 
 /**
  * Get the current active stage based on progress percentage.

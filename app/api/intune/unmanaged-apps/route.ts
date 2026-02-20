@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase';
 import { resolveTargetTenantId } from '@/lib/msp/tenant-resolution';
+import { parseAccessToken } from '@/lib/auth-utils';
 import { matchDiscoveredApp, filterUserApps, isSystemApp, normalizeAppName } from '@/lib/matching/app-matcher';
 import { compareVersions } from '@/lib/version-compare';
 import type {
@@ -28,36 +29,10 @@ type ManualMappingRow = Database['public']['Tables']['manual_app_mappings']['Row
 
 export async function GET(request: NextRequest) {
   try {
-    // Get the authorization header
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
+    const user = await parseAccessToken(request.headers.get('Authorization'));
+    if (!user) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // Decode the token to get user/tenant info
-    const accessToken = authHeader.slice(7);
-    let userId: string;
-    let tenantId: string;
-
-    try {
-      const tokenPayload = JSON.parse(
-        Buffer.from(accessToken.split('.')[1], 'base64').toString()
-      );
-      userId = tokenPayload.oid || tokenPayload.sub;
-      tenantId = tokenPayload.tid;
-
-      if (!userId || !tenantId) {
-        return NextResponse.json(
-          { error: 'Invalid token: missing identifiers' },
-          { status: 401 }
-        );
-      }
-    } catch {
-      return NextResponse.json(
-        { error: 'Invalid token format' },
         { status: 401 }
       );
     }
@@ -72,8 +47,8 @@ export async function GET(request: NextRequest) {
 
     const tenantResolution = await resolveTargetTenantId({
       supabase,
-      userId,
-      tokenTenantId: tenantId,
+      userId: user.userId,
+      tokenTenantId: user.tenantId,
       requestedTenantId: mspTenantId,
     });
 
@@ -81,7 +56,7 @@ export async function GET(request: NextRequest) {
       return tenantResolution.errorResponse;
     }
 
-    tenantId = tenantResolution.tenantId;
+    const tenantId = tenantResolution.tenantId;
 
     // Verify admin consent
     const { data: consentData, error: consentError } = await supabase
@@ -300,7 +275,7 @@ export async function GET(request: NextRequest) {
     // Update cache (upsert)
     type DiscoveredAppsCacheInsert = Database['public']['Tables']['discovered_apps_cache']['Insert'];
     const cacheRecords: DiscoveredAppsCacheInsert[] = unmanagedApps.map(app => ({
-      user_id: userId,
+      user_id: user.userId,
       tenant_id: tenantId,
       discovered_app_id: app.discoveredAppId,
       display_name: app.displayName,
@@ -352,41 +327,10 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
+    const user = await parseAccessToken(request.headers.get('Authorization'));
+    if (!user) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    const accessToken = authHeader.slice(7);
-    let userId: string;
-    let tenantId: string;
-
-    try {
-      const tokenPayload = JSON.parse(
-        Buffer.from(accessToken.split('.')[1], 'base64').toString()
-      );
-      userId = tokenPayload.oid || tokenPayload.sub;
-      tenantId = tokenPayload.tid;
-
-      if (!userId) {
-        return NextResponse.json(
-          { error: 'Invalid token: missing user identifier' },
-          { status: 401 }
-        );
-      }
-
-      if (!tenantId) {
-        return NextResponse.json(
-          { error: 'Invalid token: missing tenant identifier' },
-          { status: 401 }
-        );
-      }
-    } catch {
-      return NextResponse.json(
-        { error: 'Invalid token format' },
         { status: 401 }
       );
     }
@@ -396,8 +340,8 @@ export async function POST(request: NextRequest) {
 
     const tenantResolution = await resolveTargetTenantId({
       supabase,
-      userId,
-      tokenTenantId: tenantId,
+      userId: user.userId,
+      tokenTenantId: user.tenantId,
       requestedTenantId: mspTenantId,
     });
 
@@ -405,7 +349,7 @@ export async function POST(request: NextRequest) {
       return tenantResolution.errorResponse;
     }
 
-    tenantId = tenantResolution.tenantId;
+    const tenantId = tenantResolution.tenantId;
 
     // Get cached apps
     const { data: cachedApps } = await supabase

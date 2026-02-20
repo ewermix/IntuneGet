@@ -13,6 +13,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase';
 import { resolveTargetTenantId } from '@/lib/msp/tenant-resolution';
+import { parseAccessToken } from '@/lib/auth-utils';
 import {
   logTokenAcquired,
   logPermissionVerification,
@@ -101,7 +102,7 @@ async function verifyConsentWithGraph(tenantId: string): Promise<GraphVerificati
           const permissionStatus = {
             deviceManagementApps: false,
             userRead: true,
-            groupRead: tokenRoles.includes('Group.Read.All'),
+            groupRead: tokenRoles.includes('GroupMember.Read.All'),
             deviceManagementManagedDevices: tokenRoles.includes('DeviceManagementManagedDevices.Read.All'),
           };
 
@@ -127,7 +128,7 @@ async function verifyConsentWithGraph(tenantId: string): Promise<GraphVerificati
       const permissions: PermissionStatus = {
         deviceManagementApps: null,
         userRead: true, // If we got a token, basic access works
-        groupRead: tokenRoles.includes('Group.Read.All') || null,
+        groupRead: tokenRoles.includes('GroupMember.Read.All') || null,
         deviceManagementManagedDevices: tokenRoles.includes('DeviceManagementManagedDevices.Read.All') || null,
       };
 
@@ -166,7 +167,7 @@ async function verifyConsentWithGraph(tenantId: string): Promise<GraphVerificati
         permissions.deviceManagementApps = null;
       }
 
-      // Test Group.Read.All permission
+      // Test GroupMember.Read.All permission
       try {
         const groupTestResponse = await fetch(
           'https://graph.microsoft.com/v1.0/groups?$top=1&$select=id',
@@ -191,7 +192,7 @@ async function verifyConsentWithGraph(tenantId: string): Promise<GraphVerificati
         logApiPermissionTest(
           '/api/auth/verify-consent',
           tenantId,
-          'Group.Read.All',
+          'GroupMember.Read.All',
           groupTestResponse.status,
           permissions.groupRead
         );
@@ -381,39 +382,18 @@ export async function POST(request: NextRequest): Promise<NextResponse<ConsentVe
       );
     }
 
-    // Decode the token to get tenant ID
-    const accessToken = authHeader.slice(7);
-    let tenantId: string;
-    let userId: string;
-    let userEmail: string;
-
-    try {
-      const payload = JSON.parse(
-        Buffer.from(accessToken.split('.')[1], 'base64').toString()
-      );
-      tenantId = payload.tid;
-      userId = payload.oid || payload.sub;
-      userEmail = payload.preferred_username || payload.email || '';
-
-      if (!tenantId) {
-        return NextResponse.json(
-          { verified: false, tenantId: '', message: 'No tenant ID in token' },
-          { status: 400 }
-        );
-      }
-
-      if (!userId) {
-        return NextResponse.json(
-          { verified: false, tenantId: '', message: 'No user ID in token' },
-          { status: 400 }
-        );
-      }
-    } catch {
+    // Verify the token against Microsoft Graph before trusting any claims
+    const userInfo = await parseAccessToken(authHeader);
+    if (!userInfo) {
       return NextResponse.json(
-        { verified: false, tenantId: '', message: 'Invalid token format' },
+        { verified: false, tenantId: '', message: 'Authentication failed' },
         { status: 401 }
       );
     }
+
+    let tenantId = userInfo.tenantId;
+    const userId = userInfo.userId;
+    const userEmail = userInfo.userEmail;
 
     const supabase = createServerClient();
     const mspTenantId = request.headers.get('X-MSP-Tenant-Id');

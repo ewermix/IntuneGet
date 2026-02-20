@@ -21,8 +21,6 @@ import {
   Monitor,
   UserCircle,
   Trash2,
-  FlaskConical,
-  SkipForward,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -39,7 +37,6 @@ import {
 import { cn } from '@/lib/utils';
 import { useMicrosoftAuth } from '@/hooks/useMicrosoftAuth';
 import { ProgressStepper } from '@/components/ProgressStepper';
-import { TestSubStepper } from '@/components/TestSubStepper';
 import { ErrorDisplay } from '@/components/ErrorDisplay';
 import { PageHeader, AnimatedStatCard, StatCardGrid, AnimatedEmptyState, SkeletonGrid } from '@/components/dashboard';
 import type { PackageAssignment } from '@/types/upload';
@@ -53,7 +50,7 @@ interface PackagingJob {
   publisher: string;
   architecture: string;
   installer_type: string;
-  status: 'queued' | 'packaging' | 'testing' | 'completed' | 'failed' | 'uploading' | 'deployed' | 'cancelled' | 'duplicate_skipped';
+  status: 'queued' | 'packaging' | 'completed' | 'failed' | 'uploading' | 'deployed' | 'cancelled' | 'duplicate_skipped';
   status_message?: string;
   progress_percent: number;
   error_message?: string;
@@ -158,7 +155,7 @@ export default function UploadsPage() {
   // Auto-refresh for active jobs
   useEffect(() => {
     const hasActiveJobs = jobs.some((job) =>
-      ['queued', 'packaging', 'testing', 'uploading'].includes(job.status)
+      ['queued', 'packaging', 'uploading'].includes(job.status)
     );
 
     if (!hasActiveJobs) return;
@@ -286,6 +283,7 @@ export default function UploadsPage() {
 
       // Refresh jobs to show the new job
       await fetchJobs();
+      setFilter('active');
     } catch (err) {
       console.error('Failed to force redeploy:', err);
       setError(err instanceof Error ? err.message : 'Failed to redeploy');
@@ -294,46 +292,10 @@ export default function UploadsPage() {
     }
   };
 
-  const handleSkipTestRedeploy = async (job: PackagingJob) => {
-    const accessToken = await getAccessToken();
-    if (!accessToken) return;
-
-    setRedeployingJobId(job.id);
-    try {
-      const response = await fetch('/api/package', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          items: [job.package_config],
-          skipTest: true,
-        }),
-      });
-
-      if (!response.ok) {
-        const contentType = response.headers.get('content-type');
-        if (contentType?.includes('application/json')) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to redeploy');
-        }
-        throw new Error(`Failed to redeploy (${response.status})`);
-      }
-
-      await fetchJobs();
-    } catch (err) {
-      console.error('Failed to deploy without testing:', err);
-      setError(err instanceof Error ? err.message : 'Failed to deploy without testing');
-    } finally {
-      setRedeployingJobId(null);
-    }
-  };
-
   const filteredJobs = jobs.filter((job) => {
     switch (filter) {
       case 'active':
-        return ['queued', 'packaging', 'testing', 'uploading'].includes(job.status);
+        return ['queued', 'packaging', 'uploading'].includes(job.status);
       case 'completed':
         return ['completed', 'deployed', 'duplicate_skipped'].includes(job.status);
       case 'failed':
@@ -346,7 +308,7 @@ export default function UploadsPage() {
   const stats = {
     total: jobs.length,
     active: jobs.filter((j) =>
-      ['queued', 'packaging', 'testing', 'uploading'].includes(j.status)
+      ['queued', 'packaging', 'uploading'].includes(j.status)
     ).length,
     completed: jobs.filter((j) => ['completed', 'deployed', 'duplicate_skipped'].includes(j.status)).length,
     failed: jobs.filter((j) => ['failed', 'cancelled'].includes(j.status)).length,
@@ -563,7 +525,6 @@ export default function UploadsPage() {
                 onCancel={handleCancelJob}
                 isCancelling={cancellingJobId === job.id}
                 onForceRedeploy={handleForceRedeploy}
-                onSkipTestRedeploy={handleSkipTestRedeploy}
                 isRedeploying={redeployingJobId === job.id}
               />
             ))}
@@ -581,7 +542,6 @@ function UploadJobCard({
   onCancel,
   isCancelling,
   onForceRedeploy,
-  onSkipTestRedeploy,
   isRedeploying,
 }: {
   job: PackagingJob;
@@ -590,7 +550,6 @@ function UploadJobCard({
   onCancel: (jobId: string, dismiss?: boolean) => void;
   isCancelling?: boolean;
   onForceRedeploy: (job: PackagingJob) => void;
-  onSkipTestRedeploy: (job: PackagingJob) => void;
   isRedeploying?: boolean;
 }) {
   const prefersReducedMotion = useReducedMotion();
@@ -609,13 +568,6 @@ function UploadJobCard({
       color: 'text-accent-cyan',
       bg: 'bg-accent-cyan/10',
       border: 'border-l-accent-cyan',
-    },
-    testing: {
-      icon: FlaskConical,
-      label: 'Testing',
-      color: 'text-status-warning',
-      bg: 'bg-status-warning/10',
-      border: 'border-l-status-warning',
     },
     uploading: {
       icon: Upload,
@@ -663,10 +615,10 @@ function UploadJobCard({
 
   const config = statusConfig[job.status] || statusConfig.queued;
   const StatusIcon = config.icon;
-  const isActive = ['queued', 'packaging', 'testing', 'uploading'].includes(job.status);
+  const isActive = ['queued', 'packaging', 'uploading'].includes(job.status);
   const isStale = isActive && (Date.now() - new Date(job.updated_at).getTime()) > 30 * 60 * 1000;
   // Allow cancelling active jobs or dismissing completed/failed jobs
-  const isCancellable = ['queued', 'packaging', 'testing', 'uploading'].includes(job.status);
+  const isCancellable = ['queued', 'packaging', 'uploading'].includes(job.status);
   const isDismissable = ['completed', 'failed', 'duplicate_skipped'].includes(job.status);
   const canRemove = isCancellable || isDismissable;
 
@@ -713,9 +665,9 @@ function UploadJobCard({
               className="absolute inset-0 rounded-xl"
               animate={{
                 boxShadow: [
-                  `0 0 0 0px ${job.status === 'testing' ? 'rgba(245, 158, 11, 0.3)' : job.status === 'uploading' ? 'rgba(124, 58, 237, 0.3)' : 'rgba(8, 145, 178, 0.3)'}`,
-                  `0 0 0 6px ${job.status === 'testing' ? 'rgba(245, 158, 11, 0)' : job.status === 'uploading' ? 'rgba(124, 58, 237, 0)' : 'rgba(8, 145, 178, 0)'}`,
-                  `0 0 0 0px ${job.status === 'testing' ? 'rgba(245, 158, 11, 0.3)' : job.status === 'uploading' ? 'rgba(124, 58, 237, 0.3)' : 'rgba(8, 145, 178, 0.3)'}`,
+                  `0 0 0 0px ${job.status === 'uploading' ? 'rgba(124, 58, 237, 0.3)' : 'rgba(8, 145, 178, 0.3)'}`,
+                  `0 0 0 6px ${job.status === 'uploading' ? 'rgba(124, 58, 237, 0)' : 'rgba(8, 145, 178, 0)'}`,
+                  `0 0 0 0px ${job.status === 'uploading' ? 'rgba(124, 58, 237, 0.3)' : 'rgba(8, 145, 178, 0.3)'}`,
                 ],
               }}
               transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
@@ -851,16 +803,6 @@ function UploadJobCard({
             />
           )}
 
-          {/* Test sub-stepper for testing phase */}
-          <AnimatePresence>
-            {(job.status === 'testing' || (job.status === 'failed' && job.error_stage === 'test')) && (
-              <TestSubStepper
-                statusMessage={job.status_message}
-                isJobFailed={job.status === 'failed'}
-              />
-            )}
-          </AnimatePresence>
-
           {/* Error message */}
           {job.status === 'failed' && (job.error_message || job.error_code) && (
             <ErrorDisplay
@@ -872,34 +814,8 @@ function UploadJobCard({
             />
           )}
 
-          {/* Test failure: prominent action panel */}
-          {job.status === 'failed' && job.error_stage === 'test' && (
-            <div className="mt-4 p-5 rounded-xl border border-status-warning/20 bg-gradient-to-r from-status-warning/[0.08] to-status-warning/[0.03]">
-              <p className="text-text-primary font-medium text-sm">Test environment mismatch?</p>
-              <p className="text-text-secondary text-sm mt-1">
-                Our CI runner uses Windows Server, which may not support desktop-only apps. If this app targets Windows 10/11 endpoints, it will likely work fine.
-              </p>
-              <Button
-                variant="outline"
-                className="mt-3 w-full bg-status-warning/15 hover:bg-status-warning/20 border border-status-warning/30 text-status-warning font-medium"
-                onClick={() => onSkipTestRedeploy(job)}
-                disabled={isRedeploying}
-              >
-                {isRedeploying ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <SkipForward className="w-4 h-4 mr-2" />}
-                Deploy Without Testing
-              </Button>
-              <button
-                className="mt-2 w-full text-center text-xs text-text-muted hover:text-text-secondary transition-colors"
-                onClick={() => onForceRedeploy(job)}
-                disabled={isRedeploying}
-              >
-                or retry the deployment
-              </button>
-            </div>
-          )}
-
-          {/* Retry button for non-test failures */}
-          {job.status === 'failed' && job.error_stage !== 'test' && (
+          {/* Retry button for failures */}
+          {job.status === 'failed' && (
             <div className="mt-3">
               <Button
                 size="sm"
