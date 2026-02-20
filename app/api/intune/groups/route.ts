@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase';
 import { resolveTargetTenantId } from '@/lib/msp/tenant-resolution';
+import { parseAccessToken } from '@/lib/auth-utils';
 import { getEntraIDGroups } from '@/lib/intune-api';
 
 export async function GET(request: NextRequest) {
@@ -14,43 +15,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
 
-    // Get the authorization header (Microsoft access token from MSAL)
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
+    const user = await parseAccessToken(request.headers.get('Authorization'));
+    if (!user) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // Decode the token to get user info
-    const accessToken = authHeader.slice(7);
-    let userId: string;
-    let tenantId: string;
-
-    try {
-      const tokenPayload = JSON.parse(
-        Buffer.from(accessToken.split('.')[1], 'base64').toString()
-      );
-      userId = tokenPayload.oid || tokenPayload.sub;
-      tenantId = tokenPayload.tid;
-
-      if (!userId) {
-        return NextResponse.json(
-          { error: 'Invalid token: missing user identifier' },
-          { status: 401 }
-        );
-      }
-
-      if (!tenantId) {
-        return NextResponse.json(
-          { error: 'Invalid token: missing tenant identifier' },
-          { status: 401 }
-        );
-      }
-    } catch {
-      return NextResponse.json(
-        { error: 'Invalid token format' },
         { status: 401 }
       );
     }
@@ -61,8 +29,8 @@ export async function GET(request: NextRequest) {
 
     const tenantResolution = await resolveTargetTenantId({
       supabase,
-      userId,
-      tokenTenantId: tenantId,
+      userId: user.userId,
+      tokenTenantId: user.tenantId,
       requestedTenantId: mspTenantId,
     });
 
@@ -70,7 +38,7 @@ export async function GET(request: NextRequest) {
       return tenantResolution.errorResponse;
     }
 
-    tenantId = tenantResolution.tenantId;
+    const tenantId = tenantResolution.tenantId;
 
     const { data: consentData, error: consentError } = await supabase
       .from('tenant_consent')

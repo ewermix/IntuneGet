@@ -13,6 +13,7 @@ import {
   matchAppToWingetWithDatabase,
 } from '@/lib/app-matching';
 import { compareVersions, hasUpdate, normalizeVersion } from '@/lib/version-compare';
+import { parseAccessToken } from '@/lib/auth-utils';
 import type { IntuneWin32App, AppUpdateInfo } from '@/types/inventory';
 
 const GRAPH_API_BASE = 'https://graph.microsoft.com/beta';
@@ -61,43 +62,10 @@ export const maxDuration = 30;
 
 export async function GET(request: NextRequest) {
   try {
-    // Get the authorization header
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
+    const user = await parseAccessToken(request.headers.get('Authorization'));
+    if (!user) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // Decode the token
-    const accessToken = authHeader.slice(7);
-    let userId: string;
-    let tenantId: string;
-
-    try {
-      const tokenPayload = JSON.parse(
-        Buffer.from(accessToken.split('.')[1], 'base64').toString()
-      );
-      userId = tokenPayload.oid || tokenPayload.sub;
-      tenantId = tokenPayload.tid;
-
-      if (!userId) {
-        return NextResponse.json(
-          { error: 'Invalid token: missing user identifier' },
-          { status: 401 }
-        );
-      }
-
-      if (!tenantId) {
-        return NextResponse.json(
-          { error: 'Invalid token: missing tenant identifier' },
-          { status: 401 }
-        );
-      }
-    } catch {
-      return NextResponse.json(
-        { error: 'Invalid token format' },
         { status: 401 }
       );
     }
@@ -108,8 +76,8 @@ export async function GET(request: NextRequest) {
 
     const tenantResolution = await resolveTargetTenantId({
       supabase,
-      userId,
-      tokenTenantId: tenantId,
+      userId: user.userId,
+      tokenTenantId: user.tenantId,
       requestedTenantId: mspTenantId,
     });
 
@@ -117,7 +85,7 @@ export async function GET(request: NextRequest) {
       return tenantResolution.errorResponse;
     }
 
-    tenantId = tenantResolution.tenantId;
+    const tenantId = tenantResolution.tenantId;
 
     const { data: consentData, error: consentError } = await supabase
       .from('tenant_consent')
@@ -179,7 +147,7 @@ export async function GET(request: NextRequest) {
     const { data: tenantHistoryRows } = await supabase
       .from('upload_history')
       .select('intune_app_id, winget_id, version')
-      .eq('user_id', userId)
+      .eq('user_id', user.userId)
       .eq('intune_tenant_id', tenantId);
 
     if (tenantHistoryRows) {

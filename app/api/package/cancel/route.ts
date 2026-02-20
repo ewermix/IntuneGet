@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase';
 import { getDatabase } from '@/lib/db';
 import { cancelWorkflowRun, isGitHubActionsConfigured } from '@/lib/github-actions';
+import { parseAccessToken } from '@/lib/auth-utils';
 import type { Database } from '@/types/database';
 
 interface CancelRequestBody {
@@ -24,40 +25,16 @@ const DISMISSABLE_STATUSES = ['queued', 'packaging', 'uploading', 'completed', '
 
 export async function POST(request: NextRequest) {
   try {
-    // Get the authorization header (Microsoft access token from MSAL)
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
+    const user = await parseAccessToken(request.headers.get('Authorization'));
+    if (!user) {
       return NextResponse.json(
-        { error: 'Authentication required. Please sign in with Microsoft.' },
+        { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
-    // Decode the token to get user info
-    const accessToken = authHeader.slice(7);
-    let userId: string;
-    let userEmail: string | null = null;
-
-    try {
-      const tokenPayload = JSON.parse(
-        Buffer.from(accessToken.split('.')[1], 'base64').toString()
-      );
-      userId = tokenPayload.oid || tokenPayload.sub;
-      // Try multiple token fields for email
-      userEmail = tokenPayload.preferred_username || tokenPayload.email || tokenPayload.upn || null;
-
-      if (!userId) {
-        return NextResponse.json(
-          { error: 'Invalid token: missing user identifier' },
-          { status: 401 }
-        );
-      }
-    } catch {
-      return NextResponse.json(
-        { error: 'Invalid token format' },
-        { status: 401 }
-      );
-    }
+    const userId = user.userId;
+    const userEmail = user.userEmail;
 
     // Parse request body
     const body: CancelRequestBody = await request.json();

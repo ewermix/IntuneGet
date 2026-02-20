@@ -1,15 +1,21 @@
 import { NextRequest } from 'next/server';
 
 const {
+  parseAccessTokenMock,
   createServerClientMock,
   resolveTargetTenantIdMock,
   matchAppToWingetMock,
   matchAppToWingetWithDatabaseMock,
 } = vi.hoisted(() => ({
+  parseAccessTokenMock: vi.fn(),
   createServerClientMock: vi.fn(),
   resolveTargetTenantIdMock: vi.fn(),
   matchAppToWingetMock: vi.fn(),
   matchAppToWingetWithDatabaseMock: vi.fn(),
+}));
+
+vi.mock('@/lib/auth-utils', () => ({
+  parseAccessToken: parseAccessTokenMock,
 }));
 
 vi.mock('@/lib/supabase', () => ({
@@ -26,11 +32,6 @@ vi.mock('@/lib/app-matching', () => ({
 }));
 
 import { GET } from '@/app/api/intune/apps/updates/route';
-
-function buildToken(payload: Record<string, string>) {
-  const encoded = Buffer.from(JSON.stringify(payload)).toString('base64');
-  return `header.${encoded}.signature`;
-}
 
 function createSupabaseMock(curatedRows: Array<{ winget_id: string; latest_version: string }>) {
   return {
@@ -70,6 +71,12 @@ describe('GET /api/intune/apps/updates', () => {
     vi.clearAllMocks();
     process.env.AZURE_CLIENT_ID = '00000000-0000-0000-0000-000000000001';
     process.env.AZURE_CLIENT_SECRET = 'test-secret';
+    parseAccessTokenMock.mockResolvedValue({
+      userId: 'user-1',
+      userEmail: 'user@example.com',
+      tenantId: 'tenant-1',
+      userName: 'Test User',
+    });
     resolveTargetTenantIdMock.mockResolvedValue({
       tenantId: 'tenant-1',
       errorResponse: null,
@@ -119,7 +126,7 @@ describe('GET /api/intune/apps/updates', () => {
 
     const request = new NextRequest('http://localhost:3000/api/intune/apps/updates', {
       headers: {
-        Authorization: `Bearer ${buildToken({ oid: 'user-1', tid: 'tenant-1' })}`,
+        Authorization: 'Bearer mock-token',
       },
     });
 
@@ -174,7 +181,7 @@ describe('GET /api/intune/apps/updates', () => {
 
     const request = new NextRequest('http://localhost:3000/api/intune/apps/updates', {
       headers: {
-        Authorization: `Bearer ${buildToken({ oid: 'user-1', tid: 'tenant-1' })}`,
+        Authorization: 'Bearer mock-token',
       },
     });
 
